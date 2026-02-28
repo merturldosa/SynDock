@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+:root {
+  --color-primary: #C9A84C;
+  --color-primary-light: #D4BA6A;
+  --color-secondary: #1B2A4A;
+  --color-secondary-light: #2A3D66;
+  --color-background: #FAF8F5;
+}
+
+body {
+  font-family: "Pretendard", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  color: var(--color-secondary);
+  background-color: var(--color-background);
+}

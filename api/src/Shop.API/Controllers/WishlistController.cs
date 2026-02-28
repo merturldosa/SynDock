@@ -1,0 +1,46 @@
+using MediatR;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Shop.Application.Wishlists.Commands;
+using Shop.Application.Wishlists.Queries;
+
+namespace Shop.API.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+[Authorize]
+public class WishlistController : ControllerBase
+{
+    private readonly IMediator _mediator;
+
+    public WishlistController(IMediator mediator)
+    {
+        _mediator = mediator;
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetAll()
+    {
+        var result = await _mediator.Send(new GetWishlistQuery());
+        return Ok(result);
+    }
+
+    [HttpPost("toggle")]
+    public async Task<IActionResult> Toggle([FromBody] ToggleWishlistRequest request)
+    {
+        var result = await _mediator.Send(new ToggleWishlistCommand(request.ProductId));
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.Error });
+        return Ok(new { isWished = result.Data });
+    }
+
+    [HttpPost("check")]
+    public async Task<IActionResult> Check([FromBody] CheckWishlistRequest request)
+    {
+        var result = await _mediator.Send(new CheckWishlistQuery(request.ProductIds));
+        return Ok(new { wishedProductIds = result });
+    }
+}
+
+public record ToggleWishlistRequest(int ProductId);
+public record CheckWishlistRequest(List<int> ProductIds);

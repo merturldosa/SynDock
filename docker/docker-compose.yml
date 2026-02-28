@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  shop-db:
+    image: postgres:16-alpine
+    container_name: syndock-shop-db
+    ports:
+      - "5434:5432"
+    environment:
+      POSTGRES_DB: syndock_shop
+      POSTGRES_USER: shop_admin
+      POSTGRES_PASSWORD: Shop@2026!
+    volumes:
+      - shop-db-data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U shop_admin -d syndock_shop"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  shop-redis:
+    image: redis:7-alpine
+    container_name: syndock-shop-redis
+    ports:
+      - "6381:6379"
+    volumes:
+      - shop-redis-data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  shop-db-data:
+  shop-redis-data:

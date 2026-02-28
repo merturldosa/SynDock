@@ -1,0 +1,127 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { Coins, ArrowUpCircle, ArrowDownCircle } from "lucide-react";
+import { getPointBalance, getPointHistory, type PointHistoryDto, type PagedPointHistory } from "@/lib/pointApi";
+
+const TYPE_LABELS: Record<string, { label: string; color: string; icon: typeof ArrowUpCircle }> = {
+  Earned: { label: "적립", color: "text-emerald-600", icon: ArrowUpCircle },
+  Used: { label: "사용", color: "text-red-500", icon: ArrowDownCircle },
+  Refund: { label: "환불", color: "text-blue-500", icon: ArrowUpCircle },
+  Bonus: { label: "보너스", color: "text-orange-500", icon: ArrowUpCircle },
+  Expired: { label: "만료", color: "text-gray-400", icon: ArrowDownCircle },
+};
+
+function formatPrice(price: number): string {
+  return price.toLocaleString("ko-KR");
+}
+
+export default function PointsPage() {
+  const [balance, setBalance] = useState(0);
+  const [history, setHistory] = useState<PagedPointHistory | null>(null);
+  const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    Promise.all([
+      getPointBalance(),
+      getPointHistory(page),
+    ])
+      .then(([bal, hist]) => {
+        setBalance(bal.balance);
+        setHistory(hist);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [page]);
+
+  if (loading) {
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-8">
+        <div className="flex items-center justify-center py-20">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-[var(--color-primary)] border-t-transparent" />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-2xl mx-auto px-4 py-8">
+      <h1 className="text-2xl font-bold text-[var(--color-secondary)] mb-6">
+        포인트
+      </h1>
+
+      {/* Balance Card */}
+      <div className="bg-gradient-to-r from-[var(--color-secondary)] to-[var(--color-secondary-light)] rounded-xl p-6 mb-6 text-white">
+        <div className="flex items-center gap-3">
+          <Coins size={32} className="text-[var(--color-primary)]" />
+          <div>
+            <p className="text-sm text-white/60">보유 포인트</p>
+            <p className="text-3xl font-bold">{formatPrice(balance)}P</p>
+          </div>
+        </div>
+      </div>
+
+      {/* History */}
+      <h2 className="font-semibold text-[var(--color-secondary)] mb-3">
+        적립/사용 내역
+      </h2>
+
+      {!history || history.items.length === 0 ? (
+        <div className="text-center py-12 text-gray-400">
+          <p>포인트 내역이 없습니다.</p>
+        </div>
+      ) : (
+        <>
+          <div className="space-y-2">
+            {history.items.map((item) => {
+              const typeInfo = TYPE_LABELS[item.transactionType] || TYPE_LABELS.Earned;
+              const Icon = typeInfo.icon;
+              return (
+                <div
+                  key={item.id}
+                  className="bg-white rounded-xl shadow-sm p-4 flex items-center gap-3"
+                >
+                  <Icon size={20} className={typeInfo.color} />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-900">
+                      {item.description || typeInfo.label}
+                    </p>
+                    <p className="text-xs text-gray-400">
+                      {new Date(item.createdAt).toLocaleDateString("ko-KR")}
+                    </p>
+                  </div>
+                  <p className={`font-bold ${item.amount >= 0 ? "text-emerald-600" : "text-red-500"}`}>
+                    {item.amount >= 0 ? "+" : ""}{formatPrice(item.amount)}P
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+
+          {history.totalCount > 20 && (
+            <div className="flex items-center justify-center gap-2 mt-6">
+              <button
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page === 1}
+                className="px-3 py-2 text-sm border rounded-lg disabled:opacity-40"
+              >
+                이전
+              </button>
+              <span className="text-sm text-gray-500">
+                {page} / {Math.ceil(history.totalCount / 20)}
+              </span>
+              <button
+                onClick={() => setPage((p) => p + 1)}
+                disabled={page * 20 >= history.totalCount}
+                className="px-3 py-2 text-sm border rounded-lg disabled:opacity-40"
+              >
+                다음
+              </button>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}

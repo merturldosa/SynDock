@@ -1,0 +1,72 @@
+using MediatR;
+using Microsoft.EntityFrameworkCore;
+using Shop.Application.Common.Interfaces;
+using Shop.Domain.Enums;
+using SynDock.Core.Common;
+using SynDock.Core.Interfaces;
+
+namespace Shop.Application.Orders.Commands;
+
+public record UpdateOrderStatusCommand(
+    int OrderId,
+    string Status
+) : IRequest<Result<bool>>;
+
+public class UpdateOrderStatusCommandHandler : IRequestHandler<UpdateOrderStatusCommand, Result<bool>>
+{
+    private readonly IShopDbContext _db;
+    private readonly ICurrentUserService _currentUser;
+    private readonly IUnitOfWork _unitOfWork;
+
+    public UpdateOrderStatusCommandHandler(IShopDbContext db, ICurrentUserService currentUser, IUnitOfWork unitOfWork)
+    {
+        _db = db;
+        _currentUser = currentUser;
+        _unitOfWork = unitOfWork;
+    }
+
+    public async Task<Result<bool>> Handle(UpdateOrderStatusCommand request, CancellationToken cancellationToken)
+    {
+        if (_currentUser.UserId is null)
+            return Result<bool>.Failure("로그인이 필요합니다.");
+
+        if (!Enum.TryParse<OrderStatus>(request.Status, out _))
+            return Result<bool>.Failure($"유효하지 않은 주문 상태입니다: {request.Status}");
+
+        var order = await _db.Orders
+            .FirstOrDefaultAsync(o => o.Id == request.OrderId, cancellationToken);
+
+        if (order is null)
+            return Result<bool>.Failure("주문을 찾을 수 없습니다.");
+
+        // Only allow the order owner or admin to update
+        if (order.UserId != _currentUser.UserId.Value)
+            return Result<bool>.Failure("권한이 없습니다.");
+
+        // Validate status transition
+        if (!IsValidTransition(order.Status, request.Status))
+            return Result<bool>.Failure($"'{order.Status}'에서 '{request.Status}'로 변경할 수 없습니다.");
+
+        order.Status = request.Status;
+        order.UpdatedBy = _currentUser.Username;
+        order.UpdatedAt = DateTime.UtcNow;
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        return Result<bool>.Success(true);
+    }
+
+    private static bool IsValidTransition(string current, string next)
+    {
+        return (current, next) switch
+        {
+            (nameof(OrderStatus.Pending), nameof(OrderStatus.Confirmed)) => true,
+            (nameof(OrderStatus.Pending), nameof(OrderStatus.Cancelled)) => true,
+            (nameof(OrderStatus.Confirmed), nameof(OrderStatus.Processing)) => true,
+            (nameof(OrderStatus.Confirmed), nameof(OrderStatus.Cancelled)) => true,
+            (nameof(OrderStatus.Processing), nameof(OrderStatus.Shipped)) => true,
+            (nameof(OrderStatus.Shipped), nameof(OrderStatus.Delivered)) => true,
+            (nameof(OrderStatus.Delivered), nameof(OrderStatus.Refunded)) => true,
+            _ => false
+        };
+    }
+}
