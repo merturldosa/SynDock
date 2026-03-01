@@ -27,6 +27,21 @@ export interface TenantConfig {
   businessNumber?: string;
   ceoName?: string;
   privacyOfficer?: string;
+  seasonalThemes?: Record<string, { primary?: string; secondary?: string; background?: string }>;
+  reactionTypes?: string[];
+  chatPersona?: {
+    name: string;
+    greeting?: string;
+    systemPrompt?: string;
+  };
+  promoBanner?: {
+    title?: string;
+    description?: string;
+    imageUrl?: string;
+    linkUrl?: string;
+    backgroundColor?: string;
+    isActive: boolean;
+  };
 }
 
 export interface TenantInfo {

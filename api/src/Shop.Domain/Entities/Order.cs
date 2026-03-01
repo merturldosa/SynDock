@@ -56,4 +56,6 @@ public class Order : BaseEntity, ITenantEntity
     public ICollection<OrderItem> Items { get; set; } = new List<OrderItem>();
 
     public ICollection<Payment> Payments { get; set; } = new List<Payment>();
+
+    public ICollection<OrderHistory> Histories { get; set; } = new List<OrderHistory>();
 }

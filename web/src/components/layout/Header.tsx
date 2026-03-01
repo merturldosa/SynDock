@@ -92,6 +92,9 @@ export function Header() {
           <Link href="/feed" className="hidden md:block text-xs px-2 py-1 hover:text-[var(--color-primary)] transition-colors">
             커뮤니티
           </Link>
+          <Link href="/liturgy" className="hidden md:block text-xs px-2 py-1 hover:text-[var(--color-primary)] transition-colors">
+            전례
+          </Link>
           <Link href="/search" className="hidden md:block p-2 hover:text-[var(--color-primary)] transition-colors">
             <Search size={20} />
           </Link>

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Shop.Application.Auth.Commands;
 using Shop.Application.Auth.Queries;
+using Shop.Application.Common.DTOs;
 using SynDock.Core.Interfaces;
 
 namespace Shop.API.Controllers;
@@ -60,6 +61,20 @@ public class AuthController : ControllerBase
         var result = await _mediator.Send(new GetMeQuery(_currentUser.UserId.Value));
         if (!result.IsSuccess)
             return NotFound(new { error = result.Error });
+
+        return Ok(result.Data);
+    }
+
+    [Authorize]
+    [HttpPut("baptismal-name")]
+    public async Task<IActionResult> UpdateBaptismalName([FromBody] UpdateBaptismalNameRequest request)
+    {
+        if (_currentUser.UserId == null)
+            return Unauthorized();
+
+        var result = await _mediator.Send(new UpdateBaptismalNameCommand(_currentUser.UserId.Value, request.BaptismalName));
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.Error });
 
         return Ok(result.Data);
     }

@@ -11,6 +11,7 @@ import {
   Ticket,
   Users,
   BarChart3,
+  Warehouse,
   ChevronLeft,
 } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
@@ -20,6 +21,7 @@ const NAV_ITEMS = [
   { href: "/admin/products", icon: Package, label: "상품 관리" },
   { href: "/admin/categories", icon: FolderTree, label: "카테고리 관리" },
   { href: "/admin/orders", icon: ShoppingCart, label: "주문 관리" },
+  { href: "/admin/inventory", icon: Warehouse, label: "재고 관리" },
   { href: "/admin/coupons", icon: Ticket, label: "쿠폰 관리" },
   { href: "/admin/users", icon: Users, label: "회원 관리" },
   { href: "/admin/analytics", icon: BarChart3, label: "매출 분석" },

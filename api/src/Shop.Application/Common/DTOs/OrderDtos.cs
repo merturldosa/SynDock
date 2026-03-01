@@ -12,7 +12,10 @@ public record OrderDto(
     int? CouponId,
     string? Note,
     AddressDto? ShippingAddress,
-    DateTime CreatedAt);
+    DateTime CreatedAt,
+    IReadOnlyList<OrderHistoryDto>? Histories = null,
+    string? TrackingNumber = null,
+    string? TrackingCarrier = null);
 
 public record OrderItemDto(
     int Id,

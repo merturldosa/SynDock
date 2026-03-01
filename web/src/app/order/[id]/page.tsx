@@ -4,11 +4,27 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Package, MapPin, ArrowLeft } from "lucide-react";
+import { Package, MapPin, ArrowLeft, Truck, Clock } from "lucide-react";
 import { getOrderById, cancelOrder } from "@/lib/orderApi";
 import { useAuthStore } from "@/stores/authStore";
 import type { Order } from "@/types/order";
 import { ORDER_STATUS_LABELS, type OrderStatusType } from "@/types/order";
+
+interface OrderHistory {
+  id: number;
+  status: string;
+  note: string | null;
+  trackingNumber: string | null;
+  trackingCarrier: string | null;
+  createdBy: string;
+  createdAt: string;
+}
+
+interface ExtendedOrder extends Order {
+  histories?: OrderHistory[];
+  trackingNumber?: string | null;
+  trackingCarrier?: string | null;
+}
 
 function formatPrice(price: number): string {
   return price.toLocaleString("ko-KR") + "원";
@@ -30,10 +46,20 @@ const STATUS_COLORS: Record<string, string> = {
   Refunded: "bg-red-100 text-red-700",
 };
 
+const TIMELINE_COLORS: Record<string, string> = {
+  Pending: "bg-yellow-500",
+  Confirmed: "bg-blue-500",
+  Processing: "bg-indigo-500",
+  Shipped: "bg-purple-500",
+  Delivered: "bg-emerald-500",
+  Cancelled: "bg-red-500",
+  Refunded: "bg-gray-500",
+};
+
 export default function OrderDetailPage() {
   const params = useParams();
   const { isAuthenticated } = useAuthStore();
-  const [order, setOrder] = useState<Order | null>(null);
+  const [order, setOrder] = useState<ExtendedOrder | null>(null);
   const [loading, setLoading] = useState(true);
   const [cancelling, setCancelling] = useState(false);
 
@@ -97,6 +123,57 @@ export default function OrderDetailPage() {
           {statusLabel}
         </span>
       </div>
+
+      {/* Tracking Info */}
+      {order.trackingNumber && (
+        <section className="bg-purple-50 border border-purple-200 rounded-xl p-5 mb-6">
+          <h2 className="font-bold text-purple-800 flex items-center gap-2 mb-2">
+            <Truck size={18} /> 배송 추적
+          </h2>
+          <div className="text-sm text-purple-700 space-y-1">
+            {order.trackingCarrier && (
+              <p>택배사: <strong>{order.trackingCarrier}</strong></p>
+            )}
+            <p>운송장번호: <strong className="font-mono">{order.trackingNumber}</strong></p>
+          </div>
+        </section>
+      )}
+
+      {/* Order Timeline */}
+      {order.histories && order.histories.length > 0 && (
+        <section className="bg-white rounded-xl shadow-sm p-6 mb-6">
+          <h2 className="font-bold text-[var(--color-secondary)] flex items-center gap-2 mb-4">
+            <Clock size={18} /> 주문 진행 상황
+          </h2>
+          <div className="relative">
+            <div className="absolute left-[9px] top-2 bottom-2 w-0.5 bg-gray-200" />
+            <div className="space-y-4">
+              {order.histories.map((h) => {
+                const color = TIMELINE_COLORS[h.status] || "bg-gray-400";
+                return (
+                  <div key={h.id} className="relative pl-7">
+                    <div className={`absolute left-0 top-1 w-[18px] h-[18px] rounded-full ${color} border-2 border-white shadow`} />
+                    <div>
+                      <p className="text-sm font-medium text-[var(--color-secondary)]">
+                        {ORDER_STATUS_LABELS[h.status as OrderStatusType] || h.status}
+                      </p>
+                      {h.note && (
+                        <p className="text-xs text-gray-500 mt-0.5">{h.note}</p>
+                      )}
+                      {h.trackingNumber && (
+                        <p className="text-xs text-purple-600 mt-0.5 font-mono">
+                          운송장: {h.trackingNumber}
+                        </p>
+                      )}
+                      <p className="text-xs text-gray-400 mt-1">{formatDate(h.createdAt)}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Items */}
       <section className="bg-white rounded-xl shadow-sm p-6 mb-6">

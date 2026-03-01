@@ -4,6 +4,7 @@ export interface UserInfo {
   email: string;
   name: string;
   role: string;
+  customFieldsJson?: string;
 }
 
 export interface LoginResponse {

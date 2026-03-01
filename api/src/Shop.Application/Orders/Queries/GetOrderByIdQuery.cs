@@ -32,6 +32,7 @@ public class GetOrderByIdQueryHandler : IRequestHandler<GetOrderByIdQuery, Order
             .Include(o => o.Items)
                 .ThenInclude(oi => oi.Variant)
             .Include(o => o.ShippingAddress)
+            .Include(o => o.Histories)
             .FirstOrDefaultAsync(o => o.Id == request.OrderId && o.UserId == _currentUser.UserId.Value, cancellationToken);
 
         if (order is null)
@@ -55,6 +56,17 @@ public class GetOrderByIdQueryHandler : IRequestHandler<GetOrderByIdQuery, Order
             addressDto = new AddressDto(a.Id, a.RecipientName, a.Phone, a.ZipCode, a.Address1, a.Address2, a.IsDefault);
         }
 
+        var histories = order.Histories
+            .OrderByDescending(h => h.CreatedAt)
+            .Select(h => new OrderHistoryDto(h.Id, h.Status, h.Note, h.TrackingNumber, h.TrackingCarrier, h.CreatedBy, h.CreatedAt))
+            .ToList();
+
+        // Get latest tracking info
+        var latestShipping = order.Histories
+            .Where(h => h.TrackingNumber != null)
+            .OrderByDescending(h => h.CreatedAt)
+            .FirstOrDefault();
+
         return new OrderDto(
             order.Id,
             order.OrderNumber,
@@ -67,6 +79,9 @@ public class GetOrderByIdQueryHandler : IRequestHandler<GetOrderByIdQuery, Order
             order.CouponId,
             order.Note,
             addressDto,
-            order.CreatedAt);
+            order.CreatedAt,
+            histories,
+            latestShipping?.TrackingNumber,
+            latestShipping?.TrackingCarrier);
     }
 }

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Heart, MessageCircle, Hash, PenSquare } from "lucide-react";
+import { MessageCircle, Hash, PenSquare } from "lucide-react";
 import { getFeed, getTrendingHashtags, toggleReaction } from "@/lib/postApi";
 import { useAuthStore } from "@/stores/authStore";
 import type { PostSummary, PagedPosts, HashtagInfo } from "@/types/post";
@@ -126,7 +126,7 @@ export default function FeedPage() {
 
                   <div className="flex items-center gap-4 text-xs text-gray-400">
                     <span className="flex items-center gap-1">
-                      <Heart size={14} /> {post.reactionCount}
+                      🙏 {post.reactionCount}
                     </span>
                     <span className="flex items-center gap-1">
                       <MessageCircle size={14} /> {post.commentCount}

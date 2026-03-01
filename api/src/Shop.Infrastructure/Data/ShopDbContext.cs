@@ -46,6 +46,9 @@ public class ShopDbContext : DbContext, IShopDbContext
     public DbSet<UserPoint> UserPoints { get; set; }
     public DbSet<PointHistory> PointHistories { get; set; }
     public DbSet<Notification> Notifications { get; set; }
+    public DbSet<Saint> Saints { get; set; }
+    public DbSet<LiturgicalSeason> LiturgicalSeasons { get; set; }
+    public DbSet<OrderHistory> OrderHistories { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -86,6 +89,9 @@ public class ShopDbContext : DbContext, IShopDbContext
         ConfigureCoupon(modelBuilder);
         ConfigureUserPoint(modelBuilder);
         ConfigureNotification(modelBuilder);
+        ConfigureSaint(modelBuilder);
+        ConfigureLiturgicalSeason(modelBuilder);
+        ConfigureOrderHistory(modelBuilder);
     }
 
     private void ApplyTenantFilter<T>(ModelBuilder modelBuilder) where T : class, ITenantEntity
@@ -588,6 +594,38 @@ public class ShopDbContext : DbContext, IShopDbContext
             entity.HasOne(e => e.User)
                 .WithMany()
                 .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+    }
+
+    private static void ConfigureSaint(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Saint>(entity =>
+        {
+            entity.HasIndex(e => e.FeastDay);
+            entity.HasIndex(e => e.KoreanName);
+            entity.HasIndex(e => e.IsActive);
+        });
+    }
+
+    private static void ConfigureLiturgicalSeason(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<LiturgicalSeason>(entity =>
+        {
+            entity.HasIndex(e => new { e.Year, e.SeasonName }).IsUnique();
+            entity.HasIndex(e => new { e.StartDate, e.EndDate });
+        });
+    }
+
+    private static void ConfigureOrderHistory(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<OrderHistory>(entity =>
+        {
+            entity.HasIndex(e => e.OrderId);
+
+            entity.HasOne(e => e.Order)
+                .WithMany(o => o.Histories)
+                .HasForeignKey(e => e.OrderId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
     }

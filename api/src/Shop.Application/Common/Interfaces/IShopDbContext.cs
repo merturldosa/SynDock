@@ -35,5 +35,8 @@ public interface IShopDbContext
     DbSet<UserPoint> UserPoints { get; }
     DbSet<PointHistory> PointHistories { get; }
     DbSet<Notification> Notifications { get; }
+    DbSet<Saint> Saints { get; }
+    DbSet<LiturgicalSeason> LiturgicalSeasons { get; }
+    DbSet<OrderHistory> OrderHistories { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

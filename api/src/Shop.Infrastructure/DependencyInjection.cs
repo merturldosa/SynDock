@@ -7,6 +7,7 @@ using Shop.Infrastructure.Data;
 using Shop.Infrastructure.Payments;
 using Shop.Infrastructure.Repositories;
 using Shop.Infrastructure.Services;
+using Shop.Application.Liturgy.Services;
 using Shop.Infrastructure.AI;
 using Shop.Infrastructure.Storage;
 using SynDock.Core.Interfaces;
@@ -31,6 +32,7 @@ public static class DependencyInjection
         services.AddScoped<ITenantContext>(sp => sp.GetRequiredService<TenantContext>());
 
         services.AddScoped<IPaymentProvider, MockPaymentProvider>();
+        services.AddSingleton<ILiturgicalCalendarService, LiturgicalCalendarService>();
 
         // File storage
         var uploadsPath = Path.Combine(AppContext.BaseDirectory, "wwwroot", "uploads");

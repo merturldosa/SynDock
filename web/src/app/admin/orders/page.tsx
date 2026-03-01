@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { getAdminOrders, updateOrderStatus, type OrderSummary, type PagedOrders } from "@/lib/adminApi";
+import { getAdminOrders, updateOrderStatus, bulkUpdateOrderStatus, type OrderSummary, type PagedOrders } from "@/lib/adminApi";
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   Pending: { label: "결제 대기", color: "bg-yellow-100 text-yellow-700" },
@@ -25,6 +25,9 @@ export default function AdminOrdersPage() {
   const [page, setPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState("");
   const [loading, setLoading] = useState(true);
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [bulkStatus, setBulkStatus] = useState("Confirmed");
+  const [bulkProcessing, setBulkProcessing] = useState(false);
 
   const load = () => {
     setLoading(true);
@@ -36,6 +39,7 @@ export default function AdminOrdersPage() {
 
   useEffect(() => {
     load();
+    setSelectedIds(new Set());
   }, [page, statusFilter]);
 
   const handleStatusChange = async (orderId: number, newStatus: string) => {
@@ -45,6 +49,43 @@ export default function AdminOrdersPage() {
     } catch {
       alert("상태 변경에 실패했습니다.");
     }
+  };
+
+  const toggleSelect = (id: number) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (!data) return;
+    if (selectedIds.size === data.items.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(data.items.map((o) => o.id)));
+    }
+  };
+
+  const handleBulkUpdate = async () => {
+    if (selectedIds.size === 0) return;
+    if (!confirm(`선택한 ${selectedIds.size}건의 주문을 '${STATUS_LABELS[bulkStatus]?.label || bulkStatus}'(으)로 변경하시겠습니까?`))
+      return;
+
+    setBulkProcessing(true);
+    try {
+      const result = await bulkUpdateOrderStatus(Array.from(selectedIds), bulkStatus);
+      if (result.failCount > 0) {
+        alert(`성공: ${result.successCount}건, 실패: ${result.failCount}건\n${result.errors.join("\n")}`);
+      }
+      setSelectedIds(new Set());
+      load();
+    } catch {
+      alert("일괄 처리에 실패했습니다.");
+    }
+    setBulkProcessing(false);
   };
 
   return (
@@ -76,6 +117,39 @@ export default function AdminOrdersPage() {
         ))}
       </div>
 
+      {/* Bulk Actions */}
+      {selectedIds.size > 0 && (
+        <div className="flex items-center gap-3 mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <span className="text-sm text-blue-700 font-medium">
+            {selectedIds.size}건 선택
+          </span>
+          <select
+            value={bulkStatus}
+            onChange={(e) => setBulkStatus(e.target.value)}
+            className="text-sm border rounded px-2 py-1"
+          >
+            {STATUS_OPTIONS.map((s) => (
+              <option key={s} value={s}>
+                {STATUS_LABELS[s]?.label || s}
+              </option>
+            ))}
+          </select>
+          <button
+            onClick={handleBulkUpdate}
+            disabled={bulkProcessing}
+            className="px-4 py-1.5 bg-[var(--color-primary)] text-white rounded-lg text-sm font-medium hover:opacity-90 disabled:opacity-60"
+          >
+            {bulkProcessing ? "처리 중..." : "일괄 변경"}
+          </button>
+          <button
+            onClick={() => setSelectedIds(new Set())}
+            className="px-3 py-1.5 border rounded-lg text-sm hover:bg-gray-50"
+          >
+            선택 해제
+          </button>
+        </div>
+      )}
+
       {data && (
         <p className="text-sm text-gray-500 mb-3">
           총 {data.totalCount.toLocaleString()}건
@@ -96,6 +170,14 @@ export default function AdminOrdersPage() {
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b">
                 <tr>
+                  <th className="p-3 w-10">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.size === data.items.length && data.items.length > 0}
+                      onChange={toggleSelectAll}
+                      className="rounded"
+                    />
+                  </th>
                   <th className="text-left p-3 font-medium text-gray-500">주문번호</th>
                   <th className="text-left p-3 font-medium text-gray-500">상품</th>
                   <th className="text-right p-3 font-medium text-gray-500">금액</th>
@@ -108,7 +190,15 @@ export default function AdminOrdersPage() {
                 {data.items.map((order) => {
                   const status = STATUS_LABELS[order.status] || { label: order.status, color: "bg-gray-100 text-gray-700" };
                   return (
-                    <tr key={order.id} className="border-b last:border-0 hover:bg-gray-50">
+                    <tr key={order.id} className={`border-b last:border-0 hover:bg-gray-50 ${selectedIds.has(order.id) ? "bg-blue-50" : ""}`}>
+                      <td className="p-3">
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.has(order.id)}
+                          onChange={() => toggleSelect(order.id)}
+                          className="rounded"
+                        />
+                      </td>
                       <td className="p-3">
                         <Link href={`/admin/orders/${order.id}`} className="text-[var(--color-primary)] hover:underline font-mono text-xs">
                           {order.orderNumber}

@@ -60,6 +60,18 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Res
         // Generate order number
         var orderNumber = $"ORD-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..8].ToUpper()}";
 
+        // Stock validation and deduction
+        foreach (var ci in cart.Items)
+        {
+            if (ci.VariantId.HasValue && ci.Variant is not null)
+            {
+                if (ci.Variant.Stock < ci.Quantity)
+                    return Result<int>.Failure($"'{ci.Product.Name} ({ci.Variant.Name})' 재고가 부족합니다. (현재: {ci.Variant.Stock}, 요청: {ci.Quantity})");
+
+                ci.Variant.Stock -= ci.Quantity;
+            }
+        }
+
         // Create order items
         var orderItems = cart.Items.Select(ci =>
         {

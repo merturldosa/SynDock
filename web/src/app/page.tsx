@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import { HeroSection } from "@/components/home/HeroSection";
 import { CategorySection } from "@/components/home/CategorySection";
 import { ProductSection } from "@/components/home/ProductSection";
+import { LiturgySummary } from "@/components/home/LiturgySummary";
+import { PromoBanner } from "@/components/home/PromoBanner";
 import { useAuthStore } from "@/stores/authStore";
 import { useCartStore } from "@/stores/cartStore";
 import { getProducts, getCategories } from "@/lib/productApi";
@@ -51,7 +53,9 @@ export default function Home() {
   return (
     <>
       <HeroSection />
+      <PromoBanner />
       <CategorySection />
+      <LiturgySummary />
       {section1.category && (
         <ProductSection
           title={section1.category.name}

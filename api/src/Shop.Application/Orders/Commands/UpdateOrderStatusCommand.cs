@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Shop.Application.Common.Interfaces;
+using Shop.Domain.Entities;
 using Shop.Domain.Enums;
 using SynDock.Core.Common;
 using SynDock.Core.Interfaces;
@@ -9,7 +10,9 @@ namespace Shop.Application.Orders.Commands;
 
 public record UpdateOrderStatusCommand(
     int OrderId,
-    string Status
+    string Status,
+    string? TrackingNumber = null,
+    string? TrackingCarrier = null
 ) : IRequest<Result<bool>>;
 
 public class UpdateOrderStatusCommandHandler : IRequestHandler<UpdateOrderStatusCommand, Result<bool>>
@@ -47,9 +50,38 @@ public class UpdateOrderStatusCommandHandler : IRequestHandler<UpdateOrderStatus
         if (!IsValidTransition(order.Status, request.Status))
             return Result<bool>.Failure($"'{order.Status}'에서 '{request.Status}'로 변경할 수 없습니다.");
 
+        var previousStatus = order.Status;
         order.Status = request.Status;
         order.UpdatedBy = _currentUser.Username;
         order.UpdatedAt = DateTime.UtcNow;
+
+        // Record order history
+        var statusNote = GetStatusNote(request.Status, request.TrackingNumber);
+        var history = new OrderHistory
+        {
+            OrderId = order.Id,
+            Status = request.Status,
+            Note = statusNote,
+            TrackingNumber = request.TrackingNumber,
+            TrackingCarrier = request.TrackingCarrier,
+            CreatedBy = _currentUser.Username ?? "system"
+        };
+        await _db.OrderHistories.AddAsync(history, cancellationToken);
+
+        // Create notification for user
+        var notificationTitle = GetNotificationTitle(request.Status);
+        var notificationMessage = GetNotificationMessage(request.Status, request.TrackingNumber, request.TrackingCarrier);
+        var notification = new Notification
+        {
+            UserId = order.UserId,
+            Type = nameof(NotificationType.Order),
+            Title = notificationTitle,
+            Message = notificationMessage,
+            ReferenceId = order.Id,
+            ReferenceType = "Order",
+            CreatedBy = "system"
+        };
+        await _db.Notifications.AddAsync(notification, cancellationToken);
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         return Result<bool>.Success(true);
@@ -68,5 +100,39 @@ public class UpdateOrderStatusCommandHandler : IRequestHandler<UpdateOrderStatus
             (nameof(OrderStatus.Delivered), nameof(OrderStatus.Refunded)) => true,
             _ => false
         };
+    }
+
+    private static string GetStatusNote(string status, string? trackingNumber) => status switch
+    {
+        nameof(OrderStatus.Confirmed) => "주문이 확인되었습니다.",
+        nameof(OrderStatus.Processing) => "상품 준비가 시작되었습니다.",
+        nameof(OrderStatus.Shipped) => string.IsNullOrEmpty(trackingNumber)
+            ? "상품이 발송되었습니다."
+            : $"상품이 발송되었습니다. (운송장: {trackingNumber})",
+        nameof(OrderStatus.Delivered) => "배송이 완료되었습니다.",
+        nameof(OrderStatus.Cancelled) => "주문이 취소되었습니다.",
+        nameof(OrderStatus.Refunded) => "환불이 처리되었습니다.",
+        _ => $"주문 상태가 {status}(으)로 변경되었습니다."
+    };
+
+    private static string GetNotificationTitle(string status) => status switch
+    {
+        nameof(OrderStatus.Confirmed) => "주문이 확인되었습니다",
+        nameof(OrderStatus.Processing) => "상품 준비가 시작되었습니다",
+        nameof(OrderStatus.Shipped) => "상품이 발송되었습니다",
+        nameof(OrderStatus.Delivered) => "배송이 완료되었습니다",
+        nameof(OrderStatus.Cancelled) => "주문이 취소되었습니다",
+        nameof(OrderStatus.Refunded) => "환불이 처리되었습니다",
+        _ => "주문 상태가 변경되었습니다"
+    };
+
+    private static string GetNotificationMessage(string status, string? trackingNumber, string? carrier)
+    {
+        if (status == nameof(OrderStatus.Shipped) && !string.IsNullOrEmpty(trackingNumber))
+        {
+            var carrierText = string.IsNullOrEmpty(carrier) ? "" : $"({carrier}) ";
+            return $"상품이 발송되었습니다. {carrierText}운송장번호: {trackingNumber}";
+        }
+        return GetStatusNote(status, trackingNumber);
     }
 }

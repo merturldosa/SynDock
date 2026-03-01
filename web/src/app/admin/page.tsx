@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Package, FolderTree, ShoppingCart, Users, Ticket, TrendingUp } from "lucide-react";
+import { Package, FolderTree, ShoppingCart, Users, TrendingUp, AlertTriangle, Warehouse } from "lucide-react";
 import { getDashboardStats, type DashboardStats } from "@/lib/adminApi";
 
 const STATUS_LABELS: Record<string, string> = {
@@ -54,6 +54,38 @@ export default function AdminDashboard() {
       <h1 className="text-2xl font-bold text-[var(--color-secondary)] mb-6">
         관리자 대시보드
       </h1>
+
+      {/* Today Stats */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="bg-white rounded-xl shadow-sm p-5 border-l-4 border-blue-500">
+          <p className="text-sm text-gray-500">오늘 주문</p>
+          <p className="text-2xl font-bold text-[var(--color-secondary)]">{stats.todayOrders}건</p>
+        </div>
+        <div className="bg-white rounded-xl shadow-sm p-5 border-l-4 border-green-500">
+          <p className="text-sm text-gray-500">오늘 매출</p>
+          <p className="text-2xl font-bold text-[var(--color-secondary)]">{formatPrice(stats.todayRevenue)}</p>
+        </div>
+        <Link href="/admin/inventory" className="bg-white rounded-xl shadow-sm p-5 border-l-4 border-red-500 hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-gray-500">저재고 경고</p>
+            {stats.lowStockCount > 0 && (
+              <span className="w-6 h-6 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                {stats.lowStockCount}
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            <p className="text-2xl font-bold text-[var(--color-secondary)]">{stats.lowStockCount}건</p>
+            {stats.lowStockCount > 0 && <AlertTriangle size={20} className="text-red-500" />}
+          </div>
+        </Link>
+        <div className="bg-white rounded-xl shadow-sm p-5 border-l-4 border-purple-500">
+          <p className="text-sm text-gray-500">평균 주문 금액</p>
+          <p className="text-2xl font-bold text-[var(--color-secondary)]">
+            {stats.totalOrders > 0 ? formatPrice(Math.round(stats.totalRevenue / stats.totalOrders)) : "0원"}
+          </p>
+        </div>
+      </div>
 
       {/* Stat Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
@@ -108,6 +140,38 @@ export default function AdminDashboard() {
           )}
         </div>
 
+        {/* Category Sales */}
+        <div className="bg-white rounded-xl shadow-sm p-5">
+          <h2 className="font-semibold text-[var(--color-secondary)] mb-4">카테고리별 매출 (Top 5)</h2>
+          {stats.categorySales.length === 0 ? (
+            <p className="text-sm text-gray-400">매출 데이터가 없습니다.</p>
+          ) : (
+            <div className="space-y-3">
+              {stats.categorySales.map((cat) => {
+                const maxSales = Math.max(...stats.categorySales.map((c) => c.totalSales));
+                const pct = maxSales > 0 ? (cat.totalSales / maxSales) * 100 : 0;
+                return (
+                  <div key={cat.categoryName}>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span className="text-gray-600">{cat.categoryName}</span>
+                      <span className="font-medium">{formatPrice(cat.totalSales)}</span>
+                    </div>
+                    <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-emerald-500 rounded-full transition-all"
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                    <p className="text-xs text-gray-400 mt-0.5">{cat.orderCount}건 주문</p>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         {/* Top Products */}
         <div className="bg-white rounded-xl shadow-sm p-5">
           <h2 className="font-semibold text-[var(--color-secondary)] mb-4">베스트셀러</h2>
@@ -135,64 +199,55 @@ export default function AdminDashboard() {
             </div>
           )}
         </div>
-      </div>
 
-      {/* Recent Orders */}
-      <div className="bg-white rounded-xl shadow-sm p-5 mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="font-semibold text-[var(--color-secondary)]">최근 주문</h2>
-          <Link href="/admin/orders" className="text-sm text-[var(--color-primary)] hover:underline">
-            전체 보기
-          </Link>
-        </div>
-        {stats.recentOrders.length === 0 ? (
-          <p className="text-sm text-gray-400">주문이 없습니다.</p>
-        ) : (
-          <table className="w-full text-sm">
-            <thead className="border-b">
-              <tr>
-                <th className="text-left pb-2 font-medium text-gray-500">주문번호</th>
-                <th className="text-center pb-2 font-medium text-gray-500">상태</th>
-                <th className="text-right pb-2 font-medium text-gray-500">금액</th>
-                <th className="text-right pb-2 font-medium text-gray-500">일시</th>
-              </tr>
-            </thead>
-            <tbody>
+        {/* Recent Orders */}
+        <div className="bg-white rounded-xl shadow-sm p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-semibold text-[var(--color-secondary)]">최근 주문</h2>
+            <Link href="/admin/orders" className="text-sm text-[var(--color-primary)] hover:underline">
+              전체 보기
+            </Link>
+          </div>
+          {stats.recentOrders.length === 0 ? (
+            <p className="text-sm text-gray-400">주문이 없습니다.</p>
+          ) : (
+            <div className="space-y-2">
               {stats.recentOrders.map((order) => (
-                <tr key={order.id} className="border-b last:border-0">
-                  <td className="py-2.5">
-                    <Link href={`/admin/orders/${order.id}`} className="text-[var(--color-primary)] hover:underline font-mono text-xs">
-                      {order.orderNumber}
-                    </Link>
-                  </td>
-                  <td className="py-2.5 text-center">
-                    <span className="px-2 py-0.5 text-xs rounded-full bg-gray-100 text-gray-600">
-                      {STATUS_LABELS[order.status] || order.status}
-                    </span>
-                  </td>
-                  <td className="py-2.5 text-right font-medium">{formatPrice(order.totalAmount)}</td>
-                  <td className="py-2.5 text-right text-gray-500 text-xs">
-                    {new Date(order.createdAt).toLocaleDateString("ko-KR")}
-                  </td>
-                </tr>
+                <Link
+                  key={order.id}
+                  href={`/admin/orders/${order.id}`}
+                  className="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  <div>
+                    <p className="text-xs font-mono text-[var(--color-primary)]">{order.orderNumber}</p>
+                    <p className="text-xs text-gray-400">{new Date(order.createdAt).toLocaleDateString("ko-KR")}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-medium">{formatPrice(order.totalAmount)}</p>
+                    <span className="text-xs text-gray-500">{STATUS_LABELS[order.status] || order.status}</span>
+                  </div>
+                </Link>
               ))}
-            </tbody>
-          </table>
-        )}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Quick Actions */}
       <div className="bg-white rounded-xl shadow-sm p-5">
         <h2 className="font-semibold text-[var(--color-secondary)] mb-3">빠른 작업</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
           <Link href="/admin/products/new" className="flex items-center gap-2 p-3 bg-[var(--color-primary)] text-white rounded-lg text-sm font-medium hover:opacity-90">
             <Package size={16} /> 상품 등록
           </Link>
           <Link href="/admin/categories" className="flex items-center gap-2 p-3 bg-[var(--color-secondary)] text-white rounded-lg text-sm font-medium hover:opacity-90">
             <FolderTree size={16} /> 카테고리 관리
           </Link>
+          <Link href="/admin/inventory" className="flex items-center gap-2 p-3 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50">
+            <Warehouse size={16} /> 재고 관리
+          </Link>
           <Link href="/admin/coupons/new" className="flex items-center gap-2 p-3 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50">
-            <Ticket size={16} /> 쿠폰 생성
+            <Package size={16} /> 쿠폰 생성
           </Link>
           <Link href="/admin/orders" className="flex items-center gap-2 p-3 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50">
             <ShoppingCart size={16} /> 주문 관리

@@ -15,8 +15,10 @@ interface TenantState {
   name: string;
   theme: TenantTheme;
   config: TenantConfig | null;
+  currentSeason: string | null;
   isLoaded: boolean;
   loadTenant: () => Promise<void>;
+  applySeasonalTheme: (seasonName: string) => void;
 }
 
 function applyThemeToDOM(theme: TenantTheme) {
@@ -28,11 +30,12 @@ function applyThemeToDOM(theme: TenantTheme) {
   root.style.setProperty("--color-background", theme.background);
 }
 
-export const useTenantStore = create<TenantState>((set) => ({
+export const useTenantStore = create<TenantState>((set, get) => ({
   slug: process.env.NEXT_PUBLIC_TENANT_SLUG || "catholia",
   name: "",
   theme: DEFAULT_THEME,
   config: null,
+  currentSeason: null,
   isLoaded: false,
 
   loadTenant: async () => {
@@ -76,6 +79,25 @@ export const useTenantStore = create<TenantState>((set) => ({
         config: null,
         isLoaded: true,
       });
+    }
+  },
+
+  applySeasonalTheme: (seasonName: string) => {
+    const { config, theme } = get();
+    const seasonalOverride = config?.seasonalThemes?.[seasonName];
+    if (seasonalOverride) {
+      const seasonalTheme: TenantTheme = {
+        ...theme,
+        ...(seasonalOverride.primary && { primary: seasonalOverride.primary }),
+        ...(seasonalOverride.secondary && { secondary: seasonalOverride.secondary }),
+        ...(seasonalOverride.background && { background: seasonalOverride.background }),
+      };
+      if (typeof window !== "undefined") {
+        applyThemeToDOM(seasonalTheme);
+      }
+      set({ theme: seasonalTheme, currentSeason: seasonName });
+    } else {
+      set({ currentSeason: seasonName });
     }
   },
 }));

@@ -46,10 +46,26 @@ public class OrderController : ControllerBase
     [HttpPut("{id:int}/status")]
     public async Task<IActionResult> UpdateOrderStatus(int id, [FromBody] UpdateOrderStatusRequest request)
     {
-        var result = await _mediator.Send(new UpdateOrderStatusCommand(id, request.Status));
+        var result = await _mediator.Send(new UpdateOrderStatusCommand(id, request.Status, request.TrackingNumber, request.TrackingCarrier));
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(new { success = true });
+    }
+
+    [HttpPut("{id:int}/shipping")]
+    public async Task<IActionResult> UpdateShippingInfo(int id, [FromBody] UpdateShippingRequest request)
+    {
+        var result = await _mediator.Send(new UpdateOrderStatusCommand(id, "Shipped", request.TrackingNumber, request.TrackingCarrier));
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.Error });
+        return Ok(new { success = true });
+    }
+
+    [HttpGet("{id:int}/history")]
+    public async Task<IActionResult> GetOrderHistory(int id)
+    {
+        var result = await _mediator.Send(new GetOrderHistoryQuery(id));
+        return Ok(result);
     }
 
     [HttpPost("{id:int}/cancel")]
@@ -63,4 +79,5 @@ public class OrderController : ControllerBase
 }
 
 public record CreateOrderRequest(int? ShippingAddressId, string? Note, string? CouponCode = null, decimal PointsToUse = 0);
-public record UpdateOrderStatusRequest(string Status);
+public record UpdateOrderStatusRequest(string Status, string? TrackingNumber = null, string? TrackingCarrier = null);
+public record UpdateShippingRequest(string TrackingNumber, string? TrackingCarrier = null);

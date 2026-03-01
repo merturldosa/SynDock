@@ -23,6 +23,12 @@ export interface TopProduct {
   totalSales: number;
 }
 
+export interface CategorySales {
+  categoryName: string;
+  totalSales: number;
+  orderCount: number;
+}
+
 export interface DashboardStats {
   totalProducts: number;
   totalCategories: number;
@@ -32,6 +38,10 @@ export interface DashboardStats {
   ordersByStatus: OrderStatusCount[];
   recentOrders: RecentOrder[];
   topProducts: TopProduct[];
+  lowStockCount: number;
+  todayOrders: number;
+  todayRevenue: number;
+  categorySales: CategorySales[];
 }
 
 export async function getDashboardStats(): Promise<DashboardStats> {
@@ -175,6 +185,52 @@ export async function updateOrderStatus(
   status: string
 ): Promise<void> {
   await api.put(`/order/${id}/status`, { status });
+}
+
+export async function updateShippingInfo(
+  id: number,
+  trackingNumber: string,
+  trackingCarrier?: string
+): Promise<void> {
+  await api.put(`/order/${id}/shipping`, { trackingNumber, trackingCarrier });
+}
+
+export async function bulkUpdateOrderStatus(
+  orderIds: number[],
+  status: string
+): Promise<{ successCount: number; failCount: number; errors: string[] }> {
+  const { data } = await api.put("/admin/orders/bulk-status", {
+    orderIds,
+    status,
+  });
+  return data;
+}
+
+// ── Inventory Admin ──
+export interface LowStockItem {
+  variantId: number;
+  productId: number;
+  productName: string;
+  variantName: string;
+  sku: string | null;
+  stock: number;
+  imageUrl: string | null;
+}
+
+export async function getLowStock(
+  threshold = 10
+): Promise<LowStockItem[]> {
+  const { data } = await api.get("/admin/low-stock", {
+    params: { threshold },
+  });
+  return data;
+}
+
+export async function updateStock(
+  variantId: number,
+  newStock: number
+): Promise<void> {
+  await api.put("/admin/stock", { variantId, newStock });
 }
 
 // ── User Admin ──

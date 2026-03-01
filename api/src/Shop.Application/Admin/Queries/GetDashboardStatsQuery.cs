@@ -14,11 +14,16 @@ public record DashboardStatsDto(
     int TotalUsers,
     IReadOnlyList<OrderStatusCount> OrdersByStatus,
     IReadOnlyList<RecentOrderDto> RecentOrders,
-    IReadOnlyList<TopProductDto> TopProducts);
+    IReadOnlyList<TopProductDto> TopProducts,
+    int LowStockCount,
+    int TodayOrders,
+    decimal TodayRevenue,
+    IReadOnlyList<CategorySalesDto> CategorySales);
 
 public record OrderStatusCount(string Status, int Count);
 public record RecentOrderDto(int Id, string OrderNumber, string Status, decimal TotalAmount, DateTime CreatedAt);
 public record TopProductDto(int ProductId, string ProductName, string? ImageUrl, int OrderCount, decimal TotalSales);
+public record CategorySalesDto(string CategoryName, decimal TotalSales, int OrderCount);
 
 public record GetDashboardStatsQuery : IRequest<Result<DashboardStatsDto>>;
 
@@ -85,8 +90,39 @@ public class GetDashboardStatsQueryHandler : IRequestHandler<GetDashboardStatsQu
             tp.TotalSales
         )).ToList();
 
+        // Low stock count (threshold: 10)
+        var lowStockCount = await _db.ProductVariants
+            .AsNoTracking()
+            .Where(v => v.IsActive && v.Stock <= 10)
+            .CountAsync(cancellationToken);
+
+        // Today's orders and revenue
+        var todayStart = DateTime.UtcNow.Date;
+        var todayOrders = await _db.Orders
+            .AsNoTracking()
+            .Where(o => o.CreatedAt >= todayStart)
+            .CountAsync(cancellationToken);
+        var todayRevenue = await _db.Orders
+            .AsNoTracking()
+            .Where(o => o.CreatedAt >= todayStart && o.Status != nameof(OrderStatus.Cancelled) && o.Status != nameof(OrderStatus.Refunded))
+            .SumAsync(o => o.TotalAmount, cancellationToken);
+
+        // Category sales (top 5)
+        var categorySales = await _db.OrderItems
+            .AsNoTracking()
+            .Where(oi => oi.Order.Status != nameof(OrderStatus.Cancelled) && oi.Order.Status != nameof(OrderStatus.Refunded))
+            .GroupBy(oi => oi.Product.Category!.Name)
+            .Select(g => new CategorySalesDto(
+                g.Key,
+                g.Sum(oi => oi.TotalPrice),
+                g.Select(oi => oi.OrderId).Distinct().Count()))
+            .OrderByDescending(c => c.TotalSales)
+            .Take(5)
+            .ToListAsync(cancellationToken);
+
         return Result<DashboardStatsDto>.Success(new DashboardStatsDto(
             totalProducts, totalCategories, totalOrders, totalRevenue, totalUsers,
-            ordersByStatus, recentOrders, topProductDtos));
+            ordersByStatus, recentOrders, topProductDtos,
+            lowStockCount, todayOrders, todayRevenue, categorySales));
     }
 }

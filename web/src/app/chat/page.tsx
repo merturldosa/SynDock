@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { Send, Bot, User, Loader2 } from "lucide-react";
 import { sendChatMessage, type ChatMessageDto } from "@/lib/chatApi";
 import { useAuthStore } from "@/stores/authStore";
+import { useTenantStore } from "@/stores/tenantStore";
 
 interface Message {
   role: "user" | "assistant";
@@ -23,6 +24,14 @@ export default function ChatPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const user = useAuthStore((s) => s.user);
+  const { config } = useTenantStore();
+  const chatName = config?.chatPersona?.name || "AI 쇼핑 어시스턴트";
+
+  useEffect(() => {
+    if (config?.chatPersona?.greeting && messages.length === 1 && messages[0].role === "assistant") {
+      setMessages([{ role: "assistant", content: config.chatPersona.greeting }]);
+    }
+  }, [config]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -77,7 +86,7 @@ export default function ChatPage() {
         <div className="text-center mb-6">
           <div className="inline-flex items-center gap-2 bg-white rounded-full px-4 py-2 shadow-sm border border-gray-200">
             <Bot className="w-5 h-5 text-[var(--color-primary)]" />
-            <span className="font-medium text-gray-800">AI 쇼핑 어시스턴트</span>
+            <span className="font-medium text-gray-800">{chatName}</span>
           </div>
         </div>
 
