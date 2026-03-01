@@ -86,6 +86,16 @@ public class ProductsController : ControllerBase
             return BadRequest(new { error = result.Error });
         return Ok(new { success = true });
     }
+
+    [HttpPost("{id:int}/generate-content")]
+    [Authorize]
+    public async Task<IActionResult> GenerateContent(int id)
+    {
+        var result = await _mediator.Send(new GenerateProductContentCommand(id));
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.Error });
+        return Ok(result.Data);
+    }
 }
 
 public record CreateProductRequest(

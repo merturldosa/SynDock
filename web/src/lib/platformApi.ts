@@ -47,3 +47,34 @@ export async function updatePlatformTenant(
 ): Promise<void> {
   await api.put(`/platform/tenants/${slug}`, req);
 }
+
+// ── Billing ──
+export interface TenantBilling {
+  tenantId: number;
+  tenantName: string;
+  tenantSlug: string;
+  planType: string;
+  monthlyPrice: number;
+  billingStatus: string;
+  trialEndsAt: string | null;
+  nextBillingAt: string | null;
+}
+
+export async function getAllBilling(): Promise<TenantBilling[]> {
+  const { data } = await api.get("/platform/tenants/billing");
+  return data;
+}
+
+export async function getTenantBilling(
+  slug: string
+): Promise<TenantBilling> {
+  const { data } = await api.get(`/platform/tenants/${slug}/billing`);
+  return data;
+}
+
+export async function updateTenantBilling(
+  slug: string,
+  req: { planType?: string; monthlyPrice?: number; billingStatus?: string }
+): Promise<void> {
+  await api.put(`/platform/tenants/${slug}/billing`, req);
+}

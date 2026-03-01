@@ -49,6 +49,9 @@ public class ShopDbContext : DbContext, IShopDbContext
     public DbSet<Saint> Saints { get; set; }
     public DbSet<LiturgicalSeason> LiturgicalSeasons { get; set; }
     public DbSet<OrderHistory> OrderHistories { get; set; }
+    public DbSet<Collection> Collections { get; set; }
+    public DbSet<CollectionItem> CollectionItems { get; set; }
+    public DbSet<TenantPlan> TenantPlans { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -92,6 +95,8 @@ public class ShopDbContext : DbContext, IShopDbContext
         ConfigureSaint(modelBuilder);
         ConfigureLiturgicalSeason(modelBuilder);
         ConfigureOrderHistory(modelBuilder);
+        ConfigureCollection(modelBuilder);
+        ConfigureTenantPlan(modelBuilder);
     }
 
     private void ApplyTenantFilter<T>(ModelBuilder modelBuilder) where T : class, ITenantEntity
@@ -626,6 +631,50 @@ public class ShopDbContext : DbContext, IShopDbContext
             entity.HasOne(e => e.Order)
                 .WithMany(o => o.Histories)
                 .HasForeignKey(e => e.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+    }
+
+    private static void ConfigureCollection(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Collection>(entity =>
+        {
+            entity.HasIndex(e => e.UserId);
+            entity.HasIndex(e => e.IsPublic);
+
+            entity.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<CollectionItem>(entity =>
+        {
+            entity.HasIndex(e => new { e.CollectionId, e.ProductId }).IsUnique();
+            entity.HasIndex(e => e.CollectionId);
+
+            entity.HasOne(e => e.Collection)
+                .WithMany(c => c.Items)
+                .HasForeignKey(e => e.CollectionId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.Product)
+                .WithMany()
+                .HasForeignKey(e => e.ProductId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+    }
+
+    private static void ConfigureTenantPlan(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<TenantPlan>(entity =>
+        {
+            entity.HasIndex(e => e.TenantId).IsUnique();
+            entity.HasIndex(e => e.BillingStatus);
+
+            entity.HasOne(e => e.Tenant)
+                .WithMany()
+                .HasForeignKey(e => e.TenantId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
     }

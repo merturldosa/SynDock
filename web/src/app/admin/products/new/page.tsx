@@ -6,6 +6,7 @@ import { Upload, X } from "lucide-react";
 import { getCategories } from "@/lib/productApi";
 import { createProduct } from "@/lib/adminApi";
 import { uploadImage } from "@/lib/postApi";
+import { AIContentGenerator } from "@/components/admin/AIContentGenerator";
 import type { CategoryInfo } from "@/types/product";
 
 export default function AdminProductNewPage() {
@@ -147,6 +148,12 @@ export default function AdminProductNewPage() {
                 rows={4}
                 className="w-full px-3 py-2.5 border rounded-lg text-sm resize-none"
               />
+              <div className="mt-2">
+                <AIContentGenerator
+                  productId={null}
+                  onApply={(desc) => setForm((f) => ({ ...f, description: desc }))}
+                />
+              </div>
             </div>
             <div>
               <label className="block text-sm text-gray-500 mb-1">규격</label>

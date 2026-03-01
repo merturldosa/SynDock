@@ -12,6 +12,7 @@ import {
   Users,
   BarChart3,
   Warehouse,
+  Mail,
   ChevronLeft,
 } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
@@ -25,6 +26,7 @@ const NAV_ITEMS = [
   { href: "/admin/coupons", icon: Ticket, label: "쿠폰 관리" },
   { href: "/admin/users", icon: Users, label: "회원 관리" },
   { href: "/admin/analytics", icon: BarChart3, label: "매출 분석" },
+  { href: "/admin/email", icon: Mail, label: "이메일" },
 ];
 
 export default function AdminLayout({

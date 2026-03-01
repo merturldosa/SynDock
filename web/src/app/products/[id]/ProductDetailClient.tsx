@@ -4,7 +4,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronLeft, ShoppingCart, Phone, Heart, Sparkles } from "lucide-react";
+import { ChevronLeft, ShoppingCart, Phone, Heart, Sparkles, FolderPlus } from "lucide-react";
 import { getProductById } from "@/lib/productApi";
 import { toggleWishlist, checkWishlist } from "@/lib/reviewApi";
 import { getProductRecommendations, type RecommendedProduct } from "@/lib/recommendationApi";
@@ -13,6 +13,8 @@ import { useCartStore } from "@/stores/cartStore";
 import { useTenantStore } from "@/stores/tenantStore";
 import { ReviewTab } from "@/components/product/ReviewTab";
 import { QnATab } from "@/components/product/QnATab";
+import { ShareButton } from "@/components/ShareButton";
+import { AddToCollectionModal } from "@/components/AddToCollectionModal";
 import type { ProductDetail } from "@/types/product";
 
 function formatPrice(price: number): string {
@@ -31,6 +33,7 @@ export default function ProductDetailClient() {
   const [activeTab, setActiveTab] = useState<"detail" | "review" | "qna">("detail");
   const [isWished, setIsWished] = useState(false);
   const [recommendations, setRecommendations] = useState<RecommendedProduct[]>([]);
+  const [showCollectionModal, setShowCollectionModal] = useState(false);
 
   useEffect(() => {
     const id = Number(params.id);
@@ -217,6 +220,16 @@ export default function ProductDetailClient() {
             >
               <Heart size={22} className={isWished ? "fill-red-500" : ""} />
             </button>
+            <ShareButton title={product.name} text={product.description || undefined} />
+            {isAuthenticated && (
+              <button
+                onClick={() => setShowCollectionModal(true)}
+                className="p-4 rounded-xl border-2 border-gray-200 text-gray-400 hover:border-purple-300 hover:text-purple-500 transition-colors"
+                title="컬렉션에 추가"
+              >
+                <FolderPlus size={22} />
+              </button>
+            )}
             {isInquiry ? (
               contactPhone ? (
                 <a
@@ -335,6 +348,15 @@ export default function ProductDetailClient() {
             ))}
           </div>
         </div>
+      )}
+
+      {/* Collection Modal */}
+      {product && (
+        <AddToCollectionModal
+          productId={product.id}
+          isOpen={showCollectionModal}
+          onClose={() => setShowCollectionModal(false)}
+        />
       )}
     </div>
   );

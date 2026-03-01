@@ -38,5 +38,8 @@ public interface IShopDbContext
     DbSet<Saint> Saints { get; }
     DbSet<LiturgicalSeason> LiturgicalSeasons { get; }
     DbSet<OrderHistory> OrderHistories { get; }
+    DbSet<Collection> Collections { get; }
+    DbSet<CollectionItem> CollectionItems { get; }
+    DbSet<TenantPlan> TenantPlans { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

@@ -1,4 +1,6 @@
 using MediatR;
+using Microsoft.EntityFrameworkCore;
+using Shop.Application.Common.DTOs;
 using Shop.Application.Common.Interfaces;
 using Shop.Domain.Entities;
 using SynDock.Core.Common;
@@ -19,11 +21,13 @@ public class CreateNotificationCommandHandler : IRequestHandler<CreateNotificati
 {
     private readonly IShopDbContext _db;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly INotificationSender _sender;
 
-    public CreateNotificationCommandHandler(IShopDbContext db, IUnitOfWork unitOfWork)
+    public CreateNotificationCommandHandler(IShopDbContext db, IUnitOfWork unitOfWork, INotificationSender sender)
     {
         _db = db;
         _unitOfWork = unitOfWork;
+        _sender = sender;
     }
 
     public async Task<Result<int>> Handle(CreateNotificationCommand request, CancellationToken cancellationToken)
@@ -42,6 +46,25 @@ public class CreateNotificationCommandHandler : IRequestHandler<CreateNotificati
 
         await _db.Notifications.AddAsync(notification, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        // Push real-time notification via SignalR
+        var dto = new NotificationDto(
+            notification.Id,
+            notification.Type,
+            notification.Title,
+            notification.Message,
+            notification.IsRead,
+            notification.ReadAt,
+            notification.ReferenceId,
+            notification.ReferenceType,
+            notification.CreatedAt);
+
+        await _sender.SendToUser(request.UserId, dto, cancellationToken);
+
+        // Send updated unread count
+        var unreadCount = await _db.Notifications
+            .CountAsync(n => n.UserId == request.UserId && !n.IsRead, cancellationToken);
+        await _sender.SendUnreadCount(request.UserId, unreadCount, cancellationToken);
 
         return Result<int>.Success(notification.Id);
     }

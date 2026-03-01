@@ -7,6 +7,7 @@ import {
   LayoutDashboard,
   Store,
   Plus,
+  CreditCard,
   ChevronLeft,
 } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
@@ -15,6 +16,7 @@ const NAV_ITEMS = [
   { href: "/superadmin", icon: LayoutDashboard, label: "대시보드" },
   { href: "/superadmin/tenants", icon: Store, label: "쇼핑몰 관리" },
   { href: "/superadmin/tenants/new", icon: Plus, label: "쇼핑몰 분양" },
+  { href: "/superadmin/billing", icon: CreditCard, label: "빌링" },
 ];
 
 export default function SuperAdminLayout({

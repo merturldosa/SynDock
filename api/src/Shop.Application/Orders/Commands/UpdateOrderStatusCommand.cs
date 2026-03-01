@@ -20,12 +20,14 @@ public class UpdateOrderStatusCommandHandler : IRequestHandler<UpdateOrderStatus
     private readonly IShopDbContext _db;
     private readonly ICurrentUserService _currentUser;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IEmailService _emailService;
 
-    public UpdateOrderStatusCommandHandler(IShopDbContext db, ICurrentUserService currentUser, IUnitOfWork unitOfWork)
+    public UpdateOrderStatusCommandHandler(IShopDbContext db, ICurrentUserService currentUser, IUnitOfWork unitOfWork, IEmailService emailService)
     {
         _db = db;
         _currentUser = currentUser;
         _unitOfWork = unitOfWork;
+        _emailService = emailService;
     }
 
     public async Task<Result<bool>> Handle(UpdateOrderStatusCommand request, CancellationToken cancellationToken)
@@ -82,6 +84,29 @@ public class UpdateOrderStatusCommandHandler : IRequestHandler<UpdateOrderStatus
             CreatedBy = "system"
         };
         await _db.Notifications.AddAsync(notification, cancellationToken);
+
+        // Send email notification
+        var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == order.UserId, cancellationToken);
+        if (user is not null && !string.IsNullOrEmpty(user.Email))
+        {
+            try
+            {
+                if (request.Status == nameof(OrderStatus.Confirmed))
+                {
+                    var emailBody = $"<h2>주문이 확인되었습니다</h2><p>주문번호: <strong>{order.OrderNumber}</strong></p><p>결제 금액: {order.TotalAmount:N0}원</p><p>상품 준비 후 발송해 드리겠습니다.</p>";
+                    await _emailService.SendAsync(user.Email, "주문 확인", emailBody, cancellationToken);
+                }
+                else if (request.Status == nameof(OrderStatus.Shipped))
+                {
+                    var trackingInfo = !string.IsNullOrEmpty(request.TrackingNumber)
+                        ? $"<p>택배사: {request.TrackingCarrier ?? "택배"}<br/>운송장번호: <strong>{request.TrackingNumber}</strong></p>"
+                        : "";
+                    var emailBody = $"<h2>상품이 발송되었습니다</h2><p>주문번호: <strong>{order.OrderNumber}</strong></p>{trackingInfo}<p>배송 완료까지 2~3일 소요됩니다.</p>";
+                    await _emailService.SendAsync(user.Email, "배송 시작", emailBody, cancellationToken);
+                }
+            }
+            catch { /* Email failure should not block order status update */ }
+        }
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         return Result<bool>.Success(true);

@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import { Menu, X, ShoppingCart, User, Search, Bell, MessageCircle } from "lucide-react";
 import { getCategories } from "@/lib/productApi";
 import { getUnreadCount } from "@/lib/notificationApi";
+import { useNotificationStore } from "@/stores/notificationStore";
 import type { CategoryInfo } from "@/types/product";
 
 export function Header() {
@@ -16,9 +17,9 @@ export function Header() {
   const { user, isAuthenticated, isLoading, logout, fetchMe } = useAuthStore();
   const { name: tenantName } = useTenantStore();
   const { cart, fetchCart } = useCartStore();
+  const { unreadCount, setUnreadCount, connect, disconnect } = useNotificationStore();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [categories, setCategories] = useState<CategoryInfo[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
     fetchMe();
@@ -28,8 +29,12 @@ export function Header() {
     if (isAuthenticated) {
       fetchCart();
       getUnreadCount().then(r => setUnreadCount(r.count)).catch(() => {});
+      const token = localStorage.getItem("accessToken");
+      if (token) connect(token);
+    } else {
+      disconnect();
     }
-  }, [isAuthenticated, fetchCart]);
+  }, [isAuthenticated, fetchCart, connect, disconnect, setUnreadCount]);
 
   useEffect(() => {
     getCategories().then(setCategories).catch(() => {});

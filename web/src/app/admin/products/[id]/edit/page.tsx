@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { getProductById, getCategories } from "@/lib/productApi";
 import { updateProduct } from "@/lib/adminApi";
+import { AIContentGenerator } from "@/components/admin/AIContentGenerator";
 import type { ProductDetail, CategoryInfo } from "@/types/product";
 
 export default function AdminProductEditPage() {
@@ -144,6 +145,12 @@ export default function AdminProductEditPage() {
                 rows={4}
                 className="w-full px-3 py-2.5 border rounded-lg text-sm resize-none"
               />
+              <div className="mt-2">
+                <AIContentGenerator
+                  productId={product?.id ?? null}
+                  onApply={(desc) => setForm((f) => ({ ...f, description: desc }))}
+                />
+              </div>
             </div>
             <div>
               <label className="block text-sm text-gray-500 mb-1">규격</label>

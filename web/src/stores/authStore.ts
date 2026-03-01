@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import type { UserInfo } from "@/types/auth";
 import api from "@/lib/api";
+import { useNotificationStore } from "./notificationStore";
 
 interface AuthState {
   user: UserInfo | null;
@@ -20,9 +21,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     localStorage.setItem("accessToken", accessToken);
     localStorage.setItem("refreshToken", refreshToken);
     set({ user, isAuthenticated: true, isLoading: false });
+    useNotificationStore.getState().connect(accessToken);
   },
 
   logout: () => {
+    useNotificationStore.getState().disconnect();
     localStorage.removeItem("accessToken");
     localStorage.removeItem("refreshToken");
     set({ user: null, isAuthenticated: false, isLoading: false });

@@ -1,8 +1,11 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Shop.Application.Admin.Commands;
 using Shop.Application.Admin.Queries;
+using Shop.Application.Common.Interfaces;
+using Shop.Application.Notifications.Commands;
 
 namespace Shop.API.Controllers;
 
@@ -12,10 +15,14 @@ namespace Shop.API.Controllers;
 public class AdminController : ControllerBase
 {
     private readonly IMediator _mediator;
+    private readonly IEmailService _emailService;
+    private readonly IShopDbContext _db;
 
-    public AdminController(IMediator mediator)
+    public AdminController(IMediator mediator, IEmailService emailService, IShopDbContext db)
     {
         _mediator = mediator;
+        _emailService = emailService;
+        _db = db;
     }
 
     [HttpGet("stats")]
@@ -71,7 +78,41 @@ public class AdminController : ControllerBase
             return BadRequest(new { error = result.Error });
         return Ok(result.Data);
     }
+    [HttpPost("notifications/broadcast")]
+    public async Task<IActionResult> BroadcastNotification([FromBody] BroadcastNotificationRequest request)
+    {
+        var result = await _mediator.Send(new BroadcastNotificationCommand(request.Title, request.Message, request.Type));
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.Error });
+        return Ok(new { sentCount = result.Data });
+    }
+    [HttpPost("email/broadcast")]
+    public async Task<IActionResult> SendMarketingEmail([FromBody] MarketingEmailRequest request)
+    {
+        var users = await _db.Users
+            .AsNoTracking()
+            .Where(u => u.IsActive && !string.IsNullOrEmpty(u.Email))
+            .Select(u => u.Email)
+            .ToListAsync();
+
+        var htmlBody = Shop.Infrastructure.Services.EmailTemplates.MarketingBroadcast(request.Title, request.Content);
+        var sentCount = 0;
+
+        foreach (var email in users)
+        {
+            try
+            {
+                await _emailService.SendAsync(email, request.Title, htmlBody);
+                sentCount++;
+            }
+            catch { /* skip failed emails */ }
+        }
+
+        return Ok(new { sentCount });
+    }
 }
 
 public record UpdateStockRequest(int VariantId, int NewStock);
 public record BulkUpdateOrderStatusRequest(int[] OrderIds, string Status);
+public record BroadcastNotificationRequest(string Title, string Message, string Type);
+public record MarketingEmailRequest(string Title, string Content, string Target = "all");

@@ -10,6 +10,7 @@ import {
   type NotificationDto,
   type PagedNotifications,
 } from "@/lib/notificationApi";
+import { useNotificationStore } from "@/stores/notificationStore";
 
 const TYPE_LABELS: Record<string, { label: string; color: string }> = {
   Order: { label: "주문", color: "bg-blue-100 text-blue-700" },
@@ -31,6 +32,7 @@ export default function NotificationsPage() {
   const [data, setData] = useState<PagedNotifications | null>(null);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
+  const latestNotification = useNotificationStore((s) => s.latestNotification);
 
   const load = () => {
     setLoading(true);
@@ -43,6 +45,11 @@ export default function NotificationsPage() {
   useEffect(() => {
     load();
   }, [page]);
+
+  // Auto-refresh when new real-time notification arrives
+  useEffect(() => {
+    if (latestNotification) load();
+  }, [latestNotification]);
 
   const handleRead = async (id: number) => {
     await markAsRead(id);

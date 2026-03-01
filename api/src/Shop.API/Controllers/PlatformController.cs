@@ -1,6 +1,9 @@
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Shop.Application.Common.DTOs;
+using Shop.Application.Platform.Commands;
+using Shop.Application.Platform.Queries;
 using Shop.Domain.Entities;
 using Shop.Infrastructure.Data;
 
@@ -11,10 +14,12 @@ namespace Shop.API.Controllers;
 public class PlatformController : ControllerBase
 {
     private readonly ShopDbContext _db;
+    private readonly IMediator _mediator;
 
-    public PlatformController(ShopDbContext db)
+    public PlatformController(ShopDbContext db, IMediator mediator)
     {
         _db = db;
+        _mediator = mediator;
     }
 
     [HttpGet]
@@ -85,7 +90,53 @@ public class PlatformController : ControllerBase
 
         return Ok(new TenantDto(tenant.Id, tenant.Slug, tenant.Name, tenant.CustomDomain, tenant.Subdomain, tenant.IsActive, tenant.ConfigJson));
     }
+    [HttpGet("billing")]
+    public async Task<IActionResult> GetAllBilling()
+    {
+        var result = await _mediator.Send(new GetTenantBillingQuery());
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.Error });
+        return Ok(result.Data);
+    }
+
+    [HttpGet("{slug}/billing")]
+    public async Task<IActionResult> GetTenantBilling(string slug)
+    {
+        var tenant = await _db.Tenants.AsNoTracking().FirstOrDefaultAsync(t => t.Slug == slug);
+        if (tenant == null)
+            return NotFound(new { error = "테넌트를 찾을 수 없습니다." });
+
+        var result = await _mediator.Send(new GetTenantBillingQuery(tenant.Id));
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.Error });
+        return Ok(result.Data?.FirstOrDefault());
+    }
+
+    [HttpPut("{slug}/billing")]
+    public async Task<IActionResult> UpdateTenantBilling(string slug, [FromBody] UpdateBillingRequest request)
+    {
+        var tenant = await _db.Tenants.AsNoTracking().FirstOrDefaultAsync(t => t.Slug == slug);
+        if (tenant == null)
+            return NotFound(new { error = "테넌트를 찾을 수 없습니다." });
+
+        if (request.PlanType is not null)
+        {
+            var planResult = await _mediator.Send(new UpdateTenantPlanCommand(tenant.Id, request.PlanType, request.MonthlyPrice ?? 0));
+            if (!planResult.IsSuccess)
+                return BadRequest(new { error = planResult.Error });
+        }
+
+        if (request.BillingStatus is not null)
+        {
+            var statusResult = await _mediator.Send(new UpdateBillingStatusCommand(tenant.Id, request.BillingStatus));
+            if (!statusResult.IsSuccess)
+                return BadRequest(new { error = statusResult.Error });
+        }
+
+        return Ok(new { success = true });
+    }
 }
 
 public record CreateTenantRequest(string Slug, string Name, string? CustomDomain, string? Subdomain, string? ConfigJson);
 public record UpdateTenantRequest(string? Name, string? CustomDomain, string? Subdomain, bool? IsActive, string? ConfigJson);
+public record UpdateBillingRequest(string? PlanType, decimal? MonthlyPrice, string? BillingStatus);

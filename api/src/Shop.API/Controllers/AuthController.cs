@@ -78,4 +78,16 @@ public class AuthController : ControllerBase
 
         return Ok(result.Data);
     }
+
+    [HttpPost("oauth/{provider}")]
+    public async Task<IActionResult> OAuthLogin(string provider, [FromBody] OAuthLoginRequest request)
+    {
+        var result = await _mediator.Send(new OAuthLoginCommand(provider, request.Code, request.RedirectUri));
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.Error });
+
+        return Ok(result.Data);
+    }
 }
+
+public record OAuthLoginRequest(string Code, string RedirectUri);

@@ -5,8 +5,10 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
 using Shop.API;
+using Shop.API.Hubs;
 using Shop.API.Middleware;
 using Shop.Application;
+using Shop.Application.Common.Interfaces;
 using Shop.Infrastructure;
 using Shop.Infrastructure.Data;
 
@@ -57,9 +59,28 @@ try
             ValidateLifetime = true,
             ClockSkew = TimeSpan.Zero
         };
+
+        // SignalR sends JWT via query string
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var accessToken = context.Request.Query["access_token"];
+                var path = context.HttpContext.Request.Path;
+                if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/api/hubs"))
+                {
+                    context.Token = accessToken;
+                }
+                return Task.CompletedTask;
+            }
+        };
     });
 
     builder.Services.AddAuthorization();
+
+    // SignalR
+    builder.Services.AddSignalR();
+    builder.Services.AddScoped<INotificationSender, SignalRNotificationSender>();
 
     // Controllers
     builder.Services.AddControllers();
@@ -140,6 +161,7 @@ try
     app.UseAuthorization();
 
     app.MapControllers();
+    app.MapHub<NotificationHub>("/api/hubs/notifications");
 
     // Health check endpoint
     app.MapGet("/api/health", () => Results.Ok(new { Status = "Healthy", Timestamp = DateTime.UtcNow, Platform = "SynDock.Shop" }));

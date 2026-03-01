@@ -51,6 +51,12 @@ public static class DependencyInjection
 
         services.AddHttpContextAccessor();
 
+        // OAuth
+        services.AddHttpClient<IOAuthProviderService, OAuthProviderService>();
+
+        // Email
+        services.AddScoped<IEmailService, SmtpEmailService>();
+
         // AI
         services.AddHttpClient<IAIChatProvider, ClaudeAIChatProvider>();
         services.AddScoped<IRecommendationEngine, SimpleRecommendationEngine>();

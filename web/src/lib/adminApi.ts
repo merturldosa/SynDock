@@ -254,3 +254,46 @@ export async function getAdminUsers(): Promise<UserSummary[]> {
 export async function refundOrder(orderId: number, reason: string): Promise<void> {
   await api.post(`/payment/${orderId}/refund`, { reason });
 }
+
+// ── AI Content ──
+export interface GeneratedContent {
+  heroSection: string;
+  featureSection: string;
+  closingSection: string;
+  fullDescription: string;
+}
+
+export async function generateProductContent(
+  productId: number
+): Promise<GeneratedContent> {
+  const { data } = await api.post(`/api/products/${productId}/generate-content`);
+  return data;
+}
+
+// ── Email Broadcast ──
+export async function sendMarketingEmail(
+  title: string,
+  content: string,
+  target: string
+): Promise<{ sentCount: number }> {
+  const { data } = await api.post("/admin/email/broadcast", {
+    title,
+    content,
+    target,
+  });
+  return data;
+}
+
+// ── Notifications ──
+export async function broadcastNotification(
+  title: string,
+  message: string,
+  type: string
+): Promise<{ sentCount: number }> {
+  const { data } = await api.post("/admin/notifications/broadcast", {
+    title,
+    message,
+    type,
+  });
+  return data;
+}
