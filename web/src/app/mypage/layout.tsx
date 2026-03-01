@@ -5,7 +5,7 @@ import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import {
   User, Package, MapPin, Heart, Star, MessageCircleQuestion,
-  Coins, Ticket, Bell,
+  FolderOpen, Coins, Ticket, Bell,
 } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 
@@ -16,6 +16,7 @@ const NAV_ITEMS = [
   { href: "/mypage/wishlist", label: "찜 목록", icon: Heart },
   { href: "/mypage/reviews", label: "내 리뷰", icon: Star },
   { href: "/mypage/qna", label: "내 QnA", icon: MessageCircleQuestion },
+  { href: "/mypage/collections", label: "컬렉션", icon: FolderOpen },
   { href: "/mypage/points", label: "포인트", icon: Coins },
   { href: "/mypage/coupons", label: "쿠폰", icon: Ticket },
   { href: "/mypage/notifications", label: "알림", icon: Bell },

@@ -11,6 +11,22 @@ const nextConfig: NextConfig = {
         protocol: "http",
         hostname: "catholia.co.kr",
       },
+      {
+        protocol: "https",
+        hostname: "*.syndock.co.kr",
+      },
+      {
+        protocol: "http",
+        hostname: "*.syndock.co.kr",
+      },
+      {
+        protocol: "http",
+        hostname: "localhost",
+      },
+      {
+        protocol: "http",
+        hostname: "127.0.0.1",
+      },
     ],
   },
   async rewrites() {

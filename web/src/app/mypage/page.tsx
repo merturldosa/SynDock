@@ -7,6 +7,9 @@ import { useAuthStore } from "@/stores/authStore";
 import { Button } from "@/components/ui/Button";
 import { updateBaptismalName } from "@/lib/saintApi";
 import { getOrders } from "@/lib/orderApi";
+import { getPointBalance } from "@/lib/pointApi";
+import { getMyCoupons } from "@/lib/couponApi";
+import { getUnreadCount } from "@/lib/notificationApi";
 import type { BaptismalNameInfo } from "@/types/saint";
 
 export default function MyPage() {
@@ -16,6 +19,9 @@ export default function MyPage() {
   const [baptismalInfo, setBaptismalInfo] = useState<BaptismalNameInfo | null>(null);
   const [savingBaptismal, setSavingBaptismal] = useState(false);
   const [recentOrderCount, setRecentOrderCount] = useState(0);
+  const [pointBalance, setPointBalance] = useState<number | null>(null);
+  const [couponCount, setCouponCount] = useState<number | null>(null);
+  const [unreadNotifications, setUnreadNotifications] = useState<number | null>(null);
 
   useEffect(() => {
     if (user?.customFieldsJson) {
@@ -36,6 +42,15 @@ export default function MyPage() {
   useEffect(() => {
     getOrders({ page: 1, pageSize: 1 })
       .then((res) => setRecentOrderCount(res.totalCount))
+      .catch(() => {});
+    getPointBalance()
+      .then((res) => setPointBalance(res.balance))
+      .catch(() => {});
+    getMyCoupons()
+      .then((coupons) => setCouponCount(coupons.filter((c) => !c.isUsed).length))
+      .catch(() => {});
+    getUnreadCount()
+      .then((res) => setUnreadNotifications(res.count))
       .catch(() => {});
   }, []);
 
@@ -62,17 +77,23 @@ export default function MyPage() {
         </div>
         <div className="bg-white rounded-xl shadow-sm p-4 text-center">
           <Coins size={24} className="mx-auto text-[var(--color-primary)] mb-2" />
-          <p className="text-2xl font-bold text-[var(--color-secondary)]">-</p>
+          <p className="text-2xl font-bold text-[var(--color-secondary)]">
+            {pointBalance !== null ? pointBalance.toLocaleString("ko-KR") : "-"}
+          </p>
           <p className="text-xs text-gray-500">포인트</p>
         </div>
         <div className="bg-white rounded-xl shadow-sm p-4 text-center">
           <Ticket size={24} className="mx-auto text-[var(--color-primary)] mb-2" />
-          <p className="text-2xl font-bold text-[var(--color-secondary)]">-</p>
+          <p className="text-2xl font-bold text-[var(--color-secondary)]">
+            {couponCount !== null ? couponCount.toLocaleString("ko-KR") : "-"}
+          </p>
           <p className="text-xs text-gray-500">쿠폰</p>
         </div>
         <div className="bg-white rounded-xl shadow-sm p-4 text-center">
           <Bell size={24} className="mx-auto text-[var(--color-primary)] mb-2" />
-          <p className="text-2xl font-bold text-[var(--color-secondary)]">-</p>
+          <p className="text-2xl font-bold text-[var(--color-secondary)]">
+            {unreadNotifications !== null ? unreadNotifications.toLocaleString("ko-KR") : "-"}
+          </p>
           <p className="text-xs text-gray-500">알림</p>
         </div>
       </div>
