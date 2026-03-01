@@ -6,8 +6,8 @@ export async function createOrder(request: {
   note?: string | null;
   couponCode?: string | null;
   pointsToUse?: number;
-}): Promise<{ orderId: number }> {
-  const { data } = await api.post<{ orderId: number }>("/order", request);
+}): Promise<{ orderId: number; orderNumber: string }> {
+  const { data } = await api.post<{ orderId: number; orderNumber: string }>("/order", request);
   return data;
 }
 
@@ -32,5 +32,34 @@ export async function getAddresses(): Promise<Address[]> {
 
 export async function createAddress(request: Omit<Address, "id">): Promise<{ addressId: number }> {
   const { data } = await api.post<{ addressId: number }>("/address", request);
+  return data;
+}
+
+export async function confirmPayment(paymentKey: string, orderId: string, amount: number): Promise<{ orderId: number; success: boolean }> {
+  const { data } = await api.post<{ orderId: number; success: boolean }>("/payment/confirm", { paymentKey, orderId, amount });
+  return data;
+}
+
+export async function getPaymentClientKey(): Promise<{ clientKey: string | null; provider: string }> {
+  const { data } = await api.get<{ clientKey: string | null; provider: string }>("/payment/client-key");
+  return data;
+}
+
+export interface TrackingEvent {
+  time: string;
+  status: string;
+  location: string;
+  description: string;
+}
+
+export interface ShippingTrackingResult {
+  isSuccess: boolean;
+  currentStatus: string | null;
+  events: TrackingEvent[] | null;
+  error: string | null;
+}
+
+export async function getShippingTracking(orderId: number): Promise<ShippingTrackingResult> {
+  const { data } = await api.get<ShippingTrackingResult>(`/order/${orderId}/tracking`);
   return data;
 }

@@ -7,6 +7,7 @@ using Shop.Infrastructure.Data;
 using Shop.Infrastructure.Payments;
 using Shop.Infrastructure.Repositories;
 using Shop.Infrastructure.Services;
+using Shop.Infrastructure.Shipping;
 using Shop.Application.Liturgy.Services;
 using Shop.Infrastructure.AI;
 using Shop.Infrastructure.Storage;
@@ -31,8 +32,17 @@ public static class DependencyInjection
         services.AddScoped<TenantContext>();
         services.AddScoped<ITenantContext>(sp => sp.GetRequiredService<TenantContext>());
 
-        services.AddScoped<IPaymentProvider, MockPaymentProvider>();
+        // Payment providers
+        services.AddScoped<MockPaymentProvider>();
+        services.AddHttpClient<TossPaymentProvider>();
+        services.AddScoped<TenantAwarePaymentProvider>();
+        services.AddScoped<IPaymentProvider>(sp => sp.GetRequiredService<TenantAwarePaymentProvider>());
+
         services.AddSingleton<ILiturgicalCalendarService, LiturgicalCalendarService>();
+
+        // Shipping tracker
+        services.AddHttpClient<IShippingTracker, DeliveryTrackerService>();
+        services.AddHostedService<ShippingStatusUpdateService>();
 
         // File storage
         var uploadsPath = Path.Combine(AppContext.BaseDirectory, "wwwroot", "uploads");

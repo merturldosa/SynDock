@@ -180,6 +180,67 @@ export default function TenantDetailPage() {
         </div>
       )}
 
+      {/* Payment Settings */}
+      <div className="bg-white rounded-xl shadow-sm p-5 mb-6">
+        <h2 className="font-semibold text-gray-900 mb-3">결제 설정</h2>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">PG사</label>
+            <select
+              value={config?.paymentConfig?.provider || "Mock"}
+              onChange={(e) => {
+                try {
+                  const parsed = configText ? JSON.parse(configText) : {};
+                  parsed.paymentConfig = { ...parsed.paymentConfig, provider: e.target.value };
+                  setConfigText(JSON.stringify(parsed, null, 2));
+                } catch { /* ignore */ }
+              }}
+              className="w-full px-3 py-2.5 border rounded-lg text-sm"
+            >
+              <option value="Mock">Mock (테스트)</option>
+              <option value="TossPayments">TossPayments</option>
+            </select>
+          </div>
+
+          {(config?.paymentConfig?.provider === "TossPayments") && (
+            <>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Client Key</label>
+                <input
+                  type="text"
+                  value={config?.paymentConfig?.clientKey || ""}
+                  onChange={(e) => {
+                    try {
+                      const parsed = configText ? JSON.parse(configText) : {};
+                      parsed.paymentConfig = { ...parsed.paymentConfig, clientKey: e.target.value };
+                      setConfigText(JSON.stringify(parsed, null, 2));
+                    } catch { /* ignore */ }
+                  }}
+                  placeholder="test_ck_..."
+                  className="w-full px-3 py-2.5 border rounded-lg text-sm font-mono"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Secret Key</label>
+                <input
+                  type="password"
+                  value={config?.paymentConfig?.secretKey || ""}
+                  onChange={(e) => {
+                    try {
+                      const parsed = configText ? JSON.parse(configText) : {};
+                      parsed.paymentConfig = { ...parsed.paymentConfig, secretKey: e.target.value };
+                      setConfigText(JSON.stringify(parsed, null, 2));
+                    } catch { /* ignore */ }
+                  }}
+                  placeholder="test_sk_..."
+                  className="w-full px-3 py-2.5 border rounded-lg text-sm font-mono"
+                />
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+
       {/* ConfigJson Editor */}
       <div className="bg-white rounded-xl shadow-sm p-5 mb-6">
         <h2 className="font-semibold text-gray-900 mb-3">ConfigJson</h2>

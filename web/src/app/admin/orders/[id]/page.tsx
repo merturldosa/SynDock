@@ -4,9 +4,9 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { ChevronLeft, Truck, Clock, Package } from "lucide-react";
+import { ChevronLeft, Truck, Clock, Package, RotateCcw } from "lucide-react";
 import api from "@/lib/api";
-import { updateOrderStatus, updateShippingInfo } from "@/lib/adminApi";
+import { updateOrderStatus, updateShippingInfo, refundOrder } from "@/lib/adminApi";
 
 interface OrderHistory {
   id: number;
@@ -93,6 +93,9 @@ export default function AdminOrderDetailPage() {
   const [trackingNumber, setTrackingNumber] = useState("");
   const [trackingCarrier, setTrackingCarrier] = useState("");
   const [shippingSaving, setShippingSaving] = useState(false);
+  const [showRefundModal, setShowRefundModal] = useState(false);
+  const [refundReason, setRefundReason] = useState("");
+  const [refunding, setRefunding] = useState(false);
 
   useEffect(() => {
     api
@@ -133,6 +136,24 @@ export default function AdminOrderDetailPage() {
     setShippingSaving(false);
   };
 
+  const handleRefund = async () => {
+    if (!refundReason.trim()) {
+      alert("환불 사유를 입력해주세요.");
+      return;
+    }
+    setRefunding(true);
+    try {
+      await refundOrder(id, refundReason);
+      const { data } = await api.get(`/order/${id}`);
+      setOrder(data);
+      setShowRefundModal(false);
+      setRefundReason("");
+    } catch {
+      alert("환불 처리에 실패했습니다.");
+    }
+    setRefunding(false);
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -150,6 +171,7 @@ export default function AdminOrderDetailPage() {
   }
 
   const showShippingForm = order.status === "Processing" || order.status === "Shipped";
+  const canRefund = order.status === "Confirmed" || order.status === "Processing" || order.status === "Shipped" || order.status === "Delivered";
 
   return (
     <div className="max-w-4xl">
@@ -300,6 +322,51 @@ export default function AdminOrderDetailPage() {
               >
                 {shippingSaving ? "저장 중..." : "배송 정보 저장 (발송 처리)"}
               </button>
+            </div>
+          )}
+
+          {/* Refund Button */}
+          {canRefund && (
+            <div className="bg-white rounded-xl shadow-sm p-5">
+              <button
+                onClick={() => setShowRefundModal(true)}
+                className="w-full py-2 border border-red-300 text-red-600 rounded-lg text-sm font-medium hover:bg-red-50 transition-colors flex items-center justify-center gap-2"
+              >
+                <RotateCcw size={16} /> 환불 처리
+              </button>
+            </div>
+          )}
+
+          {/* Refund Modal */}
+          {showRefundModal && (
+            <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+              <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-md mx-4">
+                <h3 className="text-lg font-bold text-[var(--color-secondary)] mb-4">환불 처리</h3>
+                <p className="text-sm text-gray-500 mb-3">
+                  주문 <strong>{order.orderNumber}</strong>을(를) 환불합니다.
+                </p>
+                <textarea
+                  value={refundReason}
+                  onChange={(e) => setRefundReason(e.target.value)}
+                  placeholder="환불 사유를 입력해 주세요"
+                  className="w-full px-3 py-2 border rounded-lg text-sm resize-none h-24 mb-4"
+                />
+                <div className="flex gap-3">
+                  <button
+                    onClick={handleRefund}
+                    disabled={refunding}
+                    className="flex-1 py-2 bg-red-500 text-white rounded-lg text-sm font-medium hover:bg-red-600 disabled:opacity-60"
+                  >
+                    {refunding ? "처리 중..." : "환불 확인"}
+                  </button>
+                  <button
+                    onClick={() => { setShowRefundModal(false); setRefundReason(""); }}
+                    className="flex-1 py-2 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50"
+                  >
+                    취소
+                  </button>
+                </div>
+              </div>
             </div>
           )}
 

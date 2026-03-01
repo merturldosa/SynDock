@@ -8,14 +8,16 @@ using SynDock.Core.Interfaces;
 
 namespace Shop.Application.Orders.Commands;
 
+public record CreateOrderResult(int OrderId, string OrderNumber);
+
 public record CreateOrderCommand(
     int? ShippingAddressId,
     string? Note,
     string? CouponCode,
     decimal PointsToUse = 0
-) : IRequest<Result<int>>;
+) : IRequest<Result<CreateOrderResult>>;
 
-public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Result<int>>
+public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Result<CreateOrderResult>>
 {
     private readonly IShopDbContext _db;
     private readonly ICurrentUserService _currentUser;
@@ -28,10 +30,10 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Res
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<Result<int>> Handle(CreateOrderCommand request, CancellationToken cancellationToken)
+    public async Task<Result<CreateOrderResult>> Handle(CreateOrderCommand request, CancellationToken cancellationToken)
     {
         if (_currentUser.UserId is null)
-            return Result<int>.Failure("로그인이 필요합니다.");
+            return Result<CreateOrderResult>.Failure("로그인이 필요합니다.");
 
         var userId = _currentUser.UserId.Value;
 
@@ -44,7 +46,7 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Res
             .FirstOrDefaultAsync(c => c.UserId == userId, cancellationToken);
 
         if (cart is null || !cart.Items.Any())
-            return Result<int>.Failure("장바구니가 비어있습니다.");
+            return Result<CreateOrderResult>.Failure("장바구니가 비어있습니다.");
 
         // Validate shipping address if provided
         if (request.ShippingAddressId.HasValue)
@@ -54,7 +56,7 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Res
                 .FirstOrDefaultAsync(a => a.Id == request.ShippingAddressId.Value && a.UserId == userId, cancellationToken);
 
             if (address is null)
-                return Result<int>.Failure("배송지를 찾을 수 없습니다.");
+                return Result<CreateOrderResult>.Failure("배송지를 찾을 수 없습니다.");
         }
 
         // Generate order number
@@ -66,7 +68,7 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Res
             if (ci.VariantId.HasValue && ci.Variant is not null)
             {
                 if (ci.Variant.Stock < ci.Quantity)
-                    return Result<int>.Failure($"'{ci.Product.Name} ({ci.Variant.Name})' 재고가 부족합니다. (현재: {ci.Variant.Stock}, 요청: {ci.Quantity})");
+                    return Result<CreateOrderResult>.Failure($"'{ci.Product.Name} ({ci.Variant.Name})' 재고가 부족합니다. (현재: {ci.Variant.Stock}, 요청: {ci.Quantity})");
 
                 ci.Variant.Stock -= ci.Quantity;
             }
@@ -177,6 +179,6 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Res
         _db.CartItems.RemoveRange(cart.Items);
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
-        return Result<int>.Success(order.Id);
+        return Result<CreateOrderResult>.Success(new CreateOrderResult(order.Id, order.OrderNumber));
     }
 }

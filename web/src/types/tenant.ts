@@ -12,7 +12,14 @@ export interface HeroCta {
   variant?: "primary" | "outline";
 }
 
+export interface PaymentConfig {
+  provider: "TossPayments" | "Mock";
+  clientKey?: string;
+  secretKey?: string;
+}
+
 export interface TenantConfig {
+  paymentConfig?: PaymentConfig;
   theme?: TenantTheme;
   heroSubtitle?: string;
   heroTagline?: string;

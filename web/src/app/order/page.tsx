@@ -4,10 +4,11 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
+import Script from "next/script";
 import { ShoppingCart, MapPin, Plus, Tag, Coins, Check } from "lucide-react";
 import { useCartStore } from "@/stores/cartStore";
 import { useAuthStore } from "@/stores/authStore";
-import { createOrder, getAddresses, createAddress } from "@/lib/orderApi";
+import { createOrder, getAddresses, createAddress, getPaymentClientKey } from "@/lib/orderApi";
 import { getMyCoupons, validateCoupon } from "@/lib/couponApi";
 import { getPointBalance } from "@/lib/pointApi";
 import type { Address } from "@/types/order";
@@ -44,6 +45,10 @@ export default function OrderPage() {
   const [pointBalance, setPointBalance] = useState(0);
   const [pointsToUse, setPointsToUse] = useState(0);
 
+  // Payment
+  const [paymentProvider, setPaymentProvider] = useState<string>("Mock");
+  const [paymentClientKey, setPaymentClientKey] = useState<string | null>(null);
+
   useEffect(() => {
     if (!isAuthenticated) {
       sessionStorage.setItem("returnTo", "/order");
@@ -61,6 +66,10 @@ export default function OrderPage() {
       setMyCoupons(coupons.map((c) => ({ code: c.code, couponName: c.name, discountType: c.discountType, discountValue: c.discountValue })));
     }).catch(() => {});
     getPointBalance().then((b) => setPointBalance(b.balance)).catch(() => {});
+    getPaymentClientKey().then((res) => {
+      setPaymentProvider(res.provider);
+      setPaymentClientKey(res.clientKey);
+    }).catch(() => {});
   }, [isAuthenticated, fetchCart, router]);
 
   if (!isAuthenticated) return null;
@@ -105,13 +114,38 @@ export default function OrderPage() {
   const handleSubmit = async () => {
     setSubmitting(true);
     try {
-      const { orderId } = await createOrder({
+      const { orderId, orderNumber } = await createOrder({
         shippingAddressId: selectedAddressId,
         note: note || null,
         couponCode: appliedCoupon?.code || null,
         pointsToUse: pointsToUse,
       });
-      router.push(`/order/complete?id=${orderId}`);
+
+      const finalAmount = Math.max(0, cart.totalAmount - (appliedCoupon?.discount ?? 0) - pointsToUse);
+
+      // If TossPayments is configured and has a client key, use Widget SDK
+      if (paymentProvider === "TossPayments" && paymentClientKey && finalAmount > 0) {
+        const tossPayments = (window as unknown as Record<string, unknown>).TossPayments as ((clientKey: string) => { requestPayment: (method: string, options: Record<string, unknown>) => Promise<void> }) | undefined;
+        if (!tossPayments) {
+          alert("결제 모듈을 불러오는 중입니다. 잠시 후 다시 시도해 주세요.");
+          setSubmitting(false);
+          return;
+        }
+
+        const widget = tossPayments(paymentClientKey);
+        await widget.requestPayment("카드", {
+          amount: finalAmount,
+          orderId: orderNumber,
+          orderName: cart.items.length > 1
+            ? `${cart.items[0].productName} 외 ${cart.items.length - 1}건`
+            : cart.items[0].productName,
+          successUrl: `${window.location.origin}/order/success`,
+          failUrl: `${window.location.origin}/order/fail`,
+        });
+      } else {
+        // Mock provider — go directly to complete
+        router.push(`/order/complete?id=${orderId}`);
+      }
     } catch {
       alert("주문에 실패했습니다. 다시 시도해 주세요.");
       setSubmitting(false);
@@ -120,6 +154,9 @@ export default function OrderPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
+      {paymentProvider === "TossPayments" && (
+        <Script src="https://js.tosspayments.com/v1" strategy="afterInteractive" />
+      )}
       <h1 className="text-2xl font-bold text-[var(--color-secondary)] mb-8">주문서</h1>
 
       {/* Shipping Address */}

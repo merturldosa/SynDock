@@ -24,7 +24,7 @@ public class OrderController : ControllerBase
         var result = await _mediator.Send(new CreateOrderCommand(request.ShippingAddressId, request.Note, request.CouponCode, request.PointsToUse));
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
-        return Ok(new { orderId = result.Data });
+        return Ok(new { orderId = result.Data!.OrderId, orderNumber = result.Data.OrderNumber });
     }
 
     [HttpGet]
@@ -75,6 +75,15 @@ public class OrderController : ControllerBase
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(new { success = true });
+    }
+
+    [HttpGet("{id:int}/tracking")]
+    public async Task<IActionResult> GetShippingTracking(int id)
+    {
+        var result = await _mediator.Send(new GetShippingTrackingQuery(id));
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.Error });
+        return Ok(result.Data);
     }
 }
 

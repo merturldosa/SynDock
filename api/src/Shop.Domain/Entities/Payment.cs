@@ -29,6 +29,18 @@ public class Payment : BaseEntity, ITenantEntity
 
     public DateTime? PaidAt { get; set; }
 
+    [MaxLength(200)]
+    public string? PaymentKey { get; set; }
+
+    [MaxLength(50)]
+    public string? ProviderName { get; set; }
+
+    [MaxLength(500)]
+    public string? FailReason { get; set; }
+
+    [Column(TypeName = "jsonb")]
+    public string? MetadataJson { get; set; }
+
     // Navigation
     [ForeignKey("OrderId")]
     public Order Order { get; set; } = null!;

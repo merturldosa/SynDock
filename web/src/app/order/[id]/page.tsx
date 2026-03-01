@@ -4,8 +4,8 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Package, MapPin, ArrowLeft, Truck, Clock } from "lucide-react";
-import { getOrderById, cancelOrder } from "@/lib/orderApi";
+import { Package, MapPin, ArrowLeft, Truck, Clock, Search } from "lucide-react";
+import { getOrderById, cancelOrder, getShippingTracking, type TrackingEvent } from "@/lib/orderApi";
 import { useAuthStore } from "@/stores/authStore";
 import type { Order } from "@/types/order";
 import { ORDER_STATUS_LABELS, type OrderStatusType } from "@/types/order";
@@ -62,6 +62,9 @@ export default function OrderDetailPage() {
   const [order, setOrder] = useState<ExtendedOrder | null>(null);
   const [loading, setLoading] = useState(true);
   const [cancelling, setCancelling] = useState(false);
+  const [trackingEvents, setTrackingEvents] = useState<TrackingEvent[] | null>(null);
+  const [trackingLoading, setTrackingLoading] = useState(false);
+  const [trackingStatus, setTrackingStatus] = useState<string | null>(null);
 
   useEffect(() => {
     const id = Number(params.id);
@@ -89,6 +92,22 @@ export default function OrderDetailPage() {
       </div>
     );
   }
+
+  const handleTrackShipping = async () => {
+    setTrackingLoading(true);
+    try {
+      const result = await getShippingTracking(order.id);
+      if (result.isSuccess) {
+        setTrackingEvents(result.events);
+        setTrackingStatus(result.currentStatus);
+      } else {
+        alert(result.error || "배송 조회에 실패했습니다.");
+      }
+    } catch {
+      alert("배송 조회에 실패했습니다.");
+    }
+    setTrackingLoading(false);
+  };
 
   const canCancel = order.status === "Pending" || order.status === "Confirmed";
   const statusLabel = ORDER_STATUS_LABELS[order.status as OrderStatusType] || order.status;
@@ -127,15 +146,51 @@ export default function OrderDetailPage() {
       {/* Tracking Info */}
       {order.trackingNumber && (
         <section className="bg-purple-50 border border-purple-200 rounded-xl p-5 mb-6">
-          <h2 className="font-bold text-purple-800 flex items-center gap-2 mb-2">
-            <Truck size={18} /> 배송 추적
-          </h2>
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="font-bold text-purple-800 flex items-center gap-2">
+              <Truck size={18} /> 배송 추적
+            </h2>
+            <button
+              onClick={handleTrackShipping}
+              disabled={trackingLoading}
+              className="flex items-center gap-1 px-3 py-1.5 text-sm bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-60 transition-colors"
+            >
+              <Search size={14} />
+              {trackingLoading ? "조회 중..." : "실시간 조회"}
+            </button>
+          </div>
           <div className="text-sm text-purple-700 space-y-1">
             {order.trackingCarrier && (
               <p>택배사: <strong>{order.trackingCarrier}</strong></p>
             )}
             <p>운송장번호: <strong className="font-mono">{order.trackingNumber}</strong></p>
+            {trackingStatus && (
+              <p className="mt-2 font-medium text-purple-900">현재 상태: {trackingStatus}</p>
+            )}
           </div>
+
+          {/* Tracking Events Timeline */}
+          {trackingEvents && trackingEvents.length > 0 && (
+            <div className="mt-4 border-t border-purple-200 pt-4">
+              <div className="relative">
+                <div className="absolute left-[9px] top-2 bottom-2 w-0.5 bg-purple-200" />
+                <div className="space-y-3">
+                  {trackingEvents.map((event, idx) => (
+                    <div key={idx} className="relative pl-7">
+                      <div className={`absolute left-0 top-1 w-[18px] h-[18px] rounded-full border-2 border-white shadow ${idx === 0 ? "bg-purple-600" : "bg-purple-300"}`} />
+                      <div>
+                        <p className="text-sm font-medium text-purple-900">{event.status}</p>
+                        {event.description && <p className="text-xs text-purple-600">{event.description}</p>}
+                        <p className="text-xs text-purple-400 mt-0.5">
+                          {new Date(event.time).toLocaleDateString("ko-KR", { month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
         </section>
       )}
 

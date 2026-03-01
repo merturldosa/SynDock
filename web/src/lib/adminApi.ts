@@ -249,3 +249,8 @@ export async function getAdminUsers(): Promise<UserSummary[]> {
   const { data } = await api.get("/admin/users");
   return data;
 }
+
+// ── Refund ──
+export async function refundOrder(orderId: number, reason: string): Promise<void> {
+  await api.post(`/payment/${orderId}/refund`, { reason });
+}
