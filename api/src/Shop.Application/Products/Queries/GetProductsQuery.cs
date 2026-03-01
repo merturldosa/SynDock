@@ -11,7 +11,12 @@ public record GetProductsQuery(
     string? Search,
     string? Sort,
     int Page = 1,
-    int PageSize = 20
+    int PageSize = 20,
+    decimal? MinPrice = null,
+    decimal? MaxPrice = null,
+    decimal? MinRating = null,
+    bool? IsFeatured = null,
+    bool? IsNew = null
 ) : IRequest<PagedList<ProductListDto>>;
 
 public class GetProductsQueryHandler : IRequestHandler<GetProductsQuery, PagedList<ProductListDto>>
@@ -48,11 +53,30 @@ public class GetProductsQueryHandler : IRequestHandler<GetProductsQuery, PagedLi
                 (p.Description != null && p.Description.ToLower().Contains(search)));
         }
 
-        // Sort
+        // Price range
+        if (request.MinPrice.HasValue)
+            query = query.Where(p => (p.SalePrice ?? p.Price) >= request.MinPrice.Value);
+        if (request.MaxPrice.HasValue)
+            query = query.Where(p => (p.SalePrice ?? p.Price) <= request.MaxPrice.Value);
+
+        // Featured / New
+        if (request.IsFeatured == true)
+            query = query.Where(p => p.IsFeatured);
+        if (request.IsNew == true)
+            query = query.Where(p => p.IsNew);
+
+        // Rating filter
+        if (request.MinRating.HasValue)
+            query = query.Where(p => _db.Reviews
+                .Where(r => r.ProductId == p.Id && r.IsVisible)
+                .Average(r => (double?)r.Rating) >= (double)request.MinRating.Value);
+
+        // Sort (accept both hyphen and underscore)
         query = request.Sort?.ToLower() switch
         {
-            "price-asc" => query.OrderBy(p => p.SalePrice ?? p.Price),
-            "price-desc" => query.OrderByDescending(p => p.SalePrice ?? p.Price),
+            "price-asc" or "price_asc" => query.OrderBy(p => p.SalePrice ?? p.Price),
+            "price-desc" or "price_desc" => query.OrderByDescending(p => p.SalePrice ?? p.Price),
+            "name" or "name-asc" or "name_asc" => query.OrderBy(p => p.Name),
             "newest" => query.OrderByDescending(p => p.CreatedAt),
             "popular" => query.OrderByDescending(p => p.ViewCount),
             _ => query.OrderBy(p => p.SortOrder).ThenByDescending(p => p.CreatedAt)

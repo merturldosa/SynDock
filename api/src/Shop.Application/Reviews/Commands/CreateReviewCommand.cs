@@ -10,7 +10,8 @@ namespace Shop.Application.Reviews.Commands;
 public record CreateReviewCommand(
     int ProductId,
     int Rating,
-    string? Content
+    string? Content,
+    string? ImageUrl = null
 ) : IRequest<Result<int>>;
 
 public class CreateReviewCommandHandler : IRequestHandler<CreateReviewCommand, Result<int>>
@@ -55,6 +56,7 @@ public class CreateReviewCommandHandler : IRequestHandler<CreateReviewCommand, R
             UserId = _currentUser.UserId.Value,
             Rating = request.Rating,
             Content = request.Content,
+            ImageUrl = request.ImageUrl,
             IsVisible = true,
             CreatedBy = _currentUser.Username ?? "system"
         };

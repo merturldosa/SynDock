@@ -28,15 +28,23 @@ public class GetProductReviewsQueryHandler : IRequestHandler<GetProductReviewsQu
             ? await query.AverageAsync(r => r.Rating, cancellationToken)
             : 0;
 
+        var photoReviewCount = await query.CountAsync(r => r.ImageUrl != null, cancellationToken);
+
+        var ratingDistribution = await query
+            .GroupBy(r => r.Rating)
+            .Select(g => new RatingDistributionDto(g.Key, g.Count()))
+            .OrderByDescending(d => d.Rating)
+            .ToListAsync(cancellationToken);
+
         var reviews = await query
             .OrderByDescending(r => r.CreatedAt)
             .Skip((request.Page - 1) * request.PageSize)
             .Take(request.PageSize)
             .Select(r => new ReviewDto(
                 r.Id, r.ProductId, r.UserId, r.User.Name,
-                r.Rating, r.Content, r.IsVisible, r.CreatedAt))
+                r.Rating, r.Content, r.ImageUrl, r.IsVisible, r.CreatedAt))
             .ToListAsync(cancellationToken);
 
-        return new ReviewSummaryDto(totalCount, avgRating, reviews);
+        return new ReviewSummaryDto(totalCount, avgRating, photoReviewCount, ratingDistribution, reviews);
     }
 }

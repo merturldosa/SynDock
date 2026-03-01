@@ -65,4 +65,6 @@ public class Product : BaseEntity, ITenantEntity
     public ICollection<ProductImage> Images { get; set; } = new List<ProductImage>();
 
     public ICollection<ProductVariant> Variants { get; set; } = new List<ProductVariant>();
+
+    public ICollection<ProductDetailSection> DetailSections { get; set; } = new List<ProductDetailSection>();
 }

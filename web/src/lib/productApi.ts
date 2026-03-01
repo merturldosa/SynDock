@@ -12,6 +12,11 @@ export interface GetProductsParams {
   sort?: string;
   page?: number;
   pageSize?: number;
+  minPrice?: number;
+  maxPrice?: number;
+  minRating?: number;
+  isFeatured?: boolean;
+  isNew?: boolean;
 }
 
 export async function getProducts(
@@ -30,5 +35,22 @@ export async function getProductById(id: number): Promise<ProductDetail> {
 
 export async function getCategories(): Promise<CategoryInfo[]> {
   const { data } = await api.get<CategoryInfo[]>("/categories");
+  return data;
+}
+
+export interface SearchSuggestion {
+  id: number;
+  name: string;
+  primaryImageUrl: string | null;
+  price: number;
+  salePrice: number | null;
+}
+
+export async function getSearchSuggestions(
+  term: string
+): Promise<SearchSuggestion[]> {
+  const { data } = await api.get<SearchSuggestion[]>("/products/suggestions", {
+    params: { term },
+  });
   return data;
 }

@@ -5,31 +5,37 @@ using SynDock.Core.Entities;
 
 namespace Shop.Domain.Entities;
 
-[Table("SP_Reviews")]
-public class Review : BaseEntity, ITenantEntity
+[Table("SP_ProductDetailSections")]
+public class ProductDetailSection : BaseEntity, ITenantEntity
 {
     public int TenantId { get; set; }
 
     public int ProductId { get; set; }
 
-    public int UserId { get; set; }
+    [Required]
+    [MaxLength(200)]
+    public string Title { get; set; } = string.Empty;
 
-    public int Rating { get; set; }
-
-    [MaxLength(2000)]
+    [MaxLength(5000)]
     public string? Content { get; set; }
 
     [MaxLength(500)]
     public string? ImageUrl { get; set; }
 
-    public bool IsVisible { get; set; } = true;
+    [MaxLength(200)]
+    public string? ImageAltText { get; set; }
+
+    [Required]
+    [MaxLength(20)]
+    public string SectionType { get; set; } = "Custom";
+
+    public int SortOrder { get; set; }
+
+    public bool IsActive { get; set; } = true;
 
     // Navigation
     [ForeignKey("ProductId")]
     public Product Product { get; set; } = null!;
-
-    [ForeignKey("UserId")]
-    public User User { get; set; } = null!;
 
     [ForeignKey("TenantId")]
     public Tenant Tenant { get; set; } = null!;

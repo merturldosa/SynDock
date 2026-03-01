@@ -11,7 +11,12 @@ public record ProductDetailDto(
     int CategoryId, string CategoryName, bool IsFeatured, bool IsNew, int ViewCount,
     string? CustomFieldsJson,
     IReadOnlyList<ProductImageDto> Images,
-    IReadOnlyList<ProductVariantDto> Variants);
+    IReadOnlyList<ProductVariantDto> Variants,
+    IReadOnlyList<ProductDetailSectionDto>? DetailSections = null);
+
+public record ProductDetailSectionDto(
+    int Id, string Title, string? Content, string? ImageUrl,
+    string? ImageAltText, string SectionType, int SortOrder, bool IsActive);
 
 public record ProductImageDto(int Id, string Url, string? AltText, int SortOrder, bool IsPrimary);
 

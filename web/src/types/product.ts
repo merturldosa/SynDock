@@ -13,6 +13,17 @@ export interface ProductSummary {
   primaryImageUrl: string | null;
 }
 
+export interface ProductDetailSection {
+  id: number;
+  title: string;
+  content: string | null;
+  imageUrl: string | null;
+  imageAltText: string | null;
+  sectionType: string;
+  sortOrder: number;
+  isActive: boolean;
+}
+
 export interface ProductDetail {
   id: number;
   name: string;
@@ -29,6 +40,7 @@ export interface ProductDetail {
   isNew: boolean;
   viewCount: number;
   images: ProductImage[];
+  detailSections?: ProductDetailSection[];
 }
 
 export interface ProductImage {

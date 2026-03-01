@@ -1,0 +1,390 @@
+"use client";
+
+import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { Package, MapPin, ArrowLeft, Truck, Clock, Search } from "lucide-react";
+import { getOrderById, cancelOrder, getShippingTracking, type TrackingEvent } from "@/lib/orderApi";
+import { useAuthStore } from "@/stores/authStore";
+import type { Order } from "@/types/order";
+import { ORDER_STATUS_LABELS, type OrderStatusType } from "@/types/order";
+
+interface OrderHistory {
+  id: number;
+  status: string;
+  note: string | null;
+  trackingNumber: string | null;
+  trackingCarrier: string | null;
+  createdBy: string;
+  createdAt: string;
+}
+
+interface ExtendedOrder extends Order {
+  discountAmount?: number;
+  pointsUsed?: number;
+  histories?: OrderHistory[];
+  trackingNumber?: string | null;
+  trackingCarrier?: string | null;
+}
+
+function formatPrice(price: number): string {
+  return price.toLocaleString("ko-KR") + "원";
+}
+
+function formatDate(dateStr: string): string {
+  return new Date(dateStr).toLocaleDateString("ko-KR", {
+    year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit",
+  });
+}
+
+const STATUS_COLORS: Record<string, string> = {
+  Pending: "bg-yellow-100 text-yellow-700",
+  Confirmed: "bg-blue-100 text-blue-700",
+  Processing: "bg-indigo-100 text-indigo-700",
+  Shipped: "bg-purple-100 text-purple-700",
+  Delivered: "bg-emerald-100 text-emerald-700",
+  Cancelled: "bg-gray-100 text-gray-500",
+  Refunded: "bg-red-100 text-red-700",
+};
+
+const PROGRESS_STEPS: { key: string; label: string }[] = [
+  { key: "Pending", label: "주문접수" },
+  { key: "Confirmed", label: "주문확인" },
+  { key: "Processing", label: "준비중" },
+  { key: "Shipped", label: "배송중" },
+  { key: "Delivered", label: "배송완료" },
+];
+
+function getProgressIndex(status: string): number {
+  const idx = PROGRESS_STEPS.findIndex((s) => s.key === status);
+  return idx >= 0 ? idx : -1;
+}
+
+export default function MypageOrderDetailPage() {
+  const params = useParams();
+  const { isAuthenticated } = useAuthStore();
+  const [order, setOrder] = useState<ExtendedOrder | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [cancelling, setCancelling] = useState(false);
+  const [trackingEvents, setTrackingEvents] = useState<TrackingEvent[] | null>(null);
+  const [trackingLoading, setTrackingLoading] = useState(false);
+  const [trackingStatus, setTrackingStatus] = useState<string | null>(null);
+
+  useEffect(() => {
+    const id = Number(params.id);
+    if (!id || !isAuthenticated) return;
+    setLoading(true);
+    getOrderById(id)
+      .then(setOrder)
+      .catch(() => setOrder(null))
+      .finally(() => setLoading(false));
+  }, [params.id, isAuthenticated]);
+
+  if (!isAuthenticated) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 py-20 text-center">
+        <p className="text-gray-500 mb-4">로그인 후 이용할 수 있습니다.</p>
+        <Link href="/login" className="text-[var(--color-primary)] hover:underline">로그인하기</Link>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[50vh]">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-[var(--color-primary)] border-t-transparent" />
+      </div>
+    );
+  }
+
+  if (!order) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 py-20 text-center">
+        <p className="text-gray-500 mb-4">주문을 찾을 수 없습니다.</p>
+        <Link href="/mypage/orders" className="text-[var(--color-primary)] hover:underline">주문내역 보기</Link>
+      </div>
+    );
+  }
+
+  const handleTrackShipping = async () => {
+    setTrackingLoading(true);
+    try {
+      const result = await getShippingTracking(order.id);
+      if (result.isSuccess) {
+        setTrackingEvents(result.events);
+        setTrackingStatus(result.currentStatus);
+      } else {
+        alert(result.error || "배송 조회에 실패했습니다.");
+      }
+    } catch {
+      alert("배송 조회에 실패했습니다.");
+    }
+    setTrackingLoading(false);
+  };
+
+  const canCancel = order.status === "Pending" || order.status === "Confirmed";
+  const isCancelled = order.status === "Cancelled" || order.status === "Refunded";
+  const statusLabel = ORDER_STATUS_LABELS[order.status as OrderStatusType] || order.status;
+  const statusColor = STATUS_COLORS[order.status] || "bg-gray-100 text-gray-500";
+  const progressIndex = getProgressIndex(order.status);
+
+  const handleCancel = async () => {
+    if (!confirm("주문을 취소하시겠습니까?")) return;
+    setCancelling(true);
+    try {
+      await cancelOrder(order.id);
+      setOrder({ ...order, status: "Cancelled" });
+    } catch {
+      alert("주문 취소에 실패했습니다.");
+    }
+    setCancelling(false);
+  };
+
+  return (
+    <div className="max-w-4xl mx-auto px-4 py-8">
+      {/* Breadcrumb */}
+      <div className="flex items-center gap-2 text-sm text-gray-500 mb-6">
+        <Link href="/mypage" className="hover:text-[var(--color-primary)]">마이페이지</Link>
+        <span>/</span>
+        <Link href="/mypage/orders" className="hover:text-[var(--color-primary)]">주문내역</Link>
+        <span>/</span>
+        <span className="text-[var(--color-secondary)] font-medium">주문 상세</span>
+      </div>
+
+      {/* Order Header */}
+      <div className="flex items-start justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-[var(--color-secondary)]">주문 상세</h1>
+          <p className="text-sm text-gray-500 mt-1">주문번호: {order.orderNumber}</p>
+          <p className="text-sm text-gray-400">{formatDate(order.createdAt)}</p>
+        </div>
+        <span className={`px-3 py-1 rounded-full text-sm font-medium ${statusColor}`}>
+          {statusLabel}
+        </span>
+      </div>
+
+      {/* Cancelled/Refunded Warning */}
+      {isCancelled && (
+        <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
+          <p className="text-red-700 font-medium">
+            {order.status === "Cancelled" ? "이 주문은 취소되었습니다." : "이 주문은 환불 처리되었습니다."}
+          </p>
+        </div>
+      )}
+
+      {/* Progress Bar */}
+      {!isCancelled && progressIndex >= 0 && (
+        <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
+          <div className="flex items-center justify-between">
+            {PROGRESS_STEPS.map((step, i) => {
+              const isActive = i <= progressIndex;
+              const isCurrent = i === progressIndex;
+              return (
+                <div key={step.key} className="flex-1 flex flex-col items-center relative">
+                  {i > 0 && (
+                    <div className={`absolute top-4 right-1/2 w-full h-0.5 -z-0 ${
+                      i <= progressIndex ? "bg-[var(--color-primary)]" : "bg-gray-200"
+                    }`} />
+                  )}
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold z-10 ${
+                    isCurrent
+                      ? "bg-[var(--color-primary)] text-white ring-4 ring-[var(--color-primary)]/20"
+                      : isActive
+                        ? "bg-[var(--color-primary)] text-white"
+                        : "bg-gray-200 text-gray-400"
+                  }`}>
+                    {i + 1}
+                  </div>
+                  <span className={`text-xs mt-2 font-medium ${
+                    isActive ? "text-[var(--color-primary)]" : "text-gray-400"
+                  }`}>
+                    {step.label}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Tracking Info */}
+      {order.trackingNumber && (
+        <section className="bg-purple-50 border border-purple-200 rounded-xl p-5 mb-6">
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="font-bold text-purple-800 flex items-center gap-2">
+              <Truck size={18} /> 배송 추적
+            </h2>
+            <button
+              onClick={handleTrackShipping}
+              disabled={trackingLoading}
+              className="flex items-center gap-1 px-3 py-1.5 text-sm bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-60 transition-colors"
+            >
+              <Search size={14} />
+              {trackingLoading ? "조회 중..." : "실시간 조회"}
+            </button>
+          </div>
+          <div className="text-sm text-purple-700 space-y-1">
+            {order.trackingCarrier && (
+              <p>택배사: <strong>{order.trackingCarrier}</strong></p>
+            )}
+            <p>운송장번호: <strong className="font-mono">{order.trackingNumber}</strong></p>
+            {trackingStatus && (
+              <p className="mt-2 font-medium text-purple-900">현재 상태: {trackingStatus}</p>
+            )}
+          </div>
+
+          {/* Tracking Events Timeline */}
+          {trackingEvents && trackingEvents.length > 0 && (
+            <div className="mt-4 border-t border-purple-200 pt-4">
+              <div className="relative">
+                <div className="absolute left-[9px] top-2 bottom-2 w-0.5 bg-purple-200" />
+                <div className="space-y-3">
+                  {trackingEvents.map((event, idx) => (
+                    <div key={idx} className="relative pl-7">
+                      <div className={`absolute left-0 top-1 w-[18px] h-[18px] rounded-full border-2 border-white shadow ${idx === 0 ? "bg-purple-600" : "bg-purple-300"}`} />
+                      <div>
+                        <p className="text-sm font-medium text-purple-900">{event.status}</p>
+                        {event.description && <p className="text-xs text-purple-600">{event.description}</p>}
+                        <p className="text-xs text-purple-400 mt-0.5">
+                          {new Date(event.time).toLocaleDateString("ko-KR", { month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* Order Timeline */}
+      {order.histories && order.histories.length > 0 && (
+        <section className="bg-white rounded-xl shadow-sm p-6 mb-6">
+          <h2 className="font-bold text-[var(--color-secondary)] flex items-center gap-2 mb-4">
+            <Clock size={18} /> 주문 진행 상황
+          </h2>
+          <div className="relative">
+            <div className="absolute left-[9px] top-2 bottom-2 w-0.5 bg-gray-200" />
+            <div className="space-y-4">
+              {order.histories.map((h) => (
+                <div key={h.id} className="relative pl-7">
+                  <div className={`absolute left-0 top-1 w-[18px] h-[18px] rounded-full border-2 border-white shadow ${
+                    h.status === "Cancelled" || h.status === "Refunded" ? "bg-red-500" : "bg-[var(--color-primary)]"
+                  }`} />
+                  <div>
+                    <p className="text-sm font-medium text-[var(--color-secondary)]">
+                      {ORDER_STATUS_LABELS[h.status as OrderStatusType] || h.status}
+                    </p>
+                    {h.note && <p className="text-xs text-gray-500 mt-0.5">{h.note}</p>}
+                    {h.trackingNumber && (
+                      <p className="text-xs text-purple-600 mt-0.5 font-mono">
+                        운송장: {h.trackingNumber}
+                      </p>
+                    )}
+                    <p className="text-xs text-gray-400 mt-1">{formatDate(h.createdAt)}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Items */}
+      <section className="bg-white rounded-xl shadow-sm p-6 mb-6">
+        <h2 className="font-bold text-[var(--color-secondary)] flex items-center gap-2 mb-4">
+          <Package size={18} /> 주문 상품
+        </h2>
+        <div className="space-y-3">
+          {order.items.map((item) => (
+            <div key={item.id} className="flex gap-3 py-3 border-b border-gray-50 last:border-0">
+              <Link href={`/products/${item.productId}`} className="shrink-0">
+                <div className="relative w-20 h-20 rounded-lg overflow-hidden bg-gray-100">
+                  {item.primaryImageUrl ? (
+                    <Image src={item.primaryImageUrl} alt={item.productName} fill className="object-cover" sizes="80px" unoptimized />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-3xl opacity-30">📦</div>
+                  )}
+                </div>
+              </Link>
+              <div className="flex-1 min-w-0">
+                <Link href={`/products/${item.productId}`} className="text-sm font-medium text-[var(--color-secondary)] hover:text-[var(--color-primary)] transition-colors line-clamp-1">
+                  {item.productName}
+                </Link>
+                {item.variantName && <p className="text-xs text-gray-500">{item.variantName}</p>}
+                <p className="text-xs text-gray-400 mt-0.5">{formatPrice(item.unitPrice)} x {item.quantity}개</p>
+              </div>
+              <p className="text-sm font-bold text-[var(--color-secondary)] shrink-0">{formatPrice(item.totalPrice)}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Shipping */}
+      {order.shippingAddress && (
+        <section className="bg-white rounded-xl shadow-sm p-6 mb-6">
+          <h2 className="font-bold text-[var(--color-secondary)] flex items-center gap-2 mb-3">
+            <MapPin size={18} /> 배송지 정보
+          </h2>
+          <div className="text-sm text-gray-600 space-y-1">
+            <p className="font-medium">{order.shippingAddress.recipientName}</p>
+            <p>{order.shippingAddress.phone}</p>
+            <p>[{order.shippingAddress.zipCode}] {order.shippingAddress.address1} {order.shippingAddress.address2}</p>
+          </div>
+        </section>
+      )}
+
+      {order.note && (
+        <section className="bg-white rounded-xl shadow-sm p-6 mb-6">
+          <h2 className="font-bold text-[var(--color-secondary)] mb-2">배송 메모</h2>
+          <p className="text-sm text-gray-600">{order.note}</p>
+        </section>
+      )}
+
+      {/* Summary */}
+      <section className="bg-white rounded-xl shadow-sm p-6 mb-6">
+        <div className="space-y-3 text-sm">
+          <div className="flex justify-between">
+            <span className="text-gray-500">상품 금액</span>
+            <span>{formatPrice(order.totalAmount)}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-500">배송비</span>
+            <span>{order.shippingFee > 0 ? formatPrice(order.shippingFee) : "무료"}</span>
+          </div>
+          {(order.discountAmount ?? 0) > 0 && (
+            <div className="flex justify-between text-red-500">
+              <span>할인</span>
+              <span>-{formatPrice(order.discountAmount ?? 0)}</span>
+            </div>
+          )}
+          {(order.pointsUsed ?? 0) > 0 && (
+            <div className="flex justify-between text-orange-500">
+              <span>포인트 사용</span>
+              <span>-{formatPrice(order.pointsUsed ?? 0)}</span>
+            </div>
+          )}
+          <div className="border-t pt-3 flex justify-between">
+            <span className="font-bold text-[var(--color-secondary)]">총 결제금액</span>
+            <span className="font-bold text-lg text-[var(--color-primary)]">
+              {formatPrice(order.totalAmount + order.shippingFee - (order.discountAmount ?? 0) - (order.pointsUsed ?? 0))}
+            </span>
+          </div>
+        </div>
+      </section>
+
+      {/* Cancel */}
+      {canCancel && (
+        <button
+          onClick={handleCancel}
+          disabled={cancelling}
+          className="w-full py-3 border border-red-300 text-red-500 rounded-xl font-medium hover:bg-red-50 transition-colors disabled:opacity-60"
+        >
+          {cancelling ? "취소 처리 중..." : "주문 취소"}
+        </button>
+      )}
+    </div>
+  );
+}

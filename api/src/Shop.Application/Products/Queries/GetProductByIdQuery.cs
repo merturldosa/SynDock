@@ -23,6 +23,7 @@ public class GetProductByIdQueryHandler : IRequestHandler<GetProductByIdQuery, P
             .Include(p => p.Category)
             .Include(p => p.Images.OrderBy(i => i.SortOrder))
             .Include(p => p.Variants.Where(v => v.IsActive).OrderBy(v => v.SortOrder))
+            .Include(p => p.DetailSections.Where(s => s.IsActive).OrderBy(s => s.SortOrder))
             .FirstOrDefaultAsync(p => p.Id == request.Id && p.IsActive, cancellationToken);
 
         if (product == null) return null;
@@ -33,7 +34,9 @@ public class GetProductByIdQueryHandler : IRequestHandler<GetProductByIdQuery, P
             product.CategoryId, product.Category.Name, product.IsFeatured, product.IsNew, product.ViewCount,
             product.CustomFieldsJson,
             product.Images.Select(i => new ProductImageDto(i.Id, i.Url, i.AltText, i.SortOrder, i.IsPrimary)).ToList(),
-            product.Variants.Select(v => new ProductVariantDto(v.Id, v.Name, v.Sku, v.Price, v.Stock, v.IsActive)).ToList()
+            product.Variants.Select(v => new ProductVariantDto(v.Id, v.Name, v.Sku, v.Price, v.Stock, v.IsActive)).ToList(),
+            product.DetailSections.Select(s => new ProductDetailSectionDto(
+                s.Id, s.Title, s.Content, s.ImageUrl, s.ImageAltText, s.SectionType, s.SortOrder, s.IsActive)).ToList()
         );
     }
 }

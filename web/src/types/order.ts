@@ -68,3 +68,21 @@ export const ORDER_STATUS_LABELS: Record<OrderStatusType, string> = {
   Cancelled: "주문취소",
   Refunded: "환불완료",
 };
+
+export interface OrderHistory {
+  id: number;
+  status: string;
+  note: string | null;
+  trackingNumber: string | null;
+  trackingCarrier: string | null;
+  createdBy: string;
+  createdAt: string;
+}
+
+export interface OrderDetail extends Order {
+  discountAmount: number;
+  pointsUsed: number;
+  histories?: OrderHistory[];
+  trackingNumber?: string | null;
+  trackingCarrier?: string | null;
+}

@@ -21,13 +21,15 @@ public class UpdateOrderStatusCommandHandler : IRequestHandler<UpdateOrderStatus
     private readonly ICurrentUserService _currentUser;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IEmailService _emailService;
+    private readonly IAdminDashboardNotifier _adminNotifier;
 
-    public UpdateOrderStatusCommandHandler(IShopDbContext db, ICurrentUserService currentUser, IUnitOfWork unitOfWork, IEmailService emailService)
+    public UpdateOrderStatusCommandHandler(IShopDbContext db, ICurrentUserService currentUser, IUnitOfWork unitOfWork, IEmailService emailService, IAdminDashboardNotifier adminNotifier)
     {
         _db = db;
         _currentUser = currentUser;
         _unitOfWork = unitOfWork;
         _emailService = emailService;
+        _adminNotifier = adminNotifier;
     }
 
     public async Task<Result<bool>> Handle(UpdateOrderStatusCommand request, CancellationToken cancellationToken)
@@ -109,6 +111,11 @@ public class UpdateOrderStatusCommandHandler : IRequestHandler<UpdateOrderStatus
         }
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        // Notify admin dashboard
+        try { await _adminNotifier.NotifyOrderStatusChanged(order.TenantId, order.OrderNumber, request.Status, cancellationToken); }
+        catch { /* notification failure should not block status update */ }
+
         return Result<bool>.Success(true);
     }
 

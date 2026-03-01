@@ -5,13 +5,21 @@ export interface ReviewDto {
   userName: string;
   rating: number;
   content: string | null;
+  imageUrl: string | null;
   isVisible: boolean;
   createdAt: string;
+}
+
+export interface RatingDistribution {
+  rating: number;
+  count: number;
 }
 
 export interface ReviewSummary {
   totalCount: number;
   averageRating: number;
+  photoReviewCount: number;
+  ratingDistribution: RatingDistribution[];
   reviews: ReviewDto[];
 }
 

@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Package, FolderTree, ShoppingCart, Users, TrendingUp, AlertTriangle, Warehouse } from "lucide-react";
 import { getDashboardStats, type DashboardStats } from "@/lib/adminApi";
+import { useAdminDashboardStore } from "@/stores/adminDashboardStore";
 
 const STATUS_LABELS: Record<string, string> = {
   Pending: "결제 대기",
@@ -23,13 +24,49 @@ function formatPrice(price: number): string {
 export default function AdminDashboard() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [pulse, setPulse] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
+  const { lastEvent, connect, disconnect } = useAdminDashboardStore();
+  const toastTimer = useRef<NodeJS.Timeout | null>(null);
+
+  const loadStats = useCallback(() => {
+    getDashboardStats().then(setStats).catch(() => {});
+  }, []);
 
   useEffect(() => {
-    getDashboardStats()
-      .then(setStats)
-      .catch(() => {})
-      .finally(() => setLoading(false));
+    loadStats();
+    setLoading(false);
+
+    const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
+    if (token) {
+      connect(token);
+    }
+
+    return () => {
+      disconnect();
+    };
   }, []);
+
+  // React to real-time events
+  useEffect(() => {
+    if (!lastEvent) return;
+
+    // Reload dashboard stats
+    loadStats();
+
+    // Pulse animation
+    setPulse(true);
+    setTimeout(() => setPulse(false), 2000);
+
+    // Toast notification
+    const msg = lastEvent.type === "NewOrder"
+      ? `새 주문! ${lastEvent.orderNumber} (${formatPrice(lastEvent.totalAmount || 0)})`
+      : `주문 상태 변경: ${lastEvent.orderNumber} → ${STATUS_LABELS[lastEvent.newStatus || ""] || lastEvent.newStatus}`;
+
+    setToast(msg);
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    toastTimer.current = setTimeout(() => setToast(null), 5000);
+  }, [lastEvent, loadStats]);
 
   if (loading) {
     return (
@@ -55,15 +92,22 @@ export default function AdminDashboard() {
         관리자 대시보드
       </h1>
 
+      {/* Toast */}
+      {toast && (
+        <div className="fixed top-4 right-4 z-50 bg-[var(--color-primary)] text-white px-5 py-3 rounded-xl shadow-lg text-sm font-medium animate-[slideIn_0.3s_ease-out]">
+          {toast}
+        </div>
+      )}
+
       {/* Today Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white rounded-xl shadow-sm p-5 border-l-4 border-blue-500">
+        <div className={`bg-white rounded-xl shadow-sm p-5 border-l-4 border-blue-500 transition-all ${pulse ? "ring-2 ring-blue-300 ring-opacity-50" : ""}`}>
           <p className="text-sm text-gray-500">오늘 주문</p>
-          <p className="text-2xl font-bold text-[var(--color-secondary)]">{stats.todayOrders}건</p>
+          <p className={`text-2xl font-bold text-[var(--color-secondary)] ${pulse ? "animate-pulse" : ""}`}>{stats.todayOrders}건</p>
         </div>
-        <div className="bg-white rounded-xl shadow-sm p-5 border-l-4 border-green-500">
+        <div className={`bg-white rounded-xl shadow-sm p-5 border-l-4 border-green-500 transition-all ${pulse ? "ring-2 ring-green-300 ring-opacity-50" : ""}`}>
           <p className="text-sm text-gray-500">오늘 매출</p>
-          <p className="text-2xl font-bold text-[var(--color-secondary)]">{formatPrice(stats.todayRevenue)}</p>
+          <p className={`text-2xl font-bold text-[var(--color-secondary)] ${pulse ? "animate-pulse" : ""}`}>{formatPrice(stats.todayRevenue)}</p>
         </div>
         <Link href="/admin/inventory" className="bg-white rounded-xl shadow-sm p-5 border-l-4 border-red-500 hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">

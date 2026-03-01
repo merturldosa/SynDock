@@ -78,3 +78,43 @@ export async function updateTenantBilling(
 ): Promise<void> {
   await api.put(`/platform/tenants/${slug}/billing`, req);
 }
+
+// ── Domain Management ──
+export interface DnsInstruction {
+  type: string;
+  host: string;
+  target: string;
+}
+
+export interface DomainConfig {
+  customDomain: string | null;
+  subdomain: string | null;
+  verificationStatus: string;
+  verifiedAt: string | null;
+  sslStatus: string;
+  sslExpiresAt: string | null;
+  dnsInstructions: DnsInstruction[];
+}
+
+export interface DomainVerificationResult {
+  isVerified: boolean;
+  message: string;
+}
+
+export async function getTenantDomainConfig(slug: string): Promise<DomainConfig> {
+  const { data } = await api.get(`/platform/tenants/${slug}/domain`);
+  return data;
+}
+
+export async function updateTenantDomain(
+  slug: string,
+  req: { customDomain?: string; subdomain?: string }
+): Promise<DomainConfig> {
+  const { data } = await api.put(`/platform/tenants/${slug}/domain`, req);
+  return data;
+}
+
+export async function verifyTenantDomain(slug: string): Promise<DomainVerificationResult> {
+  const { data } = await api.post(`/platform/tenants/${slug}/domain/verify`);
+  return data;
+}

@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Shop.Application.Common.Interfaces;
 using Shop.Domain.Entities;
 using Shop.Domain.Enums;
+using Shop.Domain.Interfaces;
 using SynDock.Core.Common;
 using SynDock.Core.Interfaces;
 
@@ -22,12 +23,14 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Res
     private readonly IShopDbContext _db;
     private readonly ICurrentUserService _currentUser;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IAdminDashboardNotifier _adminNotifier;
 
-    public CreateOrderCommandHandler(IShopDbContext db, ICurrentUserService currentUser, IUnitOfWork unitOfWork)
+    public CreateOrderCommandHandler(IShopDbContext db, ICurrentUserService currentUser, IUnitOfWork unitOfWork, IAdminDashboardNotifier adminNotifier)
     {
         _db = db;
         _currentUser = currentUser;
         _unitOfWork = unitOfWork;
+        _adminNotifier = adminNotifier;
     }
 
     public async Task<Result<CreateOrderResult>> Handle(CreateOrderCommand request, CancellationToken cancellationToken)
@@ -179,6 +182,11 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Res
         _db.CartItems.RemoveRange(cart.Items);
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        // Notify admin dashboard
+        try { await _adminNotifier.NotifyNewOrder(order.TenantId, order.OrderNumber, order.TotalAmount, cancellationToken); }
+        catch { /* notification failure should not block order creation */ }
+
         return Result<CreateOrderResult>.Success(new CreateOrderResult(order.Id, order.OrderNumber));
     }
 }

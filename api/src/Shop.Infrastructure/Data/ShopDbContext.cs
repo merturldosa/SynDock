@@ -52,6 +52,7 @@ public class ShopDbContext : DbContext, IShopDbContext
     public DbSet<Collection> Collections { get; set; }
     public DbSet<CollectionItem> CollectionItems { get; set; }
     public DbSet<TenantPlan> TenantPlans { get; set; }
+    public DbSet<ProductDetailSection> ProductDetailSections { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -97,6 +98,7 @@ public class ShopDbContext : DbContext, IShopDbContext
         ConfigureOrderHistory(modelBuilder);
         ConfigureCollection(modelBuilder);
         ConfigureTenantPlan(modelBuilder);
+        ConfigureProductDetailSection(modelBuilder);
     }
 
     private void ApplyTenantFilter<T>(ModelBuilder modelBuilder) where T : class, ITenantEntity
@@ -675,6 +677,19 @@ public class ShopDbContext : DbContext, IShopDbContext
             entity.HasOne(e => e.Tenant)
                 .WithMany()
                 .HasForeignKey(e => e.TenantId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+    }
+
+    private static void ConfigureProductDetailSection(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<ProductDetailSection>(entity =>
+        {
+            entity.HasIndex(e => new { e.ProductId, e.SortOrder });
+
+            entity.HasOne(e => e.Product)
+                .WithMany(p => p.DetailSections)
+                .HasForeignKey(e => e.ProductId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
     }

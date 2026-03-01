@@ -293,7 +293,30 @@ export default function ProductDetailClient() {
         <div className="py-8">
           {activeTab === "detail" && (
             <div className="prose max-w-none">
-              {product.description ? (
+              {product.detailSections && product.detailSections.length > 0 ? (
+                <div className="space-y-10">
+                  {product.detailSections.map((section) => (
+                    <div key={section.id} className="border-b border-gray-100 pb-8 last:border-0">
+                      <h3 className="text-lg font-bold text-[var(--color-secondary)] mb-3">{section.title}</h3>
+                      {section.imageUrl && (
+                        <div className="mb-4">
+                          <Image
+                            src={section.imageUrl}
+                            alt={section.imageAltText || section.title}
+                            width={800}
+                            height={400}
+                            className="rounded-xl w-full object-cover"
+                            unoptimized
+                          />
+                        </div>
+                      )}
+                      {section.content && (
+                        <div className="text-gray-600 whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: section.content }} />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : product.description ? (
                 <p className="text-gray-600 whitespace-pre-wrap">{product.description}</p>
               ) : (
                 <p className="text-gray-400 text-center py-8">상세정보가 없습니다.</p>

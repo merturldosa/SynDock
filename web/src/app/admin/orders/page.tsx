@@ -1,8 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { getAdminOrders, updateOrderStatus, bulkUpdateOrderStatus, type OrderSummary, type PagedOrders } from "@/lib/adminApi";
+import { Search, Download } from "lucide-react";
+import {
+  getAdminOrdersSearch, updateOrderStatus, bulkUpdateOrderStatus, exportOrders,
+  type AdminOrderSummary, type AdminPagedOrders,
+} from "@/lib/adminApi";
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   Pending: { label: "결제 대기", color: "bg-yellow-100 text-yellow-700" },
@@ -21,17 +25,21 @@ function formatPrice(price: number): string {
 }
 
 export default function AdminOrdersPage() {
-  const [data, setData] = useState<PagedOrders | null>(null);
+  const [data, setData] = useState<AdminPagedOrders | null>(null);
   const [page, setPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [bulkStatus, setBulkStatus] = useState("Confirmed");
   const [bulkProcessing, setBulkProcessing] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   const load = () => {
     setLoading(true);
-    getAdminOrders(statusFilter || undefined, page)
+    getAdminOrdersSearch(statusFilter || undefined, page, 20, searchQuery || undefined)
       .then(setData)
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -40,7 +48,16 @@ export default function AdminOrdersPage() {
   useEffect(() => {
     load();
     setSelectedIds(new Set());
-  }, [page, statusFilter]);
+  }, [page, statusFilter, searchQuery]);
+
+  const handleSearchInput = (value: string) => {
+    setSearchTerm(value);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      setSearchQuery(value);
+      setPage(1);
+    }, 300);
+  };
 
   const handleStatusChange = async (orderId: number, newStatus: string) => {
     try {
@@ -88,11 +105,44 @@ export default function AdminOrdersPage() {
     setBulkProcessing(false);
   };
 
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      await exportOrders({
+        status: statusFilter || undefined,
+        search: searchQuery || undefined,
+      });
+    } catch {
+      alert("내보내기에 실패했습니다.");
+    }
+    setExporting(false);
+  };
+
   return (
     <div>
-      <h1 className="text-2xl font-bold text-[var(--color-secondary)] mb-6">
-        주문 관리
-      </h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold text-[var(--color-secondary)]">주문 관리</h1>
+        <button
+          onClick={handleExport}
+          disabled={exporting}
+          className="flex items-center gap-1.5 px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 disabled:opacity-60 transition-colors"
+        >
+          <Download size={16} />
+          {exporting ? "내보내기 중..." : "CSV 내보내기"}
+        </button>
+      </div>
+
+      {/* Search */}
+      <div className="relative mb-4">
+        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+        <input
+          type="text"
+          value={searchTerm}
+          onChange={(e) => handleSearchInput(e.target.value)}
+          placeholder="주문번호, 고객명, 이메일로 검색..."
+          className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)]"
+        />
+      </div>
 
       {/* Status Filter */}
       <div className="flex gap-2 mb-4 flex-wrap">
@@ -162,7 +212,7 @@ export default function AdminOrdersPage() {
         </div>
       ) : !data || data.items.length === 0 ? (
         <div className="text-center py-20 text-gray-400">
-          <p>주문이 없습니다.</p>
+          <p>{searchQuery ? `"${searchQuery}" 검색 결과가 없습니다.` : "주문이 없습니다."}</p>
         </div>
       ) : (
         <>
@@ -179,6 +229,7 @@ export default function AdminOrdersPage() {
                     />
                   </th>
                   <th className="text-left p-3 font-medium text-gray-500">주문번호</th>
+                  <th className="text-left p-3 font-medium text-gray-500">고객</th>
                   <th className="text-left p-3 font-medium text-gray-500">상품</th>
                   <th className="text-right p-3 font-medium text-gray-500">금액</th>
                   <th className="text-center p-3 font-medium text-gray-500">상태</th>
@@ -203,6 +254,10 @@ export default function AdminOrdersPage() {
                         <Link href={`/admin/orders/${order.id}`} className="text-[var(--color-primary)] hover:underline font-mono text-xs">
                           {order.orderNumber}
                         </Link>
+                      </td>
+                      <td className="p-3">
+                        <p className="text-sm font-medium truncate max-w-[120px]">{order.customerName || "-"}</p>
+                        <p className="text-xs text-gray-400 truncate max-w-[120px]">{order.customerEmail || ""}</p>
                       </td>
                       <td className="p-3">
                         <p className="line-clamp-1">

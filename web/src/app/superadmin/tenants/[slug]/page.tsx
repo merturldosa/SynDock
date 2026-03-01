@@ -2,10 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
+import { Globe } from "lucide-react";
 import {
   getPlatformTenant,
   updatePlatformTenant,
+  getTenantDomainConfig,
   type TenantDetail,
+  type DomainConfig,
 } from "@/lib/platformApi";
 import type { TenantConfig } from "@/types/tenant";
 
@@ -23,6 +27,7 @@ export default function TenantDetailPage() {
   const [configText, setConfigText] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [domainConfig, setDomainConfig] = useState<DomainConfig | null>(null);
 
   useEffect(() => {
     getPlatformTenant(slug)
@@ -41,6 +46,8 @@ export default function TenantDetailPage() {
       })
       .catch(() => router.push("/superadmin/tenants"))
       .finally(() => setLoading(false));
+
+    getTenantDomainConfig(slug).then(setDomainConfig).catch(() => {});
   }, [slug, router]);
 
   const handleSave = async () => {
@@ -158,6 +165,36 @@ export default function TenantDetailPage() {
               />
               <span className="text-sm text-gray-700">운영 중</span>
             </label>
+          </div>
+        </div>
+      </div>
+
+      {/* Domain Management */}
+      <div className="bg-white rounded-xl shadow-sm p-5 mb-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="font-semibold text-gray-900 mb-1">도메인 관리</h2>
+            <p className="text-sm text-gray-500">
+              {tenant.customDomain || tenant.subdomain || "도메인 미설정"}
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            {domainConfig && (
+              <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                domainConfig.verificationStatus === "Verified" ? "bg-emerald-100 text-emerald-700" :
+                domainConfig.verificationStatus === "Pending" ? "bg-yellow-100 text-yellow-700" :
+                domainConfig.verificationStatus === "Failed" ? "bg-red-100 text-red-700" :
+                "bg-gray-100 text-gray-500"
+              }`}>
+                {domainConfig.verificationStatus}
+              </span>
+            )}
+            <Link
+              href={`/superadmin/tenants/${slug}/domain`}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700"
+            >
+              <Globe size={14} /> 도메인 관리
+            </Link>
           </div>
         </div>
       </div>

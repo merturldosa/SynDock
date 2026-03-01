@@ -7,10 +7,15 @@ public record ReviewDto(
     string UserName,
     int Rating,
     string? Content,
+    string? ImageUrl,
     bool IsVisible,
     DateTime CreatedAt);
+
+public record RatingDistributionDto(int Rating, int Count);
 
 public record ReviewSummaryDto(
     int TotalCount,
     double AverageRating,
+    int PhotoReviewCount,
+    IReadOnlyList<RatingDistributionDto> RatingDistribution,
     IReadOnlyList<ReviewDto> Reviews);

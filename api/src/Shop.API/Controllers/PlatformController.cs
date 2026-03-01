@@ -135,8 +135,44 @@ public class PlatformController : ControllerBase
 
         return Ok(new { success = true });
     }
+    [HttpGet("{slug}/domain")]
+    public async Task<IActionResult> GetTenantDomainConfig(string slug)
+    {
+        var result = await _mediator.Send(new Application.Platform.Queries.GetTenantDomainConfigQuery(slug));
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.Error });
+        return Ok(result.Data);
+    }
+
+    [HttpPut("{slug}/domain")]
+    public async Task<IActionResult> UpdateTenantDomain(string slug, [FromBody] UpdateDomainRequest request)
+    {
+        var tenant = await _db.Tenants.AsNoTracking().FirstOrDefaultAsync(t => t.Slug == slug);
+        if (tenant == null)
+            return NotFound(new { error = "테넌트를 찾을 수 없습니다." });
+
+        var result = await _mediator.Send(new Application.Platform.Commands.UpdateTenantDomainCommand(
+            tenant.Id, request.CustomDomain, request.Subdomain));
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.Error });
+        return Ok(result.Data);
+    }
+
+    [HttpPost("{slug}/domain/verify")]
+    public async Task<IActionResult> VerifyTenantDomain(string slug)
+    {
+        var tenant = await _db.Tenants.AsNoTracking().FirstOrDefaultAsync(t => t.Slug == slug);
+        if (tenant == null)
+            return NotFound(new { error = "테넌트를 찾을 수 없습니다." });
+
+        var result = await _mediator.Send(new Application.Platform.Commands.VerifyTenantDomainCommand(tenant.Id));
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.Error });
+        return Ok(result.Data);
+    }
 }
 
 public record CreateTenantRequest(string Slug, string Name, string? CustomDomain, string? Subdomain, string? ConfigJson);
 public record UpdateTenantRequest(string? Name, string? CustomDomain, string? Subdomain, bool? IsActive, string? ConfigJson);
 public record UpdateBillingRequest(string? PlanType, decimal? MonthlyPrice, string? BillingStatus);
+public record UpdateDomainRequest(string? CustomDomain, string? Subdomain);

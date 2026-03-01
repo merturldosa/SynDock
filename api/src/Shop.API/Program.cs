@@ -81,6 +81,7 @@ try
     // SignalR
     builder.Services.AddSignalR();
     builder.Services.AddScoped<INotificationSender, SignalRNotificationSender>();
+    builder.Services.AddScoped<IAdminDashboardNotifier, SignalRAdminDashboardNotifier>();
 
     // Controllers
     builder.Services.AddControllers();
@@ -162,6 +163,7 @@ try
 
     app.MapControllers();
     app.MapHub<NotificationHub>("/api/hubs/notifications");
+    app.MapHub<AdminHub>("/api/hubs/admin");
 
     // Health check endpoint
     app.MapGet("/api/health", () => Results.Ok(new { Status = "Healthy", Timestamp = DateTime.UtcNow, Platform = "SynDock.Shop" }));
