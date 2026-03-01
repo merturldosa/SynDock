@@ -24,11 +24,28 @@ public class ReviewController : ControllerBase
         return Ok(result);
     }
 
+    [HttpGet("my")]
+    [Authorize]
+    public async Task<IActionResult> GetMyReviews([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+    {
+        var result = await _mediator.Send(new GetMyReviewsQuery(page, pageSize));
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.Error });
+        return Ok(result.Data);
+    }
+
+    [HttpGet("photos")]
+    public async Task<IActionResult> GetPhotoReviews([FromQuery] int? productId, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+    {
+        var result = await _mediator.Send(new GetPhotoReviewsQuery(productId, page, pageSize));
+        return Ok(result);
+    }
+
     [HttpPost]
     [Authorize]
     public async Task<IActionResult> Create([FromBody] CreateReviewRequest request)
     {
-        var result = await _mediator.Send(new CreateReviewCommand(request.ProductId, request.Rating, request.Content));
+        var result = await _mediator.Send(new CreateReviewCommand(request.ProductId, request.Rating, request.Content, request.ImageUrl));
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(new { reviewId = result.Data });
@@ -45,4 +62,4 @@ public class ReviewController : ControllerBase
     }
 }
 
-public record CreateReviewRequest(int ProductId, int Rating, string? Content);
+public record CreateReviewRequest(int ProductId, int Rating, string? Content, string? ImageUrl = null);

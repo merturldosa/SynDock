@@ -23,9 +23,16 @@ public class ProductsController : ControllerBase
         [FromQuery] string? search,
         [FromQuery] string? sort,
         [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 20)
+        [FromQuery] int pageSize = 20,
+        [FromQuery] decimal? minPrice = null,
+        [FromQuery] decimal? maxPrice = null,
+        [FromQuery] decimal? minRating = null,
+        [FromQuery] bool? isFeatured = null,
+        [FromQuery] bool? isNew = null)
     {
-        var result = await _mediator.Send(new GetProductsQuery(category, search, sort, page, pageSize));
+        var result = await _mediator.Send(new GetProductsQuery(
+            category, search, sort, page, pageSize,
+            minPrice, maxPrice, minRating, isFeatured, isNew));
         return Ok(new
         {
             items = result.Items,
@@ -36,6 +43,13 @@ public class ProductsController : ControllerBase
             hasNext = result.HasNextPage,
             hasPrev = result.HasPreviousPage
         });
+    }
+
+    [HttpGet("suggestions")]
+    public async Task<IActionResult> GetSuggestions([FromQuery] string term)
+    {
+        var result = await _mediator.Send(new GetSearchSuggestionsQuery(term));
+        return Ok(result);
     }
 
     [HttpGet("{id:int}")]
@@ -87,6 +101,25 @@ public class ProductsController : ControllerBase
         return Ok(new { success = true });
     }
 
+    [HttpGet("{id:int}/variants")]
+    public async Task<IActionResult> GetVariants(int id)
+    {
+        var result = await _mediator.Send(new GetProductVariantsQuery(id));
+        return Ok(result);
+    }
+
+    [HttpPut("{id:int}/variants")]
+    [Authorize]
+    public async Task<IActionResult> UpdateVariants(int id, [FromBody] UpdateProductVariantsRequest request)
+    {
+        var variants = request.Variants.Select(v =>
+            new VariantDto(v.Id, v.Name, v.Sku, v.Price, v.Stock, v.SortOrder, v.IsActive)).ToList();
+        var result = await _mediator.Send(new UpdateProductVariantsCommand(id, variants));
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.Error });
+        return Ok(new { success = true });
+    }
+
     [HttpPost("{id:int}/generate-content")]
     [Authorize]
     public async Task<IActionResult> GenerateContent(int id)
@@ -113,3 +146,6 @@ public record UpdateProductRequest(
     string? Specification, int CategoryId,
     bool IsActive = true, bool IsFeatured = false, bool IsNew = false,
     string? CustomFieldsJson = null);
+
+public record UpdateVariantRequestItem(int? Id, string Name, string? Sku, decimal? Price, int Stock, int SortOrder, bool IsActive);
+public record UpdateProductVariantsRequest(List<UpdateVariantRequestItem> Variants);

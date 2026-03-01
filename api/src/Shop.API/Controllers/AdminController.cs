@@ -43,13 +43,86 @@ public class AdminController : ControllerBase
         return Ok(result.Data);
     }
 
-    [HttpGet("analytics")]
-    public async Task<IActionResult> GetSalesAnalytics([FromQuery] int days = 30)
+    [HttpPut("users/{id:int}")]
+    public async Task<IActionResult> UpdateUser(int id, [FromBody] UpdateUserRequest request)
     {
-        var result = await _mediator.Send(new GetSalesAnalyticsQuery(days));
+        var result = await _mediator.Send(new UpdateUserCommand(id, request.Role, request.IsActive));
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.Error });
+        return Ok(new { success = true });
+    }
+
+    [HttpGet("analytics")]
+    public async Task<IActionResult> GetSalesAnalytics(
+        [FromQuery] int days = 30,
+        [FromQuery] DateTime? startDate = null,
+        [FromQuery] DateTime? endDate = null,
+        [FromQuery] bool includeComparison = false)
+    {
+        var result = await _mediator.Send(new GetSalesAnalyticsQuery(days, startDate, endDate, includeComparison));
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(result.Data);
+    }
+
+    [HttpGet("analytics/customers")]
+    public async Task<IActionResult> GetCustomerAnalytics()
+    {
+        var result = await _mediator.Send(new GetCustomerAnalyticsQuery());
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.Error });
+        return Ok(result.Data);
+    }
+
+    [HttpGet("analytics/products")]
+    public async Task<IActionResult> GetProductPerformance(
+        [FromQuery] string? sort = "revenue",
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20)
+    {
+        var result = await _mediator.Send(new GetProductPerformanceQuery(sort, page, pageSize));
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.Error });
+        return Ok(result.Data);
+    }
+
+    [HttpGet("orders")]
+    public async Task<IActionResult> GetAdminOrders(
+        [FromQuery] string? status,
+        [FromQuery] string? search,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20)
+    {
+        var result = await _mediator.Send(new GetAdminOrdersQuery(status, search, page, pageSize));
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.Error });
+        return Ok(result.Data);
+    }
+
+    [HttpGet("export/sales")]
+    public async Task<IActionResult> ExportSalesReport(
+        [FromQuery] DateTime startDate,
+        [FromQuery] DateTime endDate)
+    {
+        var result = await _mediator.Send(new GetSalesReportQuery(startDate, endDate));
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.Error });
+        var bytes = System.Text.Encoding.UTF8.GetPreamble().Concat(System.Text.Encoding.UTF8.GetBytes(result.Data!)).ToArray();
+        return File(bytes, "text/csv", $"sales-report-{startDate:yyyyMMdd}-{endDate:yyyyMMdd}.csv");
+    }
+
+    [HttpGet("export/orders")]
+    public async Task<IActionResult> ExportOrders(
+        [FromQuery] string? status,
+        [FromQuery] DateTime? startDate,
+        [FromQuery] DateTime? endDate,
+        [FromQuery] string? search)
+    {
+        var result = await _mediator.Send(new GetOrderExportQuery(status, startDate, endDate, search));
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.Error });
+        var bytes = System.Text.Encoding.UTF8.GetPreamble().Concat(System.Text.Encoding.UTF8.GetBytes(result.Data!)).ToArray();
+        return File(bytes, "text/csv", $"orders-export-{DateTime.UtcNow:yyyyMMdd}.csv");
     }
 
     [HttpGet("low-stock")]
@@ -110,9 +183,40 @@ public class AdminController : ControllerBase
 
         return Ok(new { sentCount });
     }
+    [HttpGet("settings")]
+    public async Task<IActionResult> GetTenantSettings()
+    {
+        var result = await _mediator.Send(new Application.Admin.Queries.GetTenantSettingsQuery());
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.Error });
+        return Ok(result.Data);
+    }
+
+    [HttpPut("settings")]
+    public async Task<IActionResult> UpdateTenantSettings([FromBody] UpdateTenantSettingsRequest request)
+    {
+        var result = await _mediator.Send(new Application.Admin.Commands.UpdateTenantSettingsCommand(
+            request.CompanyName, request.CompanyAddress, request.BusinessNumber,
+            request.CeoName, request.ContactPhone, request.ContactEmail,
+            request.HeroSubtitle, request.HeroTagline, request.HeroDescription,
+            request.Theme != null ? new Application.Admin.Commands.TenantThemeDto(
+                request.Theme.Primary, request.Theme.PrimaryLight,
+                request.Theme.Secondary, request.Theme.SecondaryLight, request.Theme.Background) : null,
+            request.LogoUrl, request.FaviconUrl));
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.Error });
+        return Ok(new { success = true });
+    }
 }
 
 public record UpdateStockRequest(int VariantId, int NewStock);
 public record BulkUpdateOrderStatusRequest(int[] OrderIds, string Status);
 public record BroadcastNotificationRequest(string Title, string Message, string Type);
 public record MarketingEmailRequest(string Title, string Content, string Target = "all");
+public record UpdateTenantSettingsThemeRequest(string? Primary, string? PrimaryLight, string? Secondary, string? SecondaryLight, string? Background);
+public record UpdateUserRequest(string Role, bool IsActive);
+public record UpdateTenantSettingsRequest(
+    string? CompanyName, string? CompanyAddress, string? BusinessNumber,
+    string? CeoName, string? ContactPhone, string? ContactEmail,
+    string? HeroSubtitle, string? HeroTagline, string? HeroDescription,
+    UpdateTenantSettingsThemeRequest? Theme, string? LogoUrl, string? FaviconUrl);

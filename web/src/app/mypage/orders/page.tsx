@@ -49,15 +49,6 @@ export default function OrdersPage() {
       .finally(() => setLoading(false));
   }, [isAuthenticated, page]);
 
-  if (!isAuthenticated) {
-    return (
-      <div className="max-w-4xl mx-auto px-4 py-20 text-center">
-        <p className="text-gray-500 mb-4">로그인 후 이용할 수 있습니다.</p>
-        <Link href="/login" className="text-[var(--color-primary)] hover:underline">로그인하기</Link>
-      </div>
-    );
-  }
-
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[50vh]">
@@ -69,13 +60,7 @@ export default function OrdersPage() {
   const totalPages = Math.ceil(totalCount / pageSize);
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
-      <div className="flex items-center gap-2 text-sm text-gray-500 mb-6">
-        <Link href="/mypage" className="hover:text-[var(--color-primary)]">마이페이지</Link>
-        <span>/</span>
-        <span className="text-[var(--color-secondary)] font-medium">주문내역</span>
-      </div>
-
+    <div>
       <h1 className="text-2xl font-bold text-[var(--color-secondary)] mb-6">주문내역</h1>
 
       {orders.length === 0 ? (
@@ -97,7 +82,7 @@ export default function OrdersPage() {
               const statusColor = STATUS_COLORS[order.status] || "bg-gray-100 text-gray-500";
 
               return (
-                <Link key={order.id} href={`/order/${order.id}`}>
+                <Link key={order.id} href={`/mypage/orders/${order.id}`}>
                   <div className="bg-white rounded-xl shadow-sm p-5 hover:shadow-md transition-shadow flex items-center gap-4">
                     <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-gray-100 shrink-0">
                       {order.firstProductImageUrl ? (

@@ -60,10 +60,86 @@ export interface SalesAnalytics {
   totalRevenue: number;
   totalOrders: number;
   averageOrderValue: number;
+  previousPeriodRevenue?: number | null;
+  previousPeriodOrders?: number | null;
+  revenueChangePercent?: number | null;
+  ordersChangePercent?: number | null;
 }
 
-export async function getSalesAnalytics(days = 30): Promise<SalesAnalytics> {
-  const { data } = await api.get("/admin/analytics", { params: { days } });
+export async function getSalesAnalytics(
+  days = 30,
+  startDate?: string,
+  endDate?: string,
+  includeComparison = false
+): Promise<SalesAnalytics> {
+  const { data } = await api.get("/admin/analytics", {
+    params: { days, startDate, endDate, includeComparison },
+  });
+  return data;
+}
+
+// ── Customer Analytics ──
+export interface CustomerSegment {
+  segment: string;
+  count: number;
+  totalSpent: number;
+}
+
+export interface SpendTier {
+  tier: string;
+  count: number;
+  totalSpent: number;
+}
+
+export interface TopCustomer {
+  userId: number;
+  name: string;
+  email: string;
+  orderCount: number;
+  totalSpent: number;
+  lastOrderAt: string;
+}
+
+export interface CustomerAnalytics {
+  totalCustomers: number;
+  newCustomers30Days: number;
+  returningCustomers: number;
+  segments: CustomerSegment[];
+  spendTiers: SpendTier[];
+  topCustomers: TopCustomer[];
+}
+
+export async function getCustomerAnalytics(): Promise<CustomerAnalytics> {
+  const { data } = await api.get("/admin/analytics/customers");
+  return data;
+}
+
+// ── Product Performance ──
+export interface ProductPerformance {
+  productId: number;
+  productName: string;
+  imageUrl: string | null;
+  categoryName: string;
+  viewCount: number;
+  orderCount: number;
+  revenue: number;
+  conversionRate: number;
+  averageRating: number;
+}
+
+export interface ProductPerformanceResult {
+  products: ProductPerformance[];
+  totalProducts: number;
+}
+
+export async function getProductPerformance(
+  sort = "revenue",
+  page = 1,
+  pageSize = 20
+): Promise<ProductPerformanceResult> {
+  const { data } = await api.get("/admin/analytics/products", {
+    params: { sort, page, pageSize },
+  });
   return data;
 }
 
@@ -180,6 +256,39 @@ export async function getAdminOrders(
   return data;
 }
 
+// ── Admin Order Search (new API) ──
+export interface AdminOrderSummary {
+  id: number;
+  orderNumber: string;
+  status: string;
+  itemCount: number;
+  totalAmount: number;
+  firstProductName: string | null;
+  firstProductImageUrl: string | null;
+  customerName: string | null;
+  customerEmail: string | null;
+  createdAt: string;
+}
+
+export interface AdminPagedOrders {
+  items: AdminOrderSummary[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
+}
+
+export async function getAdminOrdersSearch(
+  status?: string,
+  page = 1,
+  pageSize = 20,
+  search?: string
+): Promise<AdminPagedOrders> {
+  const { data } = await api.get("/admin/orders", {
+    params: { status, page, pageSize, search },
+  });
+  return data;
+}
+
 export async function updateOrderStatus(
   id: number,
   status: string
@@ -250,6 +359,30 @@ export async function getAdminUsers(): Promise<UserSummary[]> {
   return data;
 }
 
+export async function updateUser(id: number, role: string, isActive: boolean): Promise<void> {
+  await api.put(`/admin/users/${id}`, { role, isActive });
+}
+
+// ── Product Variants ──
+export interface ProductVariantDto {
+  id?: number;
+  name: string;
+  sku?: string | null;
+  price?: number | null;
+  stock: number;
+  sortOrder: number;
+  isActive: boolean;
+}
+
+export async function getProductVariants(productId: number): Promise<ProductVariantDto[]> {
+  const { data } = await api.get(`/api/products/${productId}/variants`);
+  return data;
+}
+
+export async function updateProductVariants(productId: number, variants: ProductVariantDto[]): Promise<void> {
+  await api.put(`/api/products/${productId}/variants`, { variants });
+}
+
 // ── Refund ──
 export async function refundOrder(orderId: number, reason: string): Promise<void> {
   await api.post(`/payment/${orderId}/refund`, { reason });
@@ -284,6 +417,39 @@ export async function sendMarketingEmail(
   return data;
 }
 
+// ── Tenant Settings ──
+export interface TenantSettingsTheme {
+  primary: string | null;
+  primaryLight: string | null;
+  secondary: string | null;
+  secondaryLight: string | null;
+  background: string | null;
+}
+
+export interface TenantSettings {
+  companyName: string | null;
+  companyAddress: string | null;
+  businessNumber: string | null;
+  ceoName: string | null;
+  contactPhone: string | null;
+  contactEmail: string | null;
+  heroSubtitle: string | null;
+  heroTagline: string | null;
+  heroDescription: string | null;
+  theme: TenantSettingsTheme | null;
+  logoUrl: string | null;
+  faviconUrl: string | null;
+}
+
+export async function getTenantSettings(): Promise<TenantSettings> {
+  const { data } = await api.get("/admin/settings");
+  return data;
+}
+
+export async function updateTenantSettings(settings: Partial<TenantSettings>): Promise<void> {
+  await api.put("/admin/settings", settings);
+}
+
 // ── Notifications ──
 export async function broadcastNotification(
   title: string,
@@ -296,4 +462,41 @@ export async function broadcastNotification(
     type,
   });
   return data;
+}
+
+// ── Export ──
+function downloadBlob(blob: Blob, filename: string) {
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  window.URL.revokeObjectURL(url);
+}
+
+export async function exportSalesReport(
+  startDate: string,
+  endDate: string
+): Promise<void> {
+  const { data } = await api.get("/admin/export/sales", {
+    params: { startDate, endDate },
+    responseType: "blob",
+  });
+  downloadBlob(data, `sales-report-${startDate}-${endDate}.csv`);
+}
+
+export async function exportOrders(params: {
+  status?: string;
+  startDate?: string;
+  endDate?: string;
+  search?: string;
+}): Promise<void> {
+  const { data } = await api.get("/admin/export/orders", {
+    params,
+    responseType: "blob",
+  });
+  const today = new Date().toISOString().slice(0, 10);
+  downloadBlob(data, `orders-export-${today}.csv`);
 }

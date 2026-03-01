@@ -24,6 +24,16 @@ public class QnAController : ControllerBase
         return Ok(result);
     }
 
+    [HttpGet("my")]
+    [Authorize]
+    public async Task<IActionResult> GetMyQnAs([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+    {
+        var result = await _mediator.Send(new GetMyQnAsQuery(page, pageSize));
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.Error });
+        return Ok(result.Data);
+    }
+
     [HttpPost]
     [Authorize]
     public async Task<IActionResult> CreateQuestion([FromBody] CreateQnARequest request)
