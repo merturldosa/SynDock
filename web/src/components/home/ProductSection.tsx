@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { ChevronRight } from "lucide-react";
+import { useTranslations } from "next-intl";
 import type { ProductSummary } from "@/types/product";
 import { ProductCard } from "./ProductCard";
 
@@ -15,6 +16,7 @@ interface ProductSectionProps {
 }
 
 export function ProductSection({ title, subtitle, products, moreHref, onAddToCart }: ProductSectionProps) {
+  const t = useTranslations("common");
   return (
     <section className="max-w-7xl mx-auto px-4 py-16">
       <div className="flex items-end justify-between mb-10">
@@ -27,7 +29,7 @@ export function ProductSection({ title, subtitle, products, moreHref, onAddToCar
             href={moreHref}
             className="hidden md:flex items-center gap-1 text-[var(--color-primary)] font-medium hover:underline"
           >
-            더보기 <ChevronRight size={18} />
+            {t("more")} <ChevronRight size={18} />
           </Link>
         )}
       </div>
@@ -52,7 +54,7 @@ export function ProductSection({ title, subtitle, products, moreHref, onAddToCar
             href={moreHref}
             className="inline-flex items-center gap-1 px-6 py-3 border border-[var(--color-primary)] text-[var(--color-primary)] rounded-lg font-medium hover:bg-[var(--color-primary)] hover:text-white transition-colors"
           >
-            더보기 <ChevronRight size={18} />
+            {t("more")} <ChevronRight size={18} />
           </Link>
         </div>
       )}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { ChevronUp, ChevronDown, Trash2, Plus, Save, X } from "lucide-react";
 import {
@@ -13,11 +14,11 @@ import {
 } from "@/lib/productDetailSectionApi";
 import api from "@/lib/api";
 
-const SECTION_TYPES = [
-  { value: "Hero", label: "히어로" },
-  { value: "Feature", label: "특징" },
-  { value: "Closing", label: "마무리" },
-  { value: "Custom", label: "커스텀" },
+const SECTION_TYPE_KEYS = [
+  { value: "Hero", key: "admin.sections.typeHero" },
+  { value: "Feature", key: "admin.sections.typeFeature" },
+  { value: "Closing", key: "admin.sections.typeClosing" },
+  { value: "Custom", key: "admin.sections.typeCustom" },
 ];
 
 interface Props {
@@ -25,6 +26,7 @@ interface Props {
 }
 
 export function ProductDetailSectionEditor({ productId }: Props) {
+  const t = useTranslations();
   const [sections, setSections] = useState<ProductDetailSection[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -66,13 +68,13 @@ export function ProductDetailSectionEditor({ productId }: Props) {
       });
       setForm((f) => ({ ...f, imageUrl: data.url }));
     } catch {
-      alert("이미지 업로드에 실패했습니다.");
+      alert(t("admin.sections.uploadFailed"));
     }
     setUploading(false);
   };
 
   const handleSubmit = async () => {
-    if (!form.title.trim()) return alert("제목을 입력해주세요.");
+    if (!form.title.trim()) return alert(t("admin.sections.titleRequired"));
     try {
       if (editingId) {
         await updateProductDetailSection(productId, editingId, {
@@ -95,17 +97,17 @@ export function ProductDetailSectionEditor({ productId }: Props) {
       resetForm();
       await load();
     } catch {
-      alert("저장에 실패했습니다.");
+      alert(t("admin.sections.saveFailed"));
     }
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm("이 섹션을 삭제하시겠습니까?")) return;
+    if (!confirm(t("admin.sections.deleteConfirm"))) return;
     try {
       await deleteProductDetailSection(productId, id);
       await load();
     } catch {
-      alert("삭제에 실패했습니다.");
+      alert(t("admin.sections.deleteFailed"));
     }
   };
 
@@ -118,7 +120,7 @@ export function ProductDetailSectionEditor({ productId }: Props) {
       await reorderProductDetailSections(productId, ids);
       await load();
     } catch {
-      alert("순서 변경에 실패했습니다.");
+      alert(t("admin.sections.reorderFailed"));
     }
   };
 
@@ -146,7 +148,7 @@ export function ProductDetailSectionEditor({ productId }: Props) {
     <div>
       {/* Section List */}
       {sections.length === 0 && !showForm && (
-        <p className="text-center text-gray-400 py-8">등록된 상세 섹션이 없습니다.</p>
+        <p className="text-center text-gray-400 py-8">{t("admin.sections.noSections")}</p>
       )}
 
       <div className="space-y-3 mb-6">
@@ -167,9 +169,9 @@ export function ProductDetailSectionEditor({ productId }: Props) {
                       section.sectionType === "Closing" ? "bg-orange-100 text-orange-700" :
                       "bg-gray-100 text-gray-700"
                     }`}>
-                      {SECTION_TYPES.find((t) => t.value === section.sectionType)?.label || section.sectionType}
+                      {(() => { const found = SECTION_TYPE_KEYS.find((s) => s.value === section.sectionType); return found ? t(found.key) : section.sectionType; })()}
                     </span>
-                    {!section.isActive && <span className="text-xs text-red-500">비활성</span>}
+                    {!section.isActive && <span className="text-xs text-red-500">{t("admin.sections.inactive")}</span>}
                   </div>
                   <p className="font-medium text-sm text-[var(--color-secondary)] line-clamp-1">{section.title}</p>
                   {section.content && <p className="text-xs text-gray-400 line-clamp-1 mt-0.5">{section.content}</p>}
@@ -200,7 +202,7 @@ export function ProductDetailSectionEditor({ productId }: Props) {
         <div className="bg-gray-50 rounded-xl p-5 space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="font-semibold text-[var(--color-secondary)]">
-              {editingId ? "섹션 수정" : "새 섹션 추가"}
+              {editingId ? t("admin.sections.editSection") : t("admin.sections.newSection")}
             </h3>
             <button onClick={resetForm} className="text-gray-400 hover:text-gray-600">
               <X size={18} />
@@ -208,29 +210,29 @@ export function ProductDetailSectionEditor({ productId }: Props) {
           </div>
 
           <div>
-            <label className="block text-sm text-gray-500 mb-1">제목 *</label>
+            <label className="block text-sm text-gray-500 mb-1">{t("admin.sections.sectionTitle")} *</label>
             <input
               type="text"
               value={form.title}
               onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
               className="w-full px-3 py-2.5 border rounded-lg text-sm"
-              placeholder="섹션 제목"
+              placeholder={t("admin.sections.sectionTitlePlaceholder")}
             />
           </div>
 
           <div>
-            <label className="block text-sm text-gray-500 mb-1">내용</label>
+            <label className="block text-sm text-gray-500 mb-1">{t("admin.sections.content")}</label>
             <textarea
               value={form.content}
               onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
               rows={4}
               className="w-full px-3 py-2.5 border rounded-lg text-sm resize-none"
-              placeholder="섹션 내용 (HTML 지원)"
+              placeholder={t("admin.sections.contentPlaceholder")}
             />
           </div>
 
           <div>
-            <label className="block text-sm text-gray-500 mb-1">이미지</label>
+            <label className="block text-sm text-gray-500 mb-1">{t("admin.sections.image")}</label>
             <div className="flex items-center gap-3">
               <input
                 type="file"
@@ -239,7 +241,7 @@ export function ProductDetailSectionEditor({ productId }: Props) {
                 className="text-sm"
                 disabled={uploading}
               />
-              {uploading && <span className="text-xs text-gray-400">업로드 중...</span>}
+              {uploading && <span className="text-xs text-gray-400">{t("review.uploading")}</span>}
             </div>
             {form.imageUrl && (
               <div className="mt-2 flex items-center gap-3">
@@ -251,29 +253,29 @@ export function ProductDetailSectionEditor({ productId }: Props) {
                   value={form.imageAltText}
                   onChange={(e) => setForm((f) => ({ ...f, imageAltText: e.target.value }))}
                   className="flex-1 px-3 py-2 border rounded-lg text-sm"
-                  placeholder="이미지 설명 (alt text)"
+                  placeholder={t("admin.sections.imageAlt")}
                 />
               </div>
             )}
           </div>
 
           <div>
-            <label className="block text-sm text-gray-500 mb-1">섹션 유형</label>
+            <label className="block text-sm text-gray-500 mb-1">{t("admin.sections.sectionType")}</label>
             <select
               value={form.sectionType}
               onChange={(e) => setForm((f) => ({ ...f, sectionType: e.target.value }))}
               className="w-full px-3 py-2.5 border rounded-lg text-sm"
             >
-              {SECTION_TYPES.map((t) => (
-                <option key={t.value} value={t.value}>{t.label}</option>
+              {SECTION_TYPE_KEYS.map((s) => (
+                <option key={s.value} value={s.value}>{t(s.key)}</option>
               ))}
             </select>
           </div>
 
           <div className="flex justify-end gap-2">
-            <button onClick={resetForm} className="px-4 py-2 text-sm text-gray-500 hover:text-gray-700">취소</button>
+            <button onClick={resetForm} className="px-4 py-2 text-sm text-gray-500 hover:text-gray-700">{t("common.cancel")}</button>
             <button onClick={handleSubmit} className="px-4 py-2 text-sm bg-[var(--color-primary)] text-white rounded-lg hover:opacity-90">
-              {editingId ? "수정" : "추가"}
+              {editingId ? t("common.edit") : t("common.add")}
             </button>
           </div>
         </div>
@@ -282,7 +284,7 @@ export function ProductDetailSectionEditor({ productId }: Props) {
           onClick={() => setShowForm(true)}
           className="w-full py-3 border-2 border-dashed border-gray-300 rounded-xl text-sm text-gray-500 hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] transition-colors flex items-center justify-center gap-2"
         >
-          <Plus size={16} /> 섹션 추가
+          <Plus size={16} /> {t("admin.sections.addSection")}
         </button>
       )}
     </div>

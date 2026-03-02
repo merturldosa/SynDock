@@ -3,31 +3,33 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import { Package, FolderTree, ShoppingCart, Users, TrendingUp, AlertTriangle, Warehouse } from "lucide-react";
 import { getDashboardStats, type DashboardStats } from "@/lib/adminApi";
 import { useAdminDashboardStore } from "@/stores/adminDashboardStore";
-
-const STATUS_LABELS: Record<string, string> = {
-  Pending: "결제 대기",
-  Confirmed: "결제 완료",
-  Processing: "처리 중",
-  Shipped: "배송 중",
-  Delivered: "배송 완료",
-  Cancelled: "취소",
-  Refunded: "환불",
-};
 
 function formatPrice(price: number): string {
   return price.toLocaleString("ko-KR") + "원";
 }
 
 export default function AdminDashboard() {
+  const t = useTranslations();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [pulse, setPulse] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const { lastEvent, connect, disconnect } = useAdminDashboardStore();
   const toastTimer = useRef<NodeJS.Timeout | null>(null);
+
+  const STATUS_LABELS: Record<string, string> = {
+    Pending: t("admin.orders.statusPending"),
+    Confirmed: t("admin.orders.statusConfirmed"),
+    Processing: t("admin.orders.statusProcessing"),
+    Shipped: t("admin.orders.statusShipped"),
+    Delivered: t("admin.orders.statusDelivered"),
+    Cancelled: t("admin.orders.statusCancelled"),
+    Refunded: t("admin.orders.statusRefunded"),
+  };
 
   const loadStats = useCallback(() => {
     getDashboardStats().then(setStats).catch(() => {});
@@ -60,8 +62,8 @@ export default function AdminDashboard() {
 
     // Toast notification
     const msg = lastEvent.type === "NewOrder"
-      ? `새 주문! ${lastEvent.orderNumber} (${formatPrice(lastEvent.totalAmount || 0)})`
-      : `주문 상태 변경: ${lastEvent.orderNumber} → ${STATUS_LABELS[lastEvent.newStatus || ""] || lastEvent.newStatus}`;
+      ? t("admin.dashboard.newOrder", { orderNumber: lastEvent.orderNumber, amount: formatPrice(lastEvent.totalAmount || 0) })
+      : t("admin.dashboard.orderStatusChanged", { orderNumber: lastEvent.orderNumber, status: STATUS_LABELS[lastEvent.newStatus || ""] || lastEvent.newStatus || "" });
 
     setToast(msg);
     if (toastTimer.current) clearTimeout(toastTimer.current);
@@ -79,17 +81,17 @@ export default function AdminDashboard() {
   if (!stats) return null;
 
   const cards = [
-    { label: "상품", value: stats.totalProducts, icon: Package, href: "/admin/products", color: "bg-blue-500" },
-    { label: "카테고리", value: stats.totalCategories, icon: FolderTree, href: "/admin/categories", color: "bg-emerald-500" },
-    { label: "주문", value: stats.totalOrders, icon: ShoppingCart, href: "/admin/orders", color: "bg-purple-500" },
-    { label: "매출", value: stats.totalRevenue, icon: TrendingUp, href: "/admin/orders", color: "bg-orange-500", isCurrency: true },
-    { label: "회원", value: stats.totalUsers, icon: Users, href: "/admin/users", color: "bg-indigo-500" },
+    { label: t("admin.dashboard.products"), value: stats.totalProducts, icon: Package, href: "/admin/products", color: "bg-blue-500" },
+    { label: t("admin.dashboard.categories"), value: stats.totalCategories, icon: FolderTree, href: "/admin/categories", color: "bg-emerald-500" },
+    { label: t("admin.dashboard.orders"), value: stats.totalOrders, icon: ShoppingCart, href: "/admin/orders", color: "bg-purple-500" },
+    { label: t("admin.dashboard.revenue"), value: stats.totalRevenue, icon: TrendingUp, href: "/admin/orders", color: "bg-orange-500", isCurrency: true },
+    { label: t("admin.dashboard.users"), value: stats.totalUsers, icon: Users, href: "/admin/users", color: "bg-indigo-500" },
   ];
 
   return (
     <div>
       <h1 className="text-2xl font-bold text-[var(--color-secondary)] mb-6">
-        관리자 대시보드
+        {t("admin.dashboard.title")}
       </h1>
 
       {/* Toast */}
@@ -102,16 +104,16 @@ export default function AdminDashboard() {
       {/* Today Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <div className={`bg-white rounded-xl shadow-sm p-5 border-l-4 border-blue-500 transition-all ${pulse ? "ring-2 ring-blue-300 ring-opacity-50" : ""}`}>
-          <p className="text-sm text-gray-500">오늘 주문</p>
-          <p className={`text-2xl font-bold text-[var(--color-secondary)] ${pulse ? "animate-pulse" : ""}`}>{stats.todayOrders}건</p>
+          <p className="text-sm text-gray-500">{t("admin.dashboard.todayOrders")}</p>
+          <p className={`text-2xl font-bold text-[var(--color-secondary)] ${pulse ? "animate-pulse" : ""}`}>{t("common.items", { count: stats.todayOrders })}</p>
         </div>
         <div className={`bg-white rounded-xl shadow-sm p-5 border-l-4 border-green-500 transition-all ${pulse ? "ring-2 ring-green-300 ring-opacity-50" : ""}`}>
-          <p className="text-sm text-gray-500">오늘 매출</p>
+          <p className="text-sm text-gray-500">{t("admin.dashboard.todaySales")}</p>
           <p className={`text-2xl font-bold text-[var(--color-secondary)] ${pulse ? "animate-pulse" : ""}`}>{formatPrice(stats.todayRevenue)}</p>
         </div>
         <Link href="/admin/inventory" className="bg-white rounded-xl shadow-sm p-5 border-l-4 border-red-500 hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
-            <p className="text-sm text-gray-500">저재고 경고</p>
+            <p className="text-sm text-gray-500">{t("admin.dashboard.lowStockWarning")}</p>
             {stats.lowStockCount > 0 && (
               <span className="w-6 h-6 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
                 {stats.lowStockCount}
@@ -119,14 +121,14 @@ export default function AdminDashboard() {
             )}
           </div>
           <div className="flex items-center gap-2">
-            <p className="text-2xl font-bold text-[var(--color-secondary)]">{stats.lowStockCount}건</p>
+            <p className="text-2xl font-bold text-[var(--color-secondary)]">{t("common.items", { count: stats.lowStockCount })}</p>
             {stats.lowStockCount > 0 && <AlertTriangle size={20} className="text-red-500" />}
           </div>
         </Link>
         <div className="bg-white rounded-xl shadow-sm p-5 border-l-4 border-purple-500">
-          <p className="text-sm text-gray-500">평균 주문 금액</p>
+          <p className="text-sm text-gray-500">{t("admin.dashboard.avgOrderAmount")}</p>
           <p className="text-2xl font-bold text-[var(--color-secondary)]">
-            {stats.totalOrders > 0 ? formatPrice(Math.round(stats.totalRevenue / stats.totalOrders)) : "0원"}
+            {stats.totalOrders > 0 ? formatPrice(Math.round(stats.totalRevenue / stats.totalOrders)) : formatPrice(0)}
           </p>
         </div>
       </div>
@@ -157,9 +159,9 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         {/* Order Status Distribution */}
         <div className="bg-white rounded-xl shadow-sm p-5">
-          <h2 className="font-semibold text-[var(--color-secondary)] mb-4">주문 현황</h2>
+          <h2 className="font-semibold text-[var(--color-secondary)] mb-4">{t("admin.dashboard.orderStatus")}</h2>
           {stats.ordersByStatus.length === 0 ? (
-            <p className="text-sm text-gray-400">주문 데이터가 없습니다.</p>
+            <p className="text-sm text-gray-400">{t("admin.dashboard.noOrderData")}</p>
           ) : (
             <div className="space-y-3">
               {stats.ordersByStatus.map((item) => {
@@ -169,7 +171,7 @@ export default function AdminDashboard() {
                   <div key={item.status}>
                     <div className="flex justify-between text-sm mb-1">
                       <span className="text-gray-600">{STATUS_LABELS[item.status] || item.status}</span>
-                      <span className="font-medium">{item.count}건</span>
+                      <span className="font-medium">{t("common.items", { count: item.count })}</span>
                     </div>
                     <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
                       <div
@@ -186,9 +188,9 @@ export default function AdminDashboard() {
 
         {/* Category Sales */}
         <div className="bg-white rounded-xl shadow-sm p-5">
-          <h2 className="font-semibold text-[var(--color-secondary)] mb-4">카테고리별 매출 (Top 5)</h2>
+          <h2 className="font-semibold text-[var(--color-secondary)] mb-4">{t("admin.dashboard.categorySalesTop5")}</h2>
           {stats.categorySales.length === 0 ? (
-            <p className="text-sm text-gray-400">매출 데이터가 없습니다.</p>
+            <p className="text-sm text-gray-400">{t("admin.dashboard.noSalesData")}</p>
           ) : (
             <div className="space-y-3">
               {stats.categorySales.map((cat) => {
@@ -206,7 +208,7 @@ export default function AdminDashboard() {
                         style={{ width: `${pct}%` }}
                       />
                     </div>
-                    <p className="text-xs text-gray-400 mt-0.5">{cat.orderCount}건 주문</p>
+                    <p className="text-xs text-gray-400 mt-0.5">{t("admin.dashboard.nOrders", { count: cat.orderCount })}</p>
                   </div>
                 );
               })}
@@ -218,9 +220,9 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         {/* Top Products */}
         <div className="bg-white rounded-xl shadow-sm p-5">
-          <h2 className="font-semibold text-[var(--color-secondary)] mb-4">베스트셀러</h2>
+          <h2 className="font-semibold text-[var(--color-secondary)] mb-4">{t("admin.dashboard.bestSellers")}</h2>
           {stats.topProducts.length === 0 ? (
-            <p className="text-sm text-gray-400">판매 데이터가 없습니다.</p>
+            <p className="text-sm text-gray-400">{t("admin.dashboard.noSalesHistory")}</p>
           ) : (
             <div className="space-y-3">
               {stats.topProducts.map((product, i) => (
@@ -235,7 +237,7 @@ export default function AdminDashboard() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium line-clamp-1">{product.productName}</p>
-                    <p className="text-xs text-gray-400">{product.orderCount}건 판매</p>
+                    <p className="text-xs text-gray-400">{t("admin.dashboard.nSold", { count: product.orderCount })}</p>
                   </div>
                   <span className="text-sm font-medium">{formatPrice(product.totalSales)}</span>
                 </div>
@@ -247,13 +249,13 @@ export default function AdminDashboard() {
         {/* Recent Orders */}
         <div className="bg-white rounded-xl shadow-sm p-5">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="font-semibold text-[var(--color-secondary)]">최근 주문</h2>
+            <h2 className="font-semibold text-[var(--color-secondary)]">{t("admin.dashboard.recentOrders")}</h2>
             <Link href="/admin/orders" className="text-sm text-[var(--color-primary)] hover:underline">
-              전체 보기
+              {t("admin.dashboard.viewAll")}
             </Link>
           </div>
           {stats.recentOrders.length === 0 ? (
-            <p className="text-sm text-gray-400">주문이 없습니다.</p>
+            <p className="text-sm text-gray-400">{t("admin.dashboard.noOrders")}</p>
           ) : (
             <div className="space-y-2">
               {stats.recentOrders.map((order) => (
@@ -279,22 +281,22 @@ export default function AdminDashboard() {
 
       {/* Quick Actions */}
       <div className="bg-white rounded-xl shadow-sm p-5">
-        <h2 className="font-semibold text-[var(--color-secondary)] mb-3">빠른 작업</h2>
+        <h2 className="font-semibold text-[var(--color-secondary)] mb-3">{t("admin.dashboard.quickActions")}</h2>
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
           <Link href="/admin/products/new" className="flex items-center gap-2 p-3 bg-[var(--color-primary)] text-white rounded-lg text-sm font-medium hover:opacity-90">
-            <Package size={16} /> 상품 등록
+            <Package size={16} /> {t("admin.products.addNew")}
           </Link>
           <Link href="/admin/categories" className="flex items-center gap-2 p-3 bg-[var(--color-secondary)] text-white rounded-lg text-sm font-medium hover:opacity-90">
-            <FolderTree size={16} /> 카테고리 관리
+            <FolderTree size={16} /> {t("admin.categories.title")}
           </Link>
           <Link href="/admin/inventory" className="flex items-center gap-2 p-3 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50">
-            <Warehouse size={16} /> 재고 관리
+            <Warehouse size={16} /> {t("admin.inventory.title")}
           </Link>
           <Link href="/admin/coupons/new" className="flex items-center gap-2 p-3 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50">
-            <Package size={16} /> 쿠폰 생성
+            <Package size={16} /> {t("admin.coupons.addNew")}
           </Link>
           <Link href="/admin/orders" className="flex items-center gap-2 p-3 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50">
-            <ShoppingCart size={16} /> 주문 관리
+            <ShoppingCart size={16} /> {t("admin.orders.title")}
           </Link>
         </div>
       </div>

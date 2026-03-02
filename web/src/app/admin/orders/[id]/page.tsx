@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import { ChevronLeft, Truck, Clock, Package, RotateCcw } from "lucide-react";
 import api from "@/lib/api";
 import { updateOrderStatus, updateShippingInfo, refundOrder } from "@/lib/adminApi";
@@ -51,16 +52,6 @@ interface OrderDetail {
   trackingCarrier: string | null;
 }
 
-const STATUS_LABELS: Record<string, string> = {
-  Pending: "결제 대기",
-  Confirmed: "결제 완료",
-  Processing: "처리 중",
-  Shipped: "배송 중",
-  Delivered: "배송 완료",
-  Cancelled: "취소",
-  Refunded: "환불",
-};
-
 const STATUS_COLORS: Record<string, string> = {
   Pending: "bg-yellow-500",
   Confirmed: "bg-blue-500",
@@ -87,6 +78,7 @@ function formatDateTime(dateStr: string): string {
 
 export default function AdminOrderDetailPage() {
   const params = useParams();
+  const t = useTranslations();
   const id = Number(params.id);
   const [order, setOrder] = useState<OrderDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -96,6 +88,16 @@ export default function AdminOrderDetailPage() {
   const [showRefundModal, setShowRefundModal] = useState(false);
   const [refundReason, setRefundReason] = useState("");
   const [refunding, setRefunding] = useState(false);
+
+  const STATUS_LABELS: Record<string, string> = {
+    Pending: t("admin.orders.statusPending"),
+    Confirmed: t("admin.orders.statusConfirmed"),
+    Processing: t("admin.orders.statusProcessing"),
+    Shipped: t("admin.orders.statusShipped"),
+    Delivered: t("admin.orders.statusDelivered"),
+    Cancelled: t("admin.orders.statusCancelled"),
+    Refunded: t("admin.orders.statusRefunded"),
+  };
 
   useEffect(() => {
     api
@@ -116,13 +118,13 @@ export default function AdminOrderDetailPage() {
       const { data } = await api.get(`/order/${id}`);
       setOrder(data);
     } catch {
-      alert("상태 변경에 실패했습니다.");
+      alert(t("admin.orders.updateFailed"));
     }
   };
 
   const handleShippingSave = async () => {
     if (!trackingNumber.trim()) {
-      alert("운송장 번호를 입력해주세요.");
+      alert(t("admin.orders.trackingNumberRequired"));
       return;
     }
     setShippingSaving(true);
@@ -131,14 +133,14 @@ export default function AdminOrderDetailPage() {
       const { data } = await api.get(`/order/${id}`);
       setOrder(data);
     } catch {
-      alert("배송 정보 저장에 실패했습니다.");
+      alert(t("admin.orders.shippingSaveFailed"));
     }
     setShippingSaving(false);
   };
 
   const handleRefund = async () => {
     if (!refundReason.trim()) {
-      alert("환불 사유를 입력해주세요.");
+      alert(t("admin.orders.refundReasonRequired"));
       return;
     }
     setRefunding(true);
@@ -149,7 +151,7 @@ export default function AdminOrderDetailPage() {
       setShowRefundModal(false);
       setRefundReason("");
     } catch {
-      alert("환불 처리에 실패했습니다.");
+      alert(t("admin.orders.refundFailed"));
     }
     setRefunding(false);
   };
@@ -165,7 +167,7 @@ export default function AdminOrderDetailPage() {
   if (!order) {
     return (
       <div className="text-center py-20 text-gray-400">
-        주문을 찾을 수 없습니다.
+        {t("admin.orders.notFound")}
       </div>
     );
   }
@@ -179,13 +181,13 @@ export default function AdminOrderDetailPage() {
         href="/admin/orders"
         className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 mb-4"
       >
-        <ChevronLeft size={16} /> 주문 목록
+        <ChevronLeft size={16} /> {t("admin.orders.orderList")}
       </Link>
 
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-[var(--color-secondary)]">
-            주문 상세
+            {t("admin.orders.detail")}
           </h1>
           <p className="text-sm text-gray-500 font-mono mt-1">
             {order.orderNumber}
@@ -209,7 +211,7 @@ export default function AdminOrderDetailPage() {
           {/* Order Items */}
           <div className="bg-white rounded-xl shadow-sm overflow-hidden">
             <div className="p-4 border-b font-medium text-gray-700 flex items-center gap-2">
-              <Package size={18} /> 주문 상품
+              <Package size={18} /> {t("admin.orders.orderItems")}
             </div>
             {order.items.map((item) => (
               <div
@@ -251,7 +253,7 @@ export default function AdminOrderDetailPage() {
           {/* Summary */}
           <div className="bg-white rounded-xl shadow-sm p-5 space-y-2 text-sm">
             <div className="flex justify-between">
-              <span className="text-gray-500">상품 합계</span>
+              <span className="text-gray-500">{t("admin.orders.subtotal")}</span>
               <span>
                 {formatPrice(
                   order.items.reduce((sum, item) => sum + item.totalPrice, 0)
@@ -259,23 +261,23 @@ export default function AdminOrderDetailPage() {
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-500">배송비</span>
+              <span className="text-gray-500">{t("admin.orders.shippingFee")}</span>
               <span>{formatPrice(order.shippingFee)}</span>
             </div>
             {order.discountAmount > 0 && (
               <div className="flex justify-between text-red-500">
-                <span>쿠폰 할인</span>
+                <span>{t("admin.orders.couponDiscount")}</span>
                 <span>-{formatPrice(order.discountAmount)}</span>
               </div>
             )}
             {order.pointsUsed > 0 && (
               <div className="flex justify-between text-red-500">
-                <span>포인트 사용</span>
+                <span>{t("admin.orders.pointsUsed")}</span>
                 <span>-{formatPrice(order.pointsUsed)}</span>
               </div>
             )}
             <div className="flex justify-between pt-2 border-t font-bold text-lg">
-              <span>결제 금액</span>
+              <span>{t("admin.orders.paymentAmount")}</span>
               <span className="text-[var(--color-primary)]">
                 {formatPrice(order.totalAmount)}
               </span>
@@ -286,17 +288,17 @@ export default function AdminOrderDetailPage() {
           {showShippingForm && (
             <div className="bg-white rounded-xl shadow-sm p-5">
               <h3 className="font-medium text-gray-700 mb-3 flex items-center gap-2">
-                <Truck size={18} /> 배송 정보 입력
+                <Truck size={18} /> {t("admin.orders.shippingInput")}
               </h3>
               <div className="grid grid-cols-2 gap-3 mb-3">
                 <div>
-                  <label className="block text-xs text-gray-500 mb-1">택배사</label>
+                  <label className="block text-xs text-gray-500 mb-1">{t("admin.orders.trackingCarrier")}</label>
                   <select
                     value={trackingCarrier}
                     onChange={(e) => setTrackingCarrier(e.target.value)}
                     className="w-full px-3 py-2 border rounded-lg text-sm"
                   >
-                    <option value="">택배사 선택</option>
+                    <option value="">{t("admin.orders.selectCarrier")}</option>
                     <option value="CJ대한통운">CJ대한통운</option>
                     <option value="한진택배">한진택배</option>
                     <option value="롯데택배">롯데택배</option>
@@ -305,12 +307,12 @@ export default function AdminOrderDetailPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-500 mb-1">운송장 번호</label>
+                  <label className="block text-xs text-gray-500 mb-1">{t("admin.orders.trackingNumber")}</label>
                   <input
                     type="text"
                     value={trackingNumber}
                     onChange={(e) => setTrackingNumber(e.target.value)}
-                    placeholder="운송장 번호 입력"
+                    placeholder={t("admin.orders.trackingNumberInput")}
                     className="w-full px-3 py-2 border rounded-lg text-sm"
                   />
                 </div>
@@ -320,7 +322,7 @@ export default function AdminOrderDetailPage() {
                 disabled={shippingSaving}
                 className="w-full py-2 bg-[var(--color-primary)] text-white rounded-lg text-sm font-medium hover:opacity-90 disabled:opacity-60"
               >
-                {shippingSaving ? "저장 중..." : "배송 정보 저장 (발송 처리)"}
+                {shippingSaving ? t("admin.orders.savingShipping") : t("admin.orders.saveShipping")}
               </button>
             </div>
           )}
@@ -332,7 +334,7 @@ export default function AdminOrderDetailPage() {
                 onClick={() => setShowRefundModal(true)}
                 className="w-full py-2 border border-red-300 text-red-600 rounded-lg text-sm font-medium hover:bg-red-50 transition-colors flex items-center justify-center gap-2"
               >
-                <RotateCcw size={16} /> 환불 처리
+                <RotateCcw size={16} /> {t("admin.orders.refundProcess")}
               </button>
             </div>
           )}
@@ -341,14 +343,14 @@ export default function AdminOrderDetailPage() {
           {showRefundModal && (
             <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
               <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-md mx-4">
-                <h3 className="text-lg font-bold text-[var(--color-secondary)] mb-4">환불 처리</h3>
+                <h3 className="text-lg font-bold text-[var(--color-secondary)] mb-4">{t("admin.orders.refundTitle")}</h3>
                 <p className="text-sm text-gray-500 mb-3">
-                  주문 <strong>{order.orderNumber}</strong>을(를) 환불합니다.
+                  {t("admin.orders.refundDesc", { orderNumber: order.orderNumber })}
                 </p>
                 <textarea
                   value={refundReason}
                   onChange={(e) => setRefundReason(e.target.value)}
-                  placeholder="환불 사유를 입력해 주세요"
+                  placeholder={t("admin.orders.refundReason")}
                   className="w-full px-3 py-2 border rounded-lg text-sm resize-none h-24 mb-4"
                 />
                 <div className="flex gap-3">
@@ -357,13 +359,13 @@ export default function AdminOrderDetailPage() {
                     disabled={refunding}
                     className="flex-1 py-2 bg-red-500 text-white rounded-lg text-sm font-medium hover:bg-red-600 disabled:opacity-60"
                   >
-                    {refunding ? "처리 중..." : "환불 확인"}
+                    {refunding ? t("admin.orders.refunding") : t("admin.orders.refundConfirm")}
                   </button>
                   <button
                     onClick={() => { setShowRefundModal(false); setRefundReason(""); }}
                     className="flex-1 py-2 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50"
                   >
-                    취소
+                    {t("common.cancel")}
                   </button>
                 </div>
               </div>
@@ -373,7 +375,7 @@ export default function AdminOrderDetailPage() {
           {/* Shipping Address */}
           {order.shippingAddress && (
             <div className="bg-white rounded-xl shadow-sm p-5">
-              <h3 className="font-medium text-gray-700 mb-2">배송지 정보</h3>
+              <h3 className="font-medium text-gray-700 mb-2">{t("admin.orders.shippingAddress")}</h3>
               <div className="text-sm space-y-1 text-gray-600">
                 <p>
                   {order.shippingAddress.recipientName} /{" "}
@@ -392,7 +394,7 @@ export default function AdminOrderDetailPage() {
 
           {order.note && (
             <div className="bg-white rounded-xl shadow-sm p-5">
-              <h3 className="font-medium text-gray-700 mb-2">주문 메모</h3>
+              <h3 className="font-medium text-gray-700 mb-2">{t("admin.orders.orderNote")}</h3>
               <p className="text-sm text-gray-600">{order.note}</p>
             </div>
           )}
@@ -404,14 +406,14 @@ export default function AdminOrderDetailPage() {
           {order.trackingNumber && (
             <div className="bg-white rounded-xl shadow-sm p-5">
               <h3 className="font-medium text-gray-700 mb-3 flex items-center gap-2">
-                <Truck size={18} /> 배송 추적
+                <Truck size={18} /> {t("admin.orders.trackingInfo")}
               </h3>
               <div className="text-sm space-y-1">
                 {order.trackingCarrier && (
-                  <p className="text-gray-600">택배사: <strong>{order.trackingCarrier}</strong></p>
+                  <p className="text-gray-600">{t("admin.orders.carrier")}: <strong>{order.trackingCarrier}</strong></p>
                 )}
                 <p className="text-gray-600">
-                  운송장: <strong className="font-mono">{order.trackingNumber}</strong>
+                  {t("admin.orders.trackingLabel")}: <strong className="font-mono">{order.trackingNumber}</strong>
                 </p>
               </div>
             </div>
@@ -420,7 +422,7 @@ export default function AdminOrderDetailPage() {
           {/* Order Timeline */}
           <div className="bg-white rounded-xl shadow-sm p-5">
             <h3 className="font-medium text-gray-700 mb-4 flex items-center gap-2">
-              <Clock size={18} /> 주문 타임라인
+              <Clock size={18} /> {t("admin.orders.orderTimeline")}
             </h3>
             {order.histories && order.histories.length > 0 ? (
               <div className="relative">
@@ -444,7 +446,7 @@ export default function AdminOrderDetailPage() {
                           )}
                           {h.trackingNumber && (
                             <p className="text-xs text-purple-600 mt-0.5 font-mono">
-                              운송장: {h.trackingNumber}
+                              {t("admin.orders.trackingLabel")}: {h.trackingNumber}
                             </p>
                           )}
                           <p className="text-xs text-gray-400 mt-1">
@@ -458,7 +460,7 @@ export default function AdminOrderDetailPage() {
               </div>
             ) : (
               <p className="text-sm text-gray-400 text-center py-4">
-                아직 이력이 없습니다.
+                {t("admin.orders.noTimeline")}
               </p>
             )}
           </div>

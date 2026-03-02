@@ -3,13 +3,15 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useTenantStore } from "@/stores/tenantStore";
+import { useTranslations } from "next-intl";
 
 export function HeroSection() {
+  const t = useTranslations();
   const { name: tenantName, config } = useTenantStore();
 
   const pattern = config?.heroPattern || "circle";
   const ctas = config?.heroCta || [
-    { label: "상품 둘러보기", href: "/products", variant: "primary" as const },
+    { label: t("hero.browseProducts"), href: "/products", variant: "primary" as const },
   ];
 
   return (
@@ -43,7 +45,7 @@ export function HeroSection() {
             transition={{ duration: 0.5, delay: 0.1 }}
             className="text-4xl md:text-6xl font-bold text-white mb-6 leading-tight"
           >
-            {config?.heroSubtitle || "최고의 상품을 만나보세요"}
+            {config?.heroSubtitle || t("hero.defaultSubtitle")}
             <br />
             <span className="text-[var(--color-primary)]">{tenantName || "Shop"}</span>
           </motion.h1>

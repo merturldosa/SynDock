@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Sparkles, RefreshCw, Check } from "lucide-react";
 import { generateProductContent, type GeneratedContent } from "@/lib/adminApi";
 
@@ -10,13 +11,14 @@ interface AIContentGeneratorProps {
 }
 
 export function AIContentGenerator({ productId, onApply }: AIContentGeneratorProps) {
+  const t = useTranslations();
   const [loading, setLoading] = useState(false);
   const [content, setContent] = useState<GeneratedContent | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const handleGenerate = async () => {
     if (!productId) {
-      setError("상품을 먼저 저장해주세요.");
+      setError(t("admin.aiContent.saveFirst"));
       return;
     }
     setLoading(true);
@@ -25,7 +27,7 @@ export function AIContentGenerator({ productId, onApply }: AIContentGeneratorPro
       const result = await generateProductContent(productId);
       setContent(result);
     } catch {
-      setError("AI 콘텐츠 생성에 실패했습니다. 다시 시도해주세요.");
+      setError(t("admin.aiContent.generateFailed"));
     }
     setLoading(false);
   };
@@ -35,7 +37,7 @@ export function AIContentGenerator({ productId, onApply }: AIContentGeneratorPro
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <Sparkles size={16} className="text-purple-500" />
-          <span className="text-sm font-semibold text-purple-700">AI 콘텐츠 생성</span>
+          <span className="text-sm font-semibold text-purple-700">{t("admin.aiContent.title")}</span>
         </div>
         <div className="flex gap-2">
           {content && (
@@ -44,7 +46,7 @@ export function AIContentGenerator({ productId, onApply }: AIContentGeneratorPro
               onClick={() => onApply(content.fullDescription)}
               className="flex items-center gap-1 px-3 py-1.5 bg-emerald-500 text-white rounded-lg text-xs font-medium hover:bg-emerald-600"
             >
-              <Check size={12} /> 적용
+              <Check size={12} /> {t("admin.aiContent.apply")}
             </button>
           )}
           <button
@@ -56,15 +58,15 @@ export function AIContentGenerator({ productId, onApply }: AIContentGeneratorPro
             {loading ? (
               <>
                 <div className="h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                생성 중...
+                {t("admin.aiContent.generating")}
               </>
             ) : content ? (
               <>
-                <RefreshCw size={12} /> 재생성
+                <RefreshCw size={12} /> {t("admin.aiContent.regenerate")}
               </>
             ) : (
               <>
-                <Sparkles size={12} /> AI 생성
+                <Sparkles size={12} /> {t("admin.aiContent.generate")}
               </>
             )}
           </button>
@@ -72,7 +74,7 @@ export function AIContentGenerator({ productId, onApply }: AIContentGeneratorPro
       </div>
 
       {!productId && (
-        <p className="text-xs text-gray-500">상품 저장 후 AI 콘텐츠를 생성할 수 있습니다.</p>
+        <p className="text-xs text-gray-500">{t("admin.aiContent.afterSave")}</p>
       )}
 
       {error && <p className="text-xs text-red-500 mt-2">{error}</p>}
@@ -80,15 +82,15 @@ export function AIContentGenerator({ productId, onApply }: AIContentGeneratorPro
       {content && (
         <div className="space-y-3 mt-3">
           <div className="bg-white rounded-lg p-3">
-            <p className="text-xs font-semibold text-purple-600 mb-1">상단 (Hero)</p>
+            <p className="text-xs font-semibold text-purple-600 mb-1">{t("admin.aiContent.heroSection")}</p>
             <p className="text-sm text-gray-700 whitespace-pre-wrap">{content.heroSection}</p>
           </div>
           <div className="bg-white rounded-lg p-3">
-            <p className="text-xs font-semibold text-blue-600 mb-1">중단 (Features)</p>
+            <p className="text-xs font-semibold text-blue-600 mb-1">{t("admin.aiContent.featureSection")}</p>
             <p className="text-sm text-gray-700 whitespace-pre-wrap">{content.featureSection}</p>
           </div>
           <div className="bg-white rounded-lg p-3">
-            <p className="text-xs font-semibold text-emerald-600 mb-1">하단 (CTA)</p>
+            <p className="text-xs font-semibold text-emerald-600 mb-1">{t("admin.aiContent.closingSection")}</p>
             <p className="text-sm text-gray-700 whitespace-pre-wrap">{content.closingSection}</p>
           </div>
         </div>

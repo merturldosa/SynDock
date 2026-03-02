@@ -4,9 +4,11 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { getCategories } from "@/lib/productApi";
+import { useTranslations } from "next-intl";
 import type { CategoryInfo } from "@/types/product";
 
 export function CategorySection() {
+  const t = useTranslations();
   const [categories, setCategories] = useState<CategoryInfo[]>([]);
 
   useEffect(() => {
@@ -18,8 +20,8 @@ export function CategorySection() {
   return (
     <section className="max-w-7xl mx-auto px-4 py-16">
       <div className="text-center mb-12">
-        <h2 className="text-3xl font-bold text-[var(--color-secondary)] mb-3">카테고리</h2>
-        <p className="text-gray-500">찾으시는 상품을 카테고리별로 둘러보세요</p>
+        <h2 className="text-3xl font-bold text-[var(--color-secondary)] mb-3">{t("category.title")}</h2>
+        <p className="text-gray-500">{t("category.subtitle")}</p>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
@@ -39,7 +41,7 @@ export function CategorySection() {
               <span className="font-semibold text-[var(--color-secondary)] group-hover:text-[var(--color-primary)] transition-colors">
                 {cat.name}
               </span>
-              <span className="text-xs text-gray-500 mt-1">{cat.productCount}개 상품</span>
+              <span className="text-xs text-gray-500 mt-1">{t("common.nItems", { count: cat.productCount })}</span>
             </Link>
           </motion.div>
         ))}

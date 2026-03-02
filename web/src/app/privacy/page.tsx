@@ -1,21 +1,23 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useTenantStore } from "@/stores/tenantStore";
 
 export default function PrivacyPage() {
+  const t = useTranslations();
   const { name } = useTenantStore();
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold text-[var(--color-secondary)] mb-6">
-        개인정보처리방침
+        {t("legal.privacyPolicy")}
       </h1>
 
       <div className="space-y-8 text-sm text-gray-700 leading-relaxed">
         {/* 1. 개인정보의 처리 목적 */}
         <section>
           <h2 className="text-lg font-semibold text-[var(--color-secondary)] mb-3">
-            1. 개인정보의 처리 목적
+            {t("legal.privacy.section1Title")}
           </h2>
           <p>
             {name}(이하 &quot;회사&quot;)는 다음의 목적을 위하여 개인정보를
@@ -33,7 +35,7 @@ export default function PrivacyPage() {
         {/* 2. 개인정보의 처리 및 보유기간 */}
         <section>
           <h2 className="text-lg font-semibold text-[var(--color-secondary)] mb-3">
-            2. 개인정보의 처리 및 보유기간
+            {t("legal.privacy.section2Title")}
           </h2>
           <p>
             회사는 법령에 따른 개인정보 보유·이용기간 또는 정보주체로부터
@@ -51,7 +53,7 @@ export default function PrivacyPage() {
         {/* 3. 개인정보의 제3자 제공 */}
         <section>
           <h2 className="text-lg font-semibold text-[var(--color-secondary)] mb-3">
-            3. 개인정보의 제3자 제공
+            {t("legal.privacy.section3Title")}
           </h2>
           <p>
             회사는 정보주체의 개인정보를 제1조에서 명시한 범위 내에서만
@@ -63,7 +65,7 @@ export default function PrivacyPage() {
         {/* 4. 정보주체의 권리·의무 및 행사방법 */}
         <section>
           <h2 className="text-lg font-semibold text-[var(--color-secondary)] mb-3">
-            4. 정보주체의 권리·의무 및 행사방법
+            {t("legal.privacy.section4Title")}
           </h2>
           <p>정보주체는 회사에 대해 언제든지 다음 각 호의 개인정보 보호 관련 권리를 행사할 수 있습니다.</p>
           <ul className="list-disc pl-5 mt-2 space-y-1">
@@ -77,7 +79,7 @@ export default function PrivacyPage() {
         {/* 5. 처리하는 개인정보 항목 */}
         <section>
           <h2 className="text-lg font-semibold text-[var(--color-secondary)] mb-3">
-            5. 처리하는 개인정보 항목
+            {t("legal.privacy.section5Title")}
           </h2>
           <p>회사는 다음의 개인정보 항목을 처리하고 있습니다.</p>
           <ul className="list-disc pl-5 mt-2 space-y-1">
@@ -90,7 +92,7 @@ export default function PrivacyPage() {
         {/* 6. 개인정보의 안전성 확보조치 */}
         <section>
           <h2 className="text-lg font-semibold text-[var(--color-secondary)] mb-3">
-            6. 개인정보의 안전성 확보조치
+            {t("legal.privacy.section6Title")}
           </h2>
           <p>회사는 개인정보의 안전성 확보를 위해 다음과 같은 조치를 취하고 있습니다.</p>
           <ul className="list-disc pl-5 mt-2 space-y-1">
@@ -103,7 +105,7 @@ export default function PrivacyPage() {
         {/* 7. 개인정보 보호책임자 */}
         <section>
           <h2 className="text-lg font-semibold text-[var(--color-secondary)] mb-3">
-            7. 개인정보 보호책임자
+            {t("legal.privacy.section7Title")}
           </h2>
           <p>
             회사는 개인정보 처리에 관한 업무를 총괄해서 책임지고, 개인정보

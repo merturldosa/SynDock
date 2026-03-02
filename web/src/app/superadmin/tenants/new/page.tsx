@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { createPlatformTenant } from "@/lib/platformApi";
 
 const PRESET_THEMES = [
@@ -68,6 +69,7 @@ const PRESET_THEMES = [
 ];
 
 export default function CreateTenantPage() {
+  const t = useTranslations();
   const router = useRouter();
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
@@ -108,7 +110,7 @@ export default function CreateTenantPage() {
       router.push("/superadmin/tenants");
     } catch (err: unknown) {
       const msg =
-        err instanceof Error ? err.message : "쇼핑몰 생성에 실패했습니다.";
+        err instanceof Error ? err.message : t("superadmin.newTenant.createFailed");
       setError(msg);
     } finally {
       setSubmitting(false);
@@ -118,7 +120,7 @@ export default function CreateTenantPage() {
   return (
     <div className="max-w-2xl">
       <h1 className="text-2xl font-bold text-gray-900 mb-6">
-        새 쇼핑몰 분양
+        {t("superadmin.newTenant.title")}
       </h1>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -131,13 +133,13 @@ export default function CreateTenantPage() {
         <div className="bg-white rounded-xl shadow-sm p-5 space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              쇼핑몰 이름
+              {t("superadmin.newTenant.shopName")}
             </label>
             <input
               type="text"
               value={name}
               onChange={(e) => handleNameChange(e.target.value)}
-              placeholder="예: 모현 스토어"
+              placeholder={t("superadmin.newTenant.shopNamePlaceholder")}
               className="w-full px-3 py-2.5 border rounded-lg text-sm"
               required
             />
@@ -145,19 +147,19 @@ export default function CreateTenantPage() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Slug (URL 식별자)
+              {t("superadmin.newTenant.slug")}
             </label>
             <input
               type="text"
               value={slug}
               onChange={(e) => setSlug(e.target.value)}
-              placeholder="예: mohyun"
+              placeholder={t("superadmin.newTenant.slugPlaceholder")}
               className="w-full px-3 py-2.5 border rounded-lg text-sm font-mono"
               required
               pattern="[a-z0-9-]+"
             />
             <p className="text-xs text-gray-400 mt-1">
-              영문 소문자, 숫자, 하이픈만 사용 가능
+              {t("superadmin.newTenant.slugHint")}
             </p>
           </div>
         </div>
@@ -165,7 +167,7 @@ export default function CreateTenantPage() {
         {/* Theme Selection */}
         <div className="bg-white rounded-xl shadow-sm p-5">
           <label className="block text-sm font-medium text-gray-700 mb-3">
-            디자인 테마 선택
+            {t("superadmin.newTenant.theme")}
           </label>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
             {PRESET_THEMES.map((preset, index) => (
@@ -207,14 +209,14 @@ export default function CreateTenantPage() {
             disabled={submitting}
             className="px-6 py-2.5 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700 disabled:opacity-50"
           >
-            {submitting ? "생성 중..." : "쇼핑몰 생성"}
+            {submitting ? t("superadmin.newTenant.creating") : t("superadmin.newTenant.create")}
           </button>
           <button
             type="button"
             onClick={() => router.back()}
             className="px-6 py-2.5 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50"
           >
-            취소
+            {t("superadmin.newTenant.cancel")}
           </button>
         </div>
       </form>

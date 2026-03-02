@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { Globe } from "lucide-react";
+import { Globe, BarChart3 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import {
   getPlatformTenant,
   updatePlatformTenant,
@@ -14,6 +15,7 @@ import {
 import type { TenantConfig } from "@/types/tenant";
 
 export default function TenantDetailPage() {
+  const t = useTranslations();
   const params = useParams();
   const router = useRouter();
   const slug = params.slug as string;
@@ -59,7 +61,7 @@ export default function TenantDetailPage() {
       try {
         JSON.parse(configText);
       } catch {
-        setError("ConfigJson이 유효한 JSON 형식이 아닙니다.");
+        setError(t("superadmin.tenants.configJsonInvalid"));
         return;
       }
     }
@@ -71,9 +73,9 @@ export default function TenantDetailPage() {
         isActive,
         configJson: configText.trim() || undefined,
       });
-      setSuccess("저장되었습니다.");
+      setSuccess(t("superadmin.tenants.saved"));
     } catch {
-      setError("저장에 실패했습니다.");
+      setError(t("superadmin.tenants.saveFailed"));
     } finally {
       setSaving(false);
     }
@@ -100,7 +102,7 @@ export default function TenantDetailPage() {
   return (
     <div className="max-w-3xl">
       <h1 className="text-2xl font-bold text-gray-900 mb-6">
-        쇼핑몰 상세: {tenant.name}
+        {t("superadmin.tenants.detail")}: {tenant.name}
       </h1>
 
       {error && (
@@ -116,12 +118,12 @@ export default function TenantDetailPage() {
 
       {/* Basic Info */}
       <div className="bg-white rounded-xl shadow-sm p-5 mb-6 space-y-4">
-        <h2 className="font-semibold text-gray-900">기본 정보</h2>
+        <h2 className="font-semibold text-gray-900">{t("superadmin.tenants.basicInfo")}</h2>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              쇼핑몰 이름
+              {t("superadmin.newTenant.shopName")}
             </label>
             <input
               type="text"
@@ -146,7 +148,7 @@ export default function TenantDetailPage() {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              도메인
+              {t("superadmin.tenants.domain")}
             </label>
             <p className="text-sm text-gray-600">
               {tenant.customDomain || tenant.subdomain || "-"}
@@ -154,7 +156,7 @@ export default function TenantDetailPage() {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              상태
+              {t("superadmin.tenants.status")}
             </label>
             <label className="flex items-center gap-2 cursor-pointer">
               <input
@@ -163,9 +165,27 @@ export default function TenantDetailPage() {
                 onChange={(e) => setIsActive(e.target.checked)}
                 className="w-4 h-4 rounded text-emerald-600"
               />
-              <span className="text-sm text-gray-700">운영 중</span>
+              <span className="text-sm text-gray-700">{t("superadmin.tenants.active")}</span>
             </label>
           </div>
+        </div>
+      </div>
+
+      {/* Usage Monitoring */}
+      <div className="bg-white rounded-xl shadow-sm p-5 mb-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="font-semibold text-gray-900 mb-1">{t("superadmin.tenants.usageMonitoring")}</h2>
+            <p className="text-sm text-gray-500">
+              {t("superadmin.tenants.usageMonitoringDesc")}
+            </p>
+          </div>
+          <Link
+            href={`/superadmin/tenants/${slug}/usage`}
+            className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700"
+          >
+            <BarChart3 size={14} /> {t("superadmin.tenants.viewUsage")}
+          </Link>
         </div>
       </div>
 
@@ -173,9 +193,9 @@ export default function TenantDetailPage() {
       <div className="bg-white rounded-xl shadow-sm p-5 mb-6">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="font-semibold text-gray-900 mb-1">도메인 관리</h2>
+            <h2 className="font-semibold text-gray-900 mb-1">{t("superadmin.tenants.domainManagement")}</h2>
             <p className="text-sm text-gray-500">
-              {tenant.customDomain || tenant.subdomain || "도메인 미설정"}
+              {tenant.customDomain || tenant.subdomain || t("superadmin.tenants.domainNotSet")}
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -193,7 +213,7 @@ export default function TenantDetailPage() {
               href={`/superadmin/tenants/${slug}/domain`}
               className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700"
             >
-              <Globe size={14} /> 도메인 관리
+              <Globe size={14} /> {t("superadmin.tenants.domainManagement")}
             </Link>
           </div>
         </div>
@@ -202,7 +222,7 @@ export default function TenantDetailPage() {
       {/* Theme Preview */}
       {config?.theme && (
         <div className="bg-white rounded-xl shadow-sm p-5 mb-6">
-          <h2 className="font-semibold text-gray-900 mb-3">테마 미리보기</h2>
+          <h2 className="font-semibold text-gray-900 mb-3">{t("superadmin.tenants.themePreview")}</h2>
           <div className="flex gap-3">
             {Object.entries(config.theme).map(([key, value]) => (
               <div key={key} className="text-center">
@@ -219,10 +239,10 @@ export default function TenantDetailPage() {
 
       {/* Payment Settings */}
       <div className="bg-white rounded-xl shadow-sm p-5 mb-6">
-        <h2 className="font-semibold text-gray-900 mb-3">결제 설정</h2>
+        <h2 className="font-semibold text-gray-900 mb-3">{t("superadmin.tenants.paymentSettings")}</h2>
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">PG사</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t("superadmin.tenants.pgProvider")}</label>
             <select
               value={config?.paymentConfig?.provider || "Mock"}
               onChange={(e) => {
@@ -234,7 +254,7 @@ export default function TenantDetailPage() {
               }}
               className="w-full px-3 py-2.5 border rounded-lg text-sm"
             >
-              <option value="Mock">Mock (테스트)</option>
+              <option value="Mock">{t("superadmin.tenants.mockTest")}</option>
               <option value="TossPayments">TossPayments</option>
             </select>
           </div>
@@ -296,13 +316,13 @@ export default function TenantDetailPage() {
           disabled={saving}
           className="px-6 py-2.5 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700 disabled:opacity-50"
         >
-          {saving ? "저장 중..." : "저장"}
+          {saving ? t("superadmin.tenants.saving") : t("superadmin.tenants.save")}
         </button>
         <button
           onClick={() => router.push("/superadmin/tenants")}
           className="px-6 py-2.5 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50"
         >
-          목록으로
+          {t("superadmin.tenants.backToList")}
         </button>
       </div>
     </div>

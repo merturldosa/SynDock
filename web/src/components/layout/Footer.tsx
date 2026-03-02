@@ -4,9 +4,11 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useTenantStore } from "@/stores/tenantStore";
 import { getCategories } from "@/lib/productApi";
+import { useTranslations } from "next-intl";
 import type { CategoryInfo } from "@/types/product";
 
 export function Footer() {
+  const t = useTranslations();
   const { name: tenantName, config } = useTenantStore();
   const [categories, setCategories] = useState<CategoryInfo[]>([]);
 
@@ -28,13 +30,13 @@ export function Footer() {
             <p className="text-sm leading-relaxed">
               {config?.companyName || tenantName || "Shop"}
               <br />
-              정성을 다해 엄선한 상품을 만나보세요.
+              {t("footer.tagline")}
             </p>
           </div>
 
           {/* Categories */}
           <div>
-            <h4 className="text-white font-semibold mb-3">카테고리</h4>
+            <h4 className="text-white font-semibold mb-3">{t("footer.categories")}</h4>
             <ul className="space-y-2 text-sm">
               {footerCategories.map((cat) => (
                 <li key={cat.id}>
@@ -51,13 +53,13 @@ export function Footer() {
 
           {/* Customer Service */}
           <div>
-            <h4 className="text-white font-semibold mb-3">고객센터</h4>
+            <h4 className="text-white font-semibold mb-3">{t("footer.customerService")}</h4>
             <ul className="space-y-2 text-sm">
               {config?.contactPhone && (
                 <li className="text-white font-medium text-base">{config.contactPhone}</li>
               )}
               {config?.contactFax && <li>FAX: {config.contactFax}</li>}
-              <li>평일 09:00 ~ 18:00</li>
+              <li>{t("footer.businessHours")}</li>
               {config?.contactEmail && (
                 <li>
                   <a
@@ -73,22 +75,22 @@ export function Footer() {
 
           {/* Company Info */}
           <div>
-            <h4 className="text-white font-semibold mb-3">회사정보</h4>
+            <h4 className="text-white font-semibold mb-3">{t("footer.companyInfo")}</h4>
             <ul className="space-y-2 text-sm">
-              {config?.companyName && <li>상호: {config.companyName}</li>}
-              {config?.ceoName && <li>대표: {config.ceoName}</li>}
-              {config?.businessNumber && <li>사업자등록번호: {config.businessNumber}</li>}
+              {config?.companyName && <li>{t("footer.companyName")}: {config.companyName}</li>}
+              {config?.ceoName && <li>{t("footer.ceo")}: {config.ceoName}</li>}
+              {config?.businessNumber && <li>{t("footer.businessNumber")}: {config.businessNumber}</li>}
               {config?.companyAddress && <li>{config.companyAddress}</li>}
             </ul>
           </div>
         </div>
 
         <div className="border-t border-white/10 pt-6 flex flex-col md:flex-row items-center justify-between gap-4 text-xs">
-          <p>&copy; {new Date().getFullYear()} {config?.companyName || tenantName || "Shop"}. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} {config?.companyName || tenantName || "Shop"}. {t("footer.allRightsReserved")}</p>
           <div className="flex gap-4">
-            <Link href="/privacy" className="hover:text-[var(--color-primary)] transition-colors">개인정보처리방침</Link>
-            <Link href="/terms" className="hover:text-[var(--color-primary)] transition-colors">이용약관</Link>
-            {config?.privacyOfficer && <span>정보책임자: {config.privacyOfficer}</span>}
+            <Link href="/privacy" className="hover:text-[var(--color-primary)] transition-colors">{t("footer.privacyPolicy")}</Link>
+            <Link href="/terms" className="hover:text-[var(--color-primary)] transition-colors">{t("footer.terms")}</Link>
+            {config?.privacyOfficer && <span>{t("footer.privacyOfficer")}: {config.privacyOfficer}</span>}
           </div>
         </div>
       </div>

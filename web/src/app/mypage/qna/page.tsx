@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import Image from "next/image";
 import { MessageCircleQuestion, Trash2, Lock } from "lucide-react";
@@ -13,6 +14,7 @@ function formatDate(dateStr: string): string {
 }
 
 export default function MyQnAPage() {
+  const t = useTranslations();
   const [qnas, setQnAs] = useState<MyQnA[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -33,12 +35,12 @@ export default function MyQnAPage() {
   useEffect(() => { load(page); }, [page]);
 
   const handleDelete = async (id: number) => {
-    if (!confirm("이 QnA를 삭제하시겠습니까?")) return;
+    if (!confirm(t("mypage.qna.deleteConfirm"))) return;
     try {
       await deleteQnA(id);
       load(page);
     } catch {
-      alert("삭제에 실패했습니다.");
+      alert(t("mypage.qna.deleteFailed"));
     }
   };
 
@@ -54,17 +56,17 @@ export default function MyQnAPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-[var(--color-secondary)] mb-6">내 QnA</h1>
+      <h1 className="text-2xl font-bold text-[var(--color-secondary)] mb-6">{t("mypage.qna.title")}</h1>
 
       {qnas.length === 0 ? (
         <div className="text-center py-20">
           <MessageCircleQuestion size={64} className="mx-auto text-gray-300 mb-6" />
-          <p className="text-gray-500 mb-4">작성한 QnA가 없습니다.</p>
+          <p className="text-gray-500 mb-4">{t("mypage.qna.empty")}</p>
           <Link
             href="/products"
             className="inline-block px-6 py-3 bg-[var(--color-primary)] text-white rounded-lg font-medium hover:opacity-90"
           >
-            상품 둘러보기
+            {t("mypage.qna.browseProducts")}
           </Link>
         </div>
       ) : (
@@ -101,7 +103,7 @@ export default function MyQnAPage() {
                           : "bg-gray-100 text-gray-500"
                       }`}
                     >
-                      {qna.isAnswered ? "답변완료" : "미답변"}
+                      {qna.isAnswered ? t("mypage.qna.answered") : t("mypage.qna.waiting")}
                     </span>
                     <span className="text-xs text-gray-400">{formatDate(qna.createdAt)}</span>
                   </div>

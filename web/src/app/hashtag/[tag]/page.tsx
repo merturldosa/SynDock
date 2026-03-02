@@ -4,21 +4,26 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { Hash, Heart, MessageCircle } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { getPostsByHashtag } from "@/lib/postApi";
 import type { PagedPosts } from "@/types/post";
 
-function timeAgo(dateStr: string): string {
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 60) return `${mins}분 전`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}시간 전`;
-  return new Date(dateStr).toLocaleDateString("ko-KR");
-}
-
 export default function HashtagPage() {
+  const t = useTranslations();
   const params = useParams();
   const tag = params.tag as string;
+
+  const timeAgo = (dateStr: string): string => {
+    const diff = Date.now() - new Date(dateStr).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return t("feed.justNow");
+    if (mins < 60) return t("feed.minutesAgo", { count: mins });
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return t("feed.hoursAgo", { count: hrs });
+    const days = Math.floor(hrs / 24);
+    if (days < 30) return t("feed.daysAgo", { count: days });
+    return new Date(dateStr).toLocaleDateString();
+  };
   const [data, setData] = useState<PagedPosts | null>(null);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -41,7 +46,7 @@ export default function HashtagPage() {
         </h1>
         {data && (
           <span className="text-sm text-gray-400 ml-2">
-            {data.totalCount}개 게시글
+            {t("hashtag.postsCount", { count: data.totalCount })}
           </span>
         )}
       </div>
@@ -52,12 +57,12 @@ export default function HashtagPage() {
         </div>
       ) : !data || data.items.length === 0 ? (
         <div className="text-center py-20 text-gray-400">
-          <p>이 해시태그에 게시글이 없습니다.</p>
+          <p>{t("hashtag.empty")}</p>
           <Link
             href="/feed"
             className="text-[var(--color-primary)] hover:underline mt-2 inline-block"
           >
-            피드로 돌아가기
+            {t("feed.backToFeed")}
           </Link>
         </div>
       ) : (

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { FolderTree, Plus, Edit2, Trash2, Save, X } from "lucide-react";
 import { getCategories } from "@/lib/productApi";
 import {
@@ -11,6 +12,7 @@ import {
 import type { CategoryInfo } from "@/types/product";
 
 export default function AdminCategoriesPage() {
+  const t = useTranslations();
   const [categories, setCategories] = useState<CategoryInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -49,7 +51,7 @@ export default function AdminCategoriesPage() {
       setShowAdd(false);
       load();
     } catch {
-      alert("카테고리 추가에 실패했습니다.");
+      alert(t("admin.categories.addFailed"));
     }
     setSubmitting(false);
   };
@@ -68,18 +70,18 @@ export default function AdminCategoriesPage() {
       setEditingId(null);
       load();
     } catch {
-      alert("카테고리 수정에 실패했습니다.");
+      alert(t("admin.categories.editFailed"));
     }
     setSubmitting(false);
   };
 
   const handleDelete = async (id: number, name: string) => {
-    if (!confirm(`"${name}" 카테고리를 삭제하시겠습니까?`)) return;
+    if (!confirm(t("admin.categories.deleteConfirm", { name }))) return;
     try {
       await deleteCategory(id);
       load();
     } catch {
-      alert("삭제에 실패했습니다. 하위 카테고리나 상품이 있을 수 있습니다.");
+      alert(t("admin.categories.deleteFailed"));
     }
   };
 
@@ -87,13 +89,13 @@ export default function AdminCategoriesPage() {
     <div className="max-w-2xl">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-[var(--color-secondary)]">
-          카테고리 관리
+          {t("admin.categories.title")}
         </h1>
         <button
           onClick={() => setShowAdd(!showAdd)}
           className="flex items-center gap-2 px-4 py-2.5 bg-[var(--color-primary)] text-white rounded-lg text-sm font-medium hover:opacity-90"
         >
-          <Plus size={16} /> 카테고리 추가
+          <Plus size={16} /> {t("admin.categories.addNew")}
         </button>
       </div>
 
@@ -105,14 +107,14 @@ export default function AdminCategoriesPage() {
               type="text"
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
-              placeholder="카테고리 이름"
+              placeholder={t("admin.categories.namePlaceholder")}
               className="flex-1 px-3 py-2.5 border rounded-lg text-sm"
             />
             <input
               type="text"
               value={newSlug}
               onChange={(e) => setNewSlug(e.target.value)}
-              placeholder="slug (자동 생성)"
+              placeholder={t("admin.categories.slugPlaceholder")}
               className="w-40 px-3 py-2.5 border rounded-lg text-sm"
             />
             <button
@@ -120,7 +122,7 @@ export default function AdminCategoriesPage() {
               disabled={submitting || !newName.trim()}
               className="px-4 py-2.5 bg-[var(--color-primary)] text-white rounded-lg text-sm disabled:opacity-60"
             >
-              {submitting ? "추가 중..." : "추가"}
+              {submitting ? t("admin.categories.adding") : t("common.add")}
             </button>
             <button
               onClick={() => setShowAdd(false)}
@@ -139,7 +141,7 @@ export default function AdminCategoriesPage() {
       ) : categories.length === 0 ? (
         <div className="text-center py-20 text-gray-400">
           <FolderTree size={48} className="mx-auto mb-4 opacity-50" />
-          <p>카테고리가 없습니다.</p>
+          <p>{t("admin.categories.noCategories")}</p>
         </div>
       ) : (
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
@@ -162,7 +164,7 @@ export default function AdminCategoriesPage() {
                     type="text"
                     value={editSlug}
                     onChange={(e) => setEditSlug(e.target.value)}
-                    placeholder="slug"
+                    placeholder={t("admin.categories.slugEditPlaceholder")}
                     className="w-32 px-3 py-1.5 border rounded-lg text-sm"
                   />
                   <button
@@ -191,7 +193,7 @@ export default function AdminCategoriesPage() {
                         {cat.name}
                       </p>
                       <p className="text-xs text-gray-400">
-                        {cat.slug} · {cat.productCount}개 상품
+                        {cat.slug} · {t("admin.categories.nProducts", { count: cat.productCount })}
                       </p>
                     </div>
                   </div>

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { FolderOpen, Plus, Trash2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import {
   getMyCollections,
   createCollection,
@@ -11,6 +12,7 @@ import {
 } from "@/lib/collectionApi";
 
 export default function MyCollectionsPage() {
+  const t = useTranslations();
   const [collections, setCollections] = useState<CollectionSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [newName, setNewName] = useState("");
@@ -34,25 +36,25 @@ export default function MyCollectionsPage() {
       setNewName("");
       fetchData();
     } catch {
-      alert("컬렉션 생성에 실패했습니다.");
+      alert(t("collection.createFailed"));
     }
     setCreating(false);
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm("이 컬렉션을 삭제하시겠습니까?")) return;
+    if (!confirm(t("mypage.collections.deleteConfirm"))) return;
     try {
       await deleteCollection(id);
       fetchData();
     } catch {
-      alert("삭제에 실패했습니다.");
+      alert(t("mypage.collections.deleteFailed"));
     }
   };
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold text-[var(--color-secondary)] mb-6">
-        내 컬렉션
+        {t("mypage.collections.title")}
       </h1>
 
       {/* Create new */}
@@ -61,7 +63,7 @@ export default function MyCollectionsPage() {
           type="text"
           value={newName}
           onChange={(e) => setNewName(e.target.value)}
-          placeholder="새 컬렉션 이름"
+          placeholder={t("collection.newCollectionName")}
           className="flex-1 px-4 py-2.5 border rounded-lg text-sm"
           onKeyDown={(e) => e.key === "Enter" && handleCreate()}
         />
@@ -71,7 +73,7 @@ export default function MyCollectionsPage() {
           className="flex items-center gap-2 px-4 py-2.5 bg-[var(--color-primary)] text-white rounded-lg text-sm font-medium hover:opacity-90 disabled:opacity-50"
         >
           <Plus size={16} />
-          {creating ? "생성 중..." : "만들기"}
+          {creating ? t("common.saving") : t("collection.create")}
         </button>
       </div>
 
@@ -82,9 +84,9 @@ export default function MyCollectionsPage() {
       ) : collections.length === 0 ? (
         <div className="text-center py-20">
           <FolderOpen size={48} className="mx-auto text-gray-300 mb-4" />
-          <p className="text-gray-400">아직 컬렉션이 없습니다.</p>
+          <p className="text-gray-400">{t("mypage.collections.empty")}</p>
           <p className="text-sm text-gray-300 mt-1">
-            상품 상세 페이지에서 컬렉션에 추가해보세요.
+            {t("mypage.collections.createFirst")}
           </p>
         </div>
       ) : (
@@ -108,8 +110,8 @@ export default function MyCollectionsPage() {
                     </p>
                   )}
                   <div className="flex items-center gap-3 mt-3 text-xs text-gray-400">
-                    <span>{col.itemCount}개 상품</span>
-                    <span>{col.isPublic ? "공개" : "비공개"}</span>
+                    <span>{t("mypage.collections.itemCount", { count: col.itemCount })}</span>
+                    <span>{col.isPublic ? t("mypage.collections.public") : t("mypage.collections.private")}</span>
                   </div>
                 </Link>
                 <button

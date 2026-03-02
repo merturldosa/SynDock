@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Download, X } from "lucide-react";
 
 interface BeforeInstallPromptEvent extends Event {
@@ -9,6 +10,7 @@ interface BeforeInstallPromptEvent extends Event {
 }
 
 export function PWAInstallPrompt() {
+  const t = useTranslations();
   const [deferredPrompt, setDeferredPrompt] =
     useState<BeforeInstallPromptEvent | null>(null);
   const [dismissed, setDismissed] = useState(false);
@@ -43,10 +45,10 @@ export function PWAInstallPrompt() {
           </div>
           <div>
             <p className="text-sm font-semibold text-[var(--color-secondary)]">
-              앱 설치
+              {t("pwa.installTitle")}
             </p>
             <p className="text-xs text-gray-400">
-              홈 화면에 추가하여 빠르게 접근하세요
+              {t("pwa.installDesc")}
             </p>
           </div>
         </div>
@@ -61,7 +63,7 @@ export function PWAInstallPrompt() {
             onClick={handleInstall}
             className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg text-sm font-medium hover:opacity-90"
           >
-            설치
+            {t("pwa.install")}
           </button>
         </div>
       </div>

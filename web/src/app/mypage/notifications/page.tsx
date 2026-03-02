@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Bell, Check, Trash2 } from "lucide-react";
 import {
   getNotifications,
@@ -12,23 +13,31 @@ import {
 } from "@/lib/notificationApi";
 import { useNotificationStore } from "@/stores/notificationStore";
 
-const TYPE_LABELS: Record<string, { label: string; color: string }> = {
-  Order: { label: "주문", color: "bg-blue-100 text-blue-700" },
-  System: { label: "시스템", color: "bg-gray-100 text-gray-700" },
-  Promotion: { label: "프로모션", color: "bg-orange-100 text-orange-700" },
-  Social: { label: "소셜", color: "bg-purple-100 text-purple-700" },
+const TYPE_COLORS: Record<string, string> = {
+  Order: "bg-blue-100 text-blue-700",
+  System: "bg-gray-100 text-gray-700",
+  Promotion: "bg-orange-100 text-orange-700",
+  Social: "bg-purple-100 text-purple-700",
 };
 
-function timeAgo(dateStr: string): string {
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 60) return `${mins}분 전`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}시간 전`;
-  return new Date(dateStr).toLocaleDateString("ko-KR");
-}
-
 export default function NotificationsPage() {
+  const t = useTranslations();
+
+  const typeLabel = (type: string) => {
+    const key = `mypage.notifications.type.${type}` as const;
+    return t(key);
+  };
+
+  const timeAgo = (dateStr: string): string => {
+    const diff = Date.now() - new Date(dateStr).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return t("mypage.notifications.timeAgo.justNow");
+    if (mins < 60) return t("mypage.notifications.timeAgo.minutesAgo", { count: mins });
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return t("mypage.notifications.timeAgo.hoursAgo", { count: hrs });
+    const days = Math.floor(hrs / 24);
+    return t("mypage.notifications.timeAgo.daysAgo", { count: days });
+  };
   const [data, setData] = useState<PagedNotifications | null>(null);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -70,13 +79,13 @@ export default function NotificationsPage() {
     <div className="max-w-2xl mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-[var(--color-secondary)]">
-          알림
+          {t("mypage.notifications.title")}
         </h1>
         <button
           onClick={handleReadAll}
           className="flex items-center gap-1 text-sm text-[var(--color-primary)] hover:underline"
         >
-          <Check size={16} /> 모두 읽음
+          <Check size={16} /> {t("mypage.notifications.markAllRead")}
         </button>
       </div>
 
@@ -87,12 +96,12 @@ export default function NotificationsPage() {
       ) : !data || data.items.length === 0 ? (
         <div className="text-center py-20 text-gray-400">
           <Bell size={48} className="mx-auto mb-3 opacity-30" />
-          <p>알림이 없습니다.</p>
+          <p>{t("mypage.notifications.empty")}</p>
         </div>
       ) : (
         <div className="space-y-2">
           {data.items.map((noti) => {
-            const typeInfo = TYPE_LABELS[noti.type] || TYPE_LABELS.System;
+            const typeColor = TYPE_COLORS[noti.type] || TYPE_COLORS.System;
             return (
               <div
                 key={noti.id}
@@ -103,9 +112,9 @@ export default function NotificationsPage() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <span
-                      className={`px-2 py-0.5 text-xs rounded-full ${typeInfo.color}`}
+                      className={`px-2 py-0.5 text-xs rounded-full ${typeColor}`}
                     >
-                      {typeInfo.label}
+                      {typeLabel(noti.type)}
                     </span>
                     <span className="text-xs text-gray-400">
                       {timeAgo(noti.createdAt)}
@@ -129,7 +138,7 @@ export default function NotificationsPage() {
                     <button
                       onClick={() => handleRead(noti.id)}
                       className="p-1.5 text-gray-400 hover:text-[var(--color-primary)]"
-                      title="읽음 처리"
+                      title={t("mypage.notifications.markRead")}
                     >
                       <Check size={14} />
                     </button>
@@ -137,7 +146,7 @@ export default function NotificationsPage() {
                   <button
                     onClick={() => handleDelete(noti.id)}
                     className="p-1.5 text-gray-400 hover:text-red-500"
-                    title="삭제"
+                    title={t("common.delete")}
                   >
                     <Trash2 size={14} />
                   </button>
@@ -153,7 +162,7 @@ export default function NotificationsPage() {
                 disabled={page === 1}
                 className="px-3 py-2 text-sm border rounded-lg disabled:opacity-40"
               >
-                이전
+                {t("common.prev")}
               </button>
               <span className="text-sm text-gray-500">
                 {page} / {Math.ceil(data.totalCount / 20)}
@@ -163,7 +172,7 @@ export default function NotificationsPage() {
                 disabled={page * 20 >= data.totalCount}
                 className="px-3 py-2 text-sm border rounded-lg disabled:opacity-40"
               >
-                다음
+                {t("common.next")}
               </button>
             </div>
           )}

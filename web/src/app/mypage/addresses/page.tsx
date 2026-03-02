@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { MapPin, Plus, Pencil, Trash2, X } from "lucide-react";
 import { getAddresses, createAddress, updateAddress, deleteAddress, type Address } from "@/lib/addressApi";
 
@@ -23,6 +24,7 @@ const emptyForm: AddressForm = {
 };
 
 export default function AddressesPage() {
+  const t = useTranslations();
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
@@ -79,18 +81,18 @@ export default function AddressesPage() {
       setModalOpen(false);
       load();
     } catch {
-      alert("저장에 실패했습니다.");
+      alert(t("mypage.addresses.saveFailed"));
     }
     setSubmitting(false);
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm("이 배송지를 삭제하시겠습니까?")) return;
+    if (!confirm(t("mypage.addresses.deleteConfirm"))) return;
     try {
       await deleteAddress(id);
       load();
     } catch {
-      alert("삭제에 실패했습니다.");
+      alert(t("mypage.addresses.deleteFailed"));
     }
   };
 
@@ -105,30 +107,30 @@ export default function AddressesPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-[var(--color-secondary)]">배송지 관리</h1>
+        <h1 className="text-2xl font-bold text-[var(--color-secondary)]">{t("mypage.addresses.title")}</h1>
         <button
           onClick={openCreate}
           disabled={addresses.length >= 10}
           className="flex items-center gap-1.5 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg text-sm font-medium hover:opacity-90 disabled:opacity-50"
         >
           <Plus size={16} />
-          배송지 추가
+          {t("mypage.addresses.addNew")}
         </button>
       </div>
 
       {addresses.length >= 10 && (
-        <p className="text-sm text-amber-600 mb-4">배송지는 최대 10개까지 등록할 수 있습니다.</p>
+        <p className="text-sm text-amber-600 mb-4">{t("mypage.addresses.maxLimit")}</p>
       )}
 
       {addresses.length === 0 ? (
         <div className="text-center py-20">
           <MapPin size={64} className="mx-auto text-gray-300 mb-6" />
-          <p className="text-gray-500 mb-4">등록된 배송지가 없습니다.</p>
+          <p className="text-gray-500 mb-4">{t("mypage.addresses.empty")}</p>
           <button
             onClick={openCreate}
             className="px-6 py-3 bg-[var(--color-primary)] text-white rounded-lg font-medium hover:opacity-90"
           >
-            배송지 추가
+            {t("mypage.addresses.addNew")}
           </button>
         </div>
       ) : (
@@ -144,7 +146,7 @@ export default function AddressesPage() {
                   <span className="font-medium text-[var(--color-secondary)]">{addr.recipientName}</span>
                   {addr.isDefault && (
                     <span className="px-2 py-0.5 text-xs rounded-full bg-[var(--color-primary)] text-white">
-                      기본
+                      {t("mypage.addresses.defaultLabel")}
                     </span>
                   )}
                 </div>
@@ -179,7 +181,7 @@ export default function AddressesPage() {
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-md">
             <div className="flex items-center justify-between p-5 border-b">
               <h2 className="font-semibold text-[var(--color-secondary)]">
-                {editingId ? "배송지 수정" : "배송지 추가"}
+                {editingId ? t("mypage.addresses.editAddress") : t("mypage.addresses.addNew")}
               </h2>
               <button onClick={() => setModalOpen(false)} className="text-gray-400 hover:text-gray-600">
                 <X size={20} />
@@ -187,7 +189,7 @@ export default function AddressesPage() {
             </div>
             <form onSubmit={handleSubmit} className="p-5 space-y-4">
               <div>
-                <label className="block text-sm text-gray-500 mb-1">수령인</label>
+                <label className="block text-sm text-gray-500 mb-1">{t("mypage.addresses.recipientName")}</label>
                 <input
                   type="text"
                   required
@@ -197,7 +199,7 @@ export default function AddressesPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm text-gray-500 mb-1">전화번호</label>
+                <label className="block text-sm text-gray-500 mb-1">{t("mypage.addresses.phoneNumber")}</label>
                 <input
                   type="tel"
                   required
@@ -208,7 +210,7 @@ export default function AddressesPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm text-gray-500 mb-1">우편번호</label>
+                <label className="block text-sm text-gray-500 mb-1">{t("mypage.addresses.zipCode")}</label>
                 <input
                   type="text"
                   required
@@ -218,7 +220,7 @@ export default function AddressesPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm text-gray-500 mb-1">주소</label>
+                <label className="block text-sm text-gray-500 mb-1">{t("mypage.addresses.address")}</label>
                 <input
                   type="text"
                   required
@@ -228,7 +230,7 @@ export default function AddressesPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm text-gray-500 mb-1">상세주소</label>
+                <label className="block text-sm text-gray-500 mb-1">{t("mypage.addresses.addressDetail")}</label>
                 <input
                   type="text"
                   value={form.address2}
@@ -242,7 +244,7 @@ export default function AddressesPage() {
                   checked={form.isDefault}
                   onChange={(e) => setForm((f) => ({ ...f, isDefault: e.target.checked }))}
                 />
-                기본 배송지로 설정
+                {t("mypage.addresses.setDefault")}
               </label>
               <div className="flex gap-3 pt-2">
                 <button
@@ -250,14 +252,14 @@ export default function AddressesPage() {
                   onClick={() => setModalOpen(false)}
                   className="flex-1 py-2.5 border rounded-lg text-sm text-gray-500 hover:bg-gray-50"
                 >
-                  취소
+                  {t("common.cancel")}
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
                   className="flex-1 py-2.5 bg-[var(--color-primary)] text-white rounded-lg text-sm font-medium hover:opacity-90 disabled:opacity-60"
                 >
-                  {submitting ? "저장 중..." : "저장"}
+                  {submitting ? t("common.saving") : t("common.save")}
                 </button>
               </div>
             </form>

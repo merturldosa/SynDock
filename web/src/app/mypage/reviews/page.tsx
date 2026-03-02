@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import Image from "next/image";
 import { Star, Trash2 } from "lucide-react";
@@ -13,6 +14,7 @@ function formatDate(dateStr: string): string {
 }
 
 export default function MyReviewsPage() {
+  const t = useTranslations();
   const [reviews, setReviews] = useState<MyReview[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -33,12 +35,12 @@ export default function MyReviewsPage() {
   useEffect(() => { load(page); }, [page]);
 
   const handleDelete = async (id: number) => {
-    if (!confirm("이 리뷰를 삭제하시겠습니까?")) return;
+    if (!confirm(t("mypage.reviews.deleteConfirm"))) return;
     try {
       await deleteReview(id);
       load(page);
     } catch {
-      alert("삭제에 실패했습니다.");
+      alert(t("mypage.reviews.deleteFailed"));
     }
   };
 
@@ -54,17 +56,17 @@ export default function MyReviewsPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-[var(--color-secondary)] mb-6">내 리뷰</h1>
+      <h1 className="text-2xl font-bold text-[var(--color-secondary)] mb-6">{t("mypage.reviews.title")}</h1>
 
       {reviews.length === 0 ? (
         <div className="text-center py-20">
           <Star size={64} className="mx-auto text-gray-300 mb-6" />
-          <p className="text-gray-500 mb-4">작성한 리뷰가 없습니다.</p>
+          <p className="text-gray-500 mb-4">{t("mypage.reviews.empty")}</p>
           <Link
             href="/products"
             className="inline-block px-6 py-3 bg-[var(--color-primary)] text-white rounded-lg font-medium hover:opacity-90"
           >
-            상품 둘러보기
+            {t("mypage.reviews.browseProducts")}
           </Link>
         </div>
       ) : (

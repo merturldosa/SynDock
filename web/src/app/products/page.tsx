@@ -6,12 +6,14 @@ import { ProductCard } from "@/components/home/ProductCard";
 import { getProducts, getCategories, getSearchSuggestions, type SearchSuggestion } from "@/lib/productApi";
 import { useCartStore } from "@/stores/cartStore";
 import { useAuthStore } from "@/stores/authStore";
+import { useTranslations } from "next-intl";
 import type { ProductSummary, CategoryInfo } from "@/types/product";
 import Link from "next/link";
 import Image from "next/image";
 import { Search, X, SlidersHorizontal, Star } from "lucide-react";
 
 function ProductList() {
+  const t = useTranslations();
   const router = useRouter();
   const searchParams = useSearchParams();
   const categoryFilter = searchParams.get("category");
@@ -189,20 +191,20 @@ function ProductList() {
 
   // Active filter chips
   const activeFilters: { key: string; label: string }[] = [];
-  if (minPriceParam) activeFilters.push({ key: "minPrice", label: `${Number(minPriceParam).toLocaleString()}원 이상` });
-  if (maxPriceParam) activeFilters.push({ key: "maxPrice", label: `${Number(maxPriceParam).toLocaleString()}원 이하` });
-  if (minRatingParam) activeFilters.push({ key: "minRating", label: `${minRatingParam}점 이상` });
-  if (isFeaturedParam === "true") activeFilters.push({ key: "isFeatured", label: "추천 상품" });
-  if (isNewParam === "true") activeFilters.push({ key: "isNew", label: "신상품" });
+  if (minPriceParam) activeFilters.push({ key: "minPrice", label: t("products.priceAbove", { price: Number(minPriceParam).toLocaleString() }) });
+  if (maxPriceParam) activeFilters.push({ key: "maxPrice", label: t("products.priceBelow", { price: Number(maxPriceParam).toLocaleString() }) });
+  if (minRatingParam) activeFilters.push({ key: "minRating", label: t("products.ratingAbove", { rating: minRatingParam }) });
+  if (isFeaturedParam === "true") activeFilters.push({ key: "isFeatured", label: t("products.featured") });
+  if (isNewParam === "true") activeFilters.push({ key: "isNew", label: t("products.new") });
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-gray-500 mb-6">
-        <Link href="/" className="hover:text-[var(--color-primary)]">홈</Link>
+        <Link href="/" className="hover:text-[var(--color-primary)]">{t("common.home")}</Link>
         <span>/</span>
         <span className="text-[var(--color-secondary)] font-medium">
-          {currentCategory ? currentCategory.name : "전체상품"}
+          {currentCategory ? currentCategory.name : t("common.allProducts")}
         </span>
       </div>
 
@@ -216,7 +218,7 @@ function ProductList() {
               value={searchTerm}
               onChange={(e) => handleSearchInput(e.target.value)}
               onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
-              placeholder="상품을 검색하세요..."
+              placeholder={t("common.searchPlaceholder")}
               className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)]"
             />
             {searchTerm && (
@@ -233,7 +235,7 @@ function ProductList() {
             type="submit"
             className="px-4 py-2.5 bg-[var(--color-primary)] text-white rounded-lg text-sm font-medium hover:opacity-90 transition-opacity"
           >
-            검색
+            {t("common.search")}
           </button>
           <button
             type="button"
@@ -245,7 +247,7 @@ function ProductList() {
             }`}
           >
             <SlidersHorizontal size={16} />
-            필터
+            {t("common.filter")}
             {hasActiveFilters && (
               <span className="w-5 h-5 rounded-full bg-[var(--color-primary)] text-white text-xs flex items-center justify-center">
                 {activeFilters.length}
@@ -276,11 +278,11 @@ function ProductList() {
                   <p className="text-xs text-[var(--color-primary)] font-bold">
                     {s.salePrice ? (
                       <>
-                        <span className="line-through text-gray-400 mr-1">{s.price.toLocaleString()}원</span>
-                        {s.salePrice.toLocaleString()}원
+                        <span className="line-through text-gray-400 mr-1">{s.price.toLocaleString()}{t("common.currency")}</span>
+                        {s.salePrice.toLocaleString()}{t("common.currency")}
                       </>
                     ) : (
-                      <>{s.price.toLocaleString()}원</>
+                      <>{s.price.toLocaleString()}{t("common.currency")}</>
                     )}
                   </p>
                 </div>
@@ -296,13 +298,13 @@ function ProductList() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Price Range */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">가격 범위</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">{t("products.priceRange")}</label>
               <div className="flex items-center gap-2">
                 <input
                   type="number"
                   value={minPrice}
                   onChange={(e) => setMinPrice(e.target.value)}
-                  placeholder="최소"
+                  placeholder={t("products.minPrice")}
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[var(--color-primary)]"
                 />
                 <span className="text-gray-400">~</span>
@@ -310,7 +312,7 @@ function ProductList() {
                   type="number"
                   value={maxPrice}
                   onChange={(e) => setMaxPrice(e.target.value)}
-                  placeholder="최대"
+                  placeholder={t("products.maxPrice")}
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[var(--color-primary)]"
                 />
               </div>
@@ -318,7 +320,7 @@ function ProductList() {
 
             {/* Rating */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">최소 평점</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">{t("products.minRating")}</label>
               <div className="flex gap-1">
                 {[1, 2, 3, 4, 5].map((n) => (
                   <button
@@ -337,14 +339,14 @@ function ProductList() {
                   </button>
                 ))}
                 {minRating > 0 && (
-                  <span className="text-sm text-gray-500 ml-2 self-center">{minRating}점 이상</span>
+                  <span className="text-sm text-gray-500 ml-2 self-center">{t("products.ratingAbove", { rating: minRating })}</span>
                 )}
               </div>
             </div>
 
             {/* Toggles */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">상품 유형</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">{t("products.productType")}</label>
               <div className="flex gap-3">
                 <button
                   type="button"
@@ -355,7 +357,7 @@ function ProductList() {
                       : "border-gray-200 text-gray-600 hover:border-gray-300"
                   }`}
                 >
-                  추천 상품
+                  {t("products.featured")}
                 </button>
                 <button
                   type="button"
@@ -366,7 +368,7 @@ function ProductList() {
                       : "border-gray-200 text-gray-600 hover:border-gray-300"
                   }`}
                 >
-                  신상품
+                  {t("products.new")}
                 </button>
               </div>
             </div>
@@ -377,14 +379,14 @@ function ProductList() {
               onClick={clearFilters}
               className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900"
             >
-              초기화
+              {t("common.reset")}
             </button>
             <button
               type="button"
               onClick={applyFilters}
               className="px-6 py-2 bg-[var(--color-primary)] text-white rounded-lg text-sm font-medium hover:opacity-90 transition-opacity"
             >
-              적용
+              {t("common.apply")}
             </button>
           </div>
         </div>
@@ -408,7 +410,7 @@ function ProductList() {
             onClick={clearFilters}
             className="text-xs text-gray-500 hover:text-red-500 underline"
           >
-            전체 해제
+            {t("common.clearAll")}
           </button>
         </div>
       )}
@@ -423,7 +425,7 @@ function ProductList() {
               : "bg-white text-[var(--color-secondary)] border border-gray-200 hover:border-[var(--color-primary)]"
           }`}
         >
-          전체
+          {t("common.all")}
         </Link>
         {categories.map((cat) => (
           <Link
@@ -443,13 +445,13 @@ function ProductList() {
 
       {/* Sort */}
       <div className="flex items-center justify-between mb-6">
-        <p className="text-sm text-gray-500">{totalCount.toLocaleString()}개의 상품</p>
+        <p className="text-sm text-gray-500">{t("common.productsCount", { count: totalCount.toLocaleString() })}</p>
         <div className="flex gap-2 text-sm">
           {[
-            { value: "", label: "기본" },
-            { value: "price_asc", label: "낮은가격" },
-            { value: "price_desc", label: "높은가격" },
-            { value: "name", label: "이름순" },
+            { value: "", label: t("products.sort.default") },
+            { value: "price_asc", label: t("products.sort.priceLow") },
+            { value: "price_desc", label: t("products.sort.priceHigh") },
+            { value: "name", label: t("products.sort.name") },
           ].map((opt) => (
             <Link
               key={opt.value}
@@ -505,10 +507,10 @@ function ProductList() {
           {products.length === 0 && (
             <div className="text-center py-20 text-gray-500">
               <p className="text-lg mb-2">
-                {searchParam ? `"${searchParam}" 검색 결과가 없습니다.` : "해당 조건에 맞는 상품이 없습니다."}
+                {searchParam ? t("products.searchNoResults", { term: searchParam }) : t("common.noResults")}
               </p>
               <Link href="/products" className="text-[var(--color-primary)] hover:underline">
-                전체상품 보기
+                {t("common.viewAllProducts")}
               </Link>
             </div>
           )}
@@ -519,7 +521,7 @@ function ProductList() {
                 onClick={loadMore}
                 className="px-8 py-3 border border-[var(--color-primary)] text-[var(--color-primary)] rounded-lg font-medium hover:bg-[var(--color-primary)] hover:text-white transition-colors"
               >
-                더보기 ({totalCount - products.length}개 남음)
+                {t("common.remaining", { count: totalCount - products.length })}
               </button>
             </div>
           )}

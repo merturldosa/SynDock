@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Package, ChevronRight } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { getOrders } from "@/lib/orderApi";
 import { useAuthStore } from "@/stores/authStore";
 import type { OrderSummary } from "@/types/order";
@@ -30,6 +31,7 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 export default function OrdersPage() {
+  const t = useTranslations();
   const { isAuthenticated } = useAuthStore();
   const [orders, setOrders] = useState<OrderSummary[]>([]);
   const [loading, setLoading] = useState(true);
@@ -61,17 +63,17 @@ export default function OrdersPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-[var(--color-secondary)] mb-6">주문내역</h1>
+      <h1 className="text-2xl font-bold text-[var(--color-secondary)] mb-6">{t("mypage.orders.title")}</h1>
 
       {orders.length === 0 ? (
         <div className="text-center py-20">
           <Package size={64} className="mx-auto text-gray-300 mb-6" />
-          <p className="text-gray-500 mb-4">주문내역이 없습니다.</p>
+          <p className="text-gray-500 mb-4">{t("mypage.orders.empty")}</p>
           <Link
             href="/products"
             className="inline-block px-6 py-3 bg-[var(--color-primary)] text-white rounded-lg font-medium hover:opacity-90 transition-opacity"
           >
-            상품 둘러보기
+            {t("mypage.orders.browseProducts")}
           </Link>
         </div>
       ) : (
@@ -101,7 +103,7 @@ export default function OrdersPage() {
                       </div>
                       <p className="font-medium text-sm text-[var(--color-secondary)] line-clamp-1">
                         {order.firstProductName}
-                        {order.itemCount > 1 && ` 외 ${order.itemCount - 1}건`}
+                        {order.itemCount > 1 && ` ${t("mypage.orders.andMore", { count: order.itemCount - 1 })}`}
                       </p>
                       <p className="text-sm font-bold text-[var(--color-primary)] mt-0.5">
                         {formatPrice(order.totalAmount)}

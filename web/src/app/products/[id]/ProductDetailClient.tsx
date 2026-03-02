@@ -15,13 +15,15 @@ import { ReviewTab } from "@/components/product/ReviewTab";
 import { QnATab } from "@/components/product/QnATab";
 import { ShareButton } from "@/components/ShareButton";
 import { AddToCollectionModal } from "@/components/AddToCollectionModal";
+import { useTranslations } from "next-intl";
 import type { ProductDetail } from "@/types/product";
 
 function formatPrice(price: number): string {
-  return price.toLocaleString("ko-KR") + "원";
+  return price.toLocaleString("ko-KR") + "\uC6D0";
 }
 
 export default function ProductDetailClient() {
+  const t = useTranslations();
   const params = useParams();
   const router = useRouter();
   const { isAuthenticated } = useAuthStore();
@@ -63,9 +65,9 @@ export default function ProductDetailClient() {
   if (!product) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-20 text-center">
-        <p className="text-lg text-gray-500 mb-4">상품을 찾을 수 없습니다.</p>
+        <p className="text-lg text-gray-500 mb-4">{t("products.notFound")}</p>
         <Link href="/products" className="text-[var(--color-primary)] hover:underline">
-          전체상품 보기
+          {t("common.viewAllProducts")}
         </Link>
       </div>
     );
@@ -99,7 +101,7 @@ export default function ProductDetailClient() {
     const success = await addToCart(product.id);
     setAddingToCart(false);
     if (success) {
-      alert(`${product.name}이(가) 장바구니에 담겼습니다.`);
+      alert(t("products.addedToCart", { name: product.name }));
     }
   };
 
@@ -107,7 +109,7 @@ export default function ProductDetailClient() {
     <div className="max-w-7xl mx-auto px-4 py-8">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-gray-500 mb-6">
-        <Link href="/" className="hover:text-[var(--color-primary)]">홈</Link>
+        <Link href="/" className="hover:text-[var(--color-primary)]">{t("common.home")}</Link>
         <span>/</span>
         <Link
           href={`/products?category=${product.categorySlug}`}
@@ -124,7 +126,7 @@ export default function ProductDetailClient() {
         onClick={() => router.back()}
         className="flex items-center gap-1 text-sm text-gray-500 hover:text-[var(--color-secondary)] mb-6"
       >
-        <ChevronLeft size={16} /> 뒤로가기
+        <ChevronLeft size={16} /> {t("common.back")}
       </button>
 
       <div className="grid md:grid-cols-2 gap-8 lg:gap-12">
@@ -178,16 +180,16 @@ export default function ProductDetailClient() {
           <h1 className="text-2xl lg:text-3xl font-bold text-[var(--color-secondary)] mb-4">{product.name}</h1>
 
           {product.specification && (
-            <p className="text-gray-500 mb-4">규격: {product.specification}</p>
+            <p className="text-gray-500 mb-4">{t("products.specification")}: {product.specification}</p>
           )}
 
           {/* Price */}
           <div className="border-y border-gray-100 py-6 mb-6">
             {isInquiry ? (
               <div>
-                <p className="text-2xl font-bold text-[var(--color-primary)] mb-2">상담요망</p>
+                <p className="text-2xl font-bold text-[var(--color-primary)] mb-2">{t("products.inquiryPrice")}</p>
                 <p className="text-sm text-gray-500">
-                  이 상품은 주문 제작 또는 맞춤 상담이 필요한 상품입니다.
+                  {t("products.inquiryDesc")}
                 </p>
               </div>
             ) : (
@@ -207,7 +209,7 @@ export default function ProductDetailClient() {
           {/* Description */}
           {product.description && (
             <div className="mb-8">
-              <h3 className="font-semibold text-[var(--color-secondary)] mb-2">상품 설명</h3>
+              <h3 className="font-semibold text-[var(--color-secondary)] mb-2">{t("products.description")}</h3>
               <p className="text-gray-500 whitespace-pre-wrap">{product.description}</p>
             </div>
           )}
@@ -225,7 +227,7 @@ export default function ProductDetailClient() {
               <button
                 onClick={() => setShowCollectionModal(true)}
                 className="p-4 rounded-xl border-2 border-gray-200 text-gray-400 hover:border-purple-300 hover:text-purple-500 transition-colors"
-                title="컬렉션에 추가"
+                title={t("products.addToCollection")}
               >
                 <FolderPlus size={22} />
               </button>
@@ -236,11 +238,11 @@ export default function ProductDetailClient() {
                   href={`tel:${contactPhone}`}
                   className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-[var(--color-primary)] text-white rounded-xl font-bold text-lg hover:opacity-90 transition-opacity"
                 >
-                  <Phone size={22} /> 전화 상담
+                  <Phone size={22} /> {t("products.phoneConsult")}
                 </a>
               ) : (
                 <span className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-gray-200 text-gray-500 rounded-xl font-bold text-lg">
-                  상담 문의
+                  {t("products.contactInquiry")}
                 </span>
               )
             ) : (
@@ -250,10 +252,10 @@ export default function ProductDetailClient() {
                   disabled={addingToCart}
                   className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-[var(--color-secondary)] text-white rounded-xl font-bold text-lg hover:opacity-90 transition-opacity disabled:opacity-60"
                 >
-                  <ShoppingCart size={22} /> {addingToCart ? "담는 중..." : "장바구니"}
+                  <ShoppingCart size={22} /> {addingToCart ? t("products.addingToCart") : t("products.addToCart")}
                 </button>
                 <button className="flex-1 px-6 py-4 bg-[var(--color-primary)] text-white rounded-xl font-bold text-lg hover:opacity-90 transition-opacity">
-                  바로 구매
+                  {t("products.buyNow")}
                 </button>
               </>
             )}
@@ -261,9 +263,9 @@ export default function ProductDetailClient() {
 
           {/* Info */}
           <div className="mt-8 p-4 bg-gray-50 rounded-xl text-sm text-gray-500 space-y-2">
-            <p>조회수: {product.viewCount.toLocaleString()}</p>
-            <p>배송: 주문 확인 후 3~7일 이내 출고</p>
-            {contactPhone && <p>문의: {contactPhone} (평일 09:00~18:00)</p>}
+            <p>{t("common.viewCount")}: {product.viewCount.toLocaleString()}</p>
+            <p>{t("common.shipping")}: {t("common.shippingInfo")}</p>
+            {contactPhone && <p>{t("common.inquiry")}: {contactPhone} ({t("common.inquiryHours")})</p>}
           </div>
         </div>
       </div>
@@ -272,9 +274,9 @@ export default function ProductDetailClient() {
       <div className="mt-12 border-t border-gray-200">
         <div className="flex border-b border-gray-200">
           {([
-            { key: "detail" as const, label: "상세정보" },
-            { key: "review" as const, label: "리뷰" },
-            { key: "qna" as const, label: "Q&A" },
+            { key: "detail" as const, label: t("products.detailInfo") },
+            { key: "review" as const, label: t("products.review") },
+            { key: "qna" as const, label: t("products.qna") },
           ]).map((tab) => (
             <button
               key={tab.key}
@@ -319,7 +321,7 @@ export default function ProductDetailClient() {
               ) : product.description ? (
                 <p className="text-gray-600 whitespace-pre-wrap">{product.description}</p>
               ) : (
-                <p className="text-gray-400 text-center py-8">상세정보가 없습니다.</p>
+                <p className="text-gray-400 text-center py-8">{t("products.noDetail")}</p>
               )}
             </div>
           )}
@@ -332,7 +334,7 @@ export default function ProductDetailClient() {
         <div className="mt-16">
           <div className="flex items-center gap-2 mb-6">
             <Sparkles className="w-5 h-5 text-[var(--color-primary)]" />
-            <h2 className="text-xl font-bold text-[var(--color-secondary)]">추천 상품</h2>
+            <h2 className="text-xl font-bold text-[var(--color-secondary)]">{t("products.recommended")}</h2>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             {recommendations.map((rec) => (

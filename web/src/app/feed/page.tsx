@@ -4,24 +4,26 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { MessageCircle, Hash, PenSquare } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { getFeed, getTrendingHashtags, toggleReaction } from "@/lib/postApi";
 import { useAuthStore } from "@/stores/authStore";
 import type { PostSummary, PagedPosts, HashtagInfo } from "@/types/post";
 
-function timeAgo(dateStr: string): string {
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return "방금 전";
-  if (mins < 60) return `${mins}분 전`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}시간 전`;
-  const days = Math.floor(hrs / 24);
-  if (days < 30) return `${days}일 전`;
-  return new Date(dateStr).toLocaleDateString("ko-KR");
-}
-
 export default function FeedPage() {
+  const t = useTranslations();
   const { isAuthenticated } = useAuthStore();
+
+  const timeAgo = (dateStr: string): string => {
+    const diff = Date.now() - new Date(dateStr).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return t("feed.justNow");
+    if (mins < 60) return t("feed.minutesAgo", { count: mins });
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return t("feed.hoursAgo", { count: hrs });
+    const days = Math.floor(hrs / 24);
+    if (days < 30) return t("feed.daysAgo", { count: days });
+    return new Date(dateStr).toLocaleDateString();
+  };
   const [data, setData] = useState<PagedPosts | null>(null);
   const [trending, setTrending] = useState<HashtagInfo[]>([]);
   const [page, setPage] = useState(1);
@@ -42,14 +44,14 @@ export default function FeedPage() {
     <div className="max-w-4xl mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-[var(--color-secondary)]">
-          커뮤니티
+          {t("feed.title")}
         </h1>
         {isAuthenticated && (
           <Link
             href="/feed/write"
             className="flex items-center gap-2 px-4 py-2.5 bg-[var(--color-primary)] text-white rounded-lg text-sm font-medium hover:opacity-90"
           >
-            <PenSquare size={16} /> 글쓰기
+            <PenSquare size={16} /> {t("feed.write")}
           </Link>
         )}
       </div>
@@ -64,7 +66,7 @@ export default function FeedPage() {
           ) : !data || data.items.length === 0 ? (
             <div className="text-center py-20 text-gray-400">
               <MessageCircle size={48} className="mx-auto mb-4 opacity-50" />
-              <p>아직 게시글이 없습니다.</p>
+              <p>{t("feed.empty")}</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -142,7 +144,7 @@ export default function FeedPage() {
                     disabled={page === 1}
                     className="px-3 py-2 text-sm border rounded-lg disabled:opacity-40"
                   >
-                    이전
+                    {t("feed.prev")}
                   </button>
                   <span className="text-sm text-gray-500">
                     {page} / {Math.ceil(data.totalCount / data.pageSize)}
@@ -152,7 +154,7 @@ export default function FeedPage() {
                     disabled={page * data.pageSize >= data.totalCount}
                     className="px-3 py-2 text-sm border rounded-lg disabled:opacity-40"
                   >
-                    다음
+                    {t("feed.next")}
                   </button>
                 </div>
               )}
@@ -165,10 +167,10 @@ export default function FeedPage() {
           <div className="bg-white rounded-xl shadow-sm p-5 sticky top-24">
             <h3 className="font-semibold text-[var(--color-secondary)] mb-4 flex items-center gap-2">
               <Hash size={18} className="text-[var(--color-primary)]" />
-              인기 해시태그
+              {t("feed.trending")}
             </h3>
             {trending.length === 0 ? (
-              <p className="text-sm text-gray-400">아직 해시태그가 없습니다.</p>
+              <p className="text-sm text-gray-400">{t("feed.noHashtags")}</p>
             ) : (
               <div className="space-y-2">
                 {trending.map((tag) => (

@@ -3,18 +3,19 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Calendar, Church, Star, ChevronRight } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { getTodayLiturgy, getLiturgicalSeasons } from "@/lib/liturgyApi";
 import type { LiturgyTodayDto, LiturgicalSeasonDto } from "@/types/liturgy";
 
-const SEASON_LABELS: Record<string, string> = {
-  Advent: "대림 시기",
-  Christmas: "성탄 시기",
-  OrdinaryTime1: "연중 시기 (전반)",
-  Lent: "사순 시기",
-  Triduum: "성삼일",
-  Easter: "부활 시기",
-  OrdinaryTime2: "연중 시기 (후반)",
-};
+const SEASON_KEYS = [
+  "Advent",
+  "Christmas",
+  "OrdinaryTime1",
+  "Lent",
+  "Triduum",
+  "Easter",
+  "OrdinaryTime2",
+] as const;
 
 const COLOR_MAP: Record<string, { bg: string; text: string; border: string; accent: string }> = {
   purple: { bg: "bg-purple-50", text: "text-purple-900", border: "border-purple-300", accent: "bg-purple-600" },
@@ -31,6 +32,7 @@ function formatDate(dateStr: string) {
 }
 
 export default function LiturgyPage() {
+  const t = useTranslations();
   const [today, setToday] = useState<LiturgyTodayDto | null>(null);
   const [seasons, setSeasons] = useState<LiturgicalSeasonDto[]>([]);
   const [loading, setLoading] = useState(true);
@@ -66,24 +68,20 @@ export default function LiturgyPage() {
           <div className="flex items-center gap-2 mb-2">
             <div className={`w-3 h-3 rounded-full ${colorStyle.accent}`} />
             <span className={`text-sm font-medium ${colorStyle.text} opacity-70`}>
-              오늘의 전례
+              {t("liturgy.today")}
             </span>
           </div>
           <h1 className={`text-3xl font-bold mb-2 ${colorStyle.text}`}>
-            {SEASON_LABELS[today.currentSeason.seasonName] || today.currentSeason.seasonName}
+            {t(`liturgy.season.${today.currentSeason.seasonName}`)}
           </h1>
           <p className={`${colorStyle.text} opacity-70`}>
             {formatDate(today.currentSeason.startDate)} ~ {formatDate(today.currentSeason.endDate)}
           </p>
           <div className="mt-4 flex items-center gap-2">
-            <span className={`text-sm ${colorStyle.text} opacity-60`}>전례색:</span>
+            <span className={`text-sm ${colorStyle.text} opacity-60`}>{t("liturgy.liturgicalColor")}:</span>
             <div className={`w-6 h-6 rounded-full border-2 border-white shadow ${colorStyle.accent}`} />
             <span className={`text-sm font-medium ${colorStyle.text}`}>
-              {today.currentSeason.liturgicalColor === "purple" ? "보라" :
-               today.currentSeason.liturgicalColor === "white" ? "흰색" :
-               today.currentSeason.liturgicalColor === "green" ? "녹색" :
-               today.currentSeason.liturgicalColor === "red" ? "빨강" :
-               today.currentSeason.liturgicalColor}
+              {t(`liturgy.color.${today.currentSeason.liturgicalColor}`)}
             </span>
           </div>
         </div>
@@ -94,7 +92,7 @@ export default function LiturgyPage() {
         <div className="bg-white rounded-2xl shadow-sm p-6 mb-8">
           <h2 className="text-xl font-bold text-[var(--color-secondary)] mb-4 flex items-center gap-2">
             <Star size={20} className="text-[var(--color-primary)]" />
-            오늘의 성인
+            {t("liturgy.todaySaints")}
           </h2>
           <div className="space-y-3">
             {today.todaySaints.map((saint) => (
@@ -111,7 +109,7 @@ export default function LiturgyPage() {
                     <p className="text-sm text-gray-500 italic">{saint.latinName}</p>
                   )}
                   {saint.patronage && (
-                    <p className="text-xs text-gray-400 mt-1">수호: {saint.patronage}</p>
+                    <p className="text-xs text-gray-400 mt-1">{t("liturgy.patronage")}: {saint.patronage}</p>
                   )}
                 </div>
                 <ChevronRight size={18} className="text-gray-400" />
@@ -124,7 +122,7 @@ export default function LiturgyPage() {
       {today && today.todaySaints.length === 0 && (
         <div className="bg-white rounded-2xl shadow-sm p-6 mb-8 text-center">
           <Church size={32} className="mx-auto mb-2 text-gray-300" />
-          <p className="text-gray-400 text-sm">오늘 축일인 성인이 없습니다.</p>
+          <p className="text-gray-400 text-sm">{t("liturgy.noSaintsToday")}</p>
         </div>
       )}
 
@@ -132,7 +130,7 @@ export default function LiturgyPage() {
       <div className="bg-white rounded-2xl shadow-sm p-6">
         <h2 className="text-xl font-bold text-[var(--color-secondary)] mb-4 flex items-center gap-2">
           <Calendar size={20} className="text-[var(--color-primary)]" />
-          {currentYear}년 전례력
+          {t("liturgy.calendarYear", { year: currentYear })}
         </h2>
         <div className="space-y-3">
           {seasons.map((season, idx) => {
@@ -152,11 +150,11 @@ export default function LiturgyPage() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <span className={`font-medium ${isCurrent ? sColor.text : "text-[var(--color-secondary)]"}`}>
-                      {SEASON_LABELS[season.seasonName] || season.seasonName}
+                      {t(`liturgy.season.${season.seasonName}`)}
                     </span>
                     {isCurrent && (
                       <span className="text-xs px-2 py-0.5 bg-[var(--color-primary)] text-white rounded-full">
-                        현재
+                        {t("liturgy.current")}
                       </span>
                     )}
                   </div>

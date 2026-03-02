@@ -3,10 +3,12 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Upload, X, Hash } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { createPost, uploadImage } from "@/lib/postApi";
 import { useAuthStore } from "@/stores/authStore";
 
 export default function FeedWritePage() {
+  const t = useTranslations();
   const router = useRouter();
   const { isAuthenticated } = useAuthStore();
   const [title, setTitle] = useState("");
@@ -21,7 +23,7 @@ export default function FeedWritePage() {
   if (!isAuthenticated) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-20 text-center">
-        <p className="text-gray-500">로그인 후 글을 작성할 수 있습니다.</p>
+        <p className="text-gray-500">{t("feed.loginRequired")}</p>
       </div>
     );
   }
@@ -51,7 +53,7 @@ export default function FeedWritePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!content.trim()) {
-      alert("내용을 입력해 주세요.");
+      alert(t("feed.contentRequired"));
       return;
     }
     setSubmitting(true);
@@ -65,7 +67,7 @@ export default function FeedWritePage() {
       });
       router.push("/feed");
     } catch {
-      alert("게시글 작성에 실패했습니다.");
+      alert(t("feed.postFailed"));
     }
     setSubmitting(false);
   };
@@ -73,7 +75,7 @@ export default function FeedWritePage() {
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold text-[var(--color-secondary)] mb-6">
-        글쓰기
+        {t("feed.writePost")}
       </h1>
 
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -83,23 +85,23 @@ export default function FeedWritePage() {
             onChange={(e) => setPostType(e.target.value)}
             className="px-3 py-2 border rounded-lg text-sm"
           >
-            <option value="general">일반</option>
-            <option value="review">리뷰</option>
-            <option value="daily">일상</option>
+            <option value="general">{t("feed.typeGeneral")}</option>
+            <option value="review">{t("feed.typeReview")}</option>
+            <option value="daily">{t("feed.typeDaily")}</option>
           </select>
 
           <input
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="제목 (선택)"
+            placeholder={t("feed.postTitle")}
             className="w-full px-3 py-2.5 border rounded-lg text-sm"
           />
 
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            placeholder="무슨 이야기를 나누고 싶으신가요?"
+            placeholder={t("feed.postContent")}
             rows={6}
             className="w-full px-3 py-2.5 border rounded-lg text-sm resize-none"
             required
@@ -127,7 +129,7 @@ export default function FeedWritePage() {
             <label className="w-20 h-20 border-2 border-dashed rounded-lg flex flex-col items-center justify-center cursor-pointer text-gray-400 hover:border-[var(--color-primary)] hover:text-[var(--color-primary)]">
               <Upload size={18} />
               <span className="text-[10px] mt-0.5">
-                {uploading ? "..." : "사진"}
+                {uploading ? "..." : t("feed.attachImage")}
               </span>
               <input
                 type="file"
@@ -158,7 +160,7 @@ export default function FeedWritePage() {
                       addHashtag();
                     }
                   }}
-                  placeholder="해시태그 입력 후 Enter"
+                  placeholder={t("feed.hashtagPlaceholder")}
                   className="w-full pl-8 pr-3 py-2 border rounded-lg text-sm"
                 />
               </div>
@@ -192,14 +194,14 @@ export default function FeedWritePage() {
             onClick={() => router.back()}
             className="flex-1 py-3 border rounded-lg text-sm font-medium text-gray-500"
           >
-            취소
+            {t("feed.cancel")}
           </button>
           <button
             type="submit"
             disabled={submitting || !content.trim()}
             className="flex-1 py-3 bg-[var(--color-primary)] text-white rounded-lg text-sm font-medium hover:opacity-90 disabled:opacity-60"
           >
-            {submitting ? "게시 중..." : "게시하기"}
+            {submitting ? t("feed.publishing") : t("feed.publishPost")}
           </button>
         </div>
       </form>

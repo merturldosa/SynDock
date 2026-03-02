@@ -2,14 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { Coins, ArrowUpCircle, ArrowDownCircle } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { getPointBalance, getPointHistory, type PointHistoryDto, type PagedPointHistory } from "@/lib/pointApi";
 
-const TYPE_LABELS: Record<string, { label: string; color: string; icon: typeof ArrowUpCircle }> = {
-  Earned: { label: "적립", color: "text-emerald-600", icon: ArrowUpCircle },
-  Used: { label: "사용", color: "text-red-500", icon: ArrowDownCircle },
-  Refund: { label: "환불", color: "text-blue-500", icon: ArrowUpCircle },
-  Bonus: { label: "보너스", color: "text-orange-500", icon: ArrowUpCircle },
-  Expired: { label: "만료", color: "text-gray-400", icon: ArrowDownCircle },
+const TYPE_CONFIG: Record<string, { labelKey: string; color: string; icon: typeof ArrowUpCircle }> = {
+  Earned: { labelKey: "mypage.points.earned", color: "text-emerald-600", icon: ArrowUpCircle },
+  Used: { labelKey: "mypage.points.used", color: "text-red-500", icon: ArrowDownCircle },
+  Refund: { labelKey: "mypage.points.refund", color: "text-blue-500", icon: ArrowUpCircle },
+  Bonus: { labelKey: "mypage.points.bonus", color: "text-orange-500", icon: ArrowUpCircle },
+  Expired: { labelKey: "mypage.points.expired", color: "text-gray-400", icon: ArrowDownCircle },
 };
 
 function formatPrice(price: number): string {
@@ -17,6 +18,7 @@ function formatPrice(price: number): string {
 }
 
 export default function PointsPage() {
+  const t = useTranslations();
   const [balance, setBalance] = useState(0);
   const [history, setHistory] = useState<PagedPointHistory | null>(null);
   const [page, setPage] = useState(1);
@@ -48,7 +50,7 @@ export default function PointsPage() {
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold text-[var(--color-secondary)] mb-6">
-        포인트
+        {t("mypage.points.title")}
       </h1>
 
       {/* Balance Card */}
@@ -56,7 +58,7 @@ export default function PointsPage() {
         <div className="flex items-center gap-3">
           <Coins size={32} className="text-[var(--color-primary)]" />
           <div>
-            <p className="text-sm text-white/60">보유 포인트</p>
+            <p className="text-sm text-white/60">{t("mypage.points.balance")}</p>
             <p className="text-3xl font-bold">{formatPrice(balance)}P</p>
           </div>
         </div>
@@ -64,18 +66,18 @@ export default function PointsPage() {
 
       {/* History */}
       <h2 className="font-semibold text-[var(--color-secondary)] mb-3">
-        적립/사용 내역
+        {t("mypage.points.history")}
       </h2>
 
       {!history || history.items.length === 0 ? (
         <div className="text-center py-12 text-gray-400">
-          <p>포인트 내역이 없습니다.</p>
+          <p>{t("mypage.points.empty")}</p>
         </div>
       ) : (
         <>
           <div className="space-y-2">
             {history.items.map((item) => {
-              const typeInfo = TYPE_LABELS[item.transactionType] || TYPE_LABELS.Earned;
+              const typeInfo = TYPE_CONFIG[item.transactionType] || TYPE_CONFIG.Earned;
               const Icon = typeInfo.icon;
               return (
                 <div
@@ -85,7 +87,7 @@ export default function PointsPage() {
                   <Icon size={20} className={typeInfo.color} />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-gray-900">
-                      {item.description || typeInfo.label}
+                      {item.description || t(typeInfo.labelKey)}
                     </p>
                     <p className="text-xs text-gray-400">
                       {new Date(item.createdAt).toLocaleDateString("ko-KR")}
@@ -106,7 +108,7 @@ export default function PointsPage() {
                 disabled={page === 1}
                 className="px-3 py-2 text-sm border rounded-lg disabled:opacity-40"
               >
-                이전
+                {t("mypage.points.prev")}
               </button>
               <span className="text-sm text-gray-500">
                 {page} / {Math.ceil(history.totalCount / 20)}
@@ -116,7 +118,7 @@ export default function PointsPage() {
                 disabled={page * 20 >= history.totalCount}
                 className="px-3 py-2 text-sm border rounded-lg disabled:opacity-40"
               >
-                다음
+                {t("mypage.points.next")}
               </button>
             </div>
           )}

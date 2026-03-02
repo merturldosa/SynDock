@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
 import Script from "next/script";
@@ -19,6 +20,7 @@ function formatPrice(price: number): string {
 
 export default function OrderPage() {
   const router = useRouter();
+  const t = useTranslations();
   const { cart, isLoading: cartLoading, fetchCart } = useCartStore();
   const { isAuthenticated } = useAuthStore();
   const [addresses, setAddresses] = useState<Address[]>([]);
@@ -86,12 +88,12 @@ export default function OrderPage() {
     return (
       <div className="max-w-4xl mx-auto px-4 py-20 text-center">
         <ShoppingCart size={64} className="mx-auto text-gray-300 mb-6" />
-        <h1 className="text-2xl font-bold text-[var(--color-secondary)] mb-3">주문할 상품이 없습니다</h1>
+        <h1 className="text-2xl font-bold text-[var(--color-secondary)] mb-3">{t("order.emptyCart")}</h1>
         <Link
           href="/products"
           className="inline-block px-6 py-3 bg-[var(--color-primary)] text-white rounded-lg font-medium hover:opacity-90 transition-opacity mt-4"
         >
-          상품 둘러보기
+          {t("cart.browseProducts")}
         </Link>
       </div>
     );
@@ -107,7 +109,7 @@ export default function OrderPage() {
       setShowNewAddress(false);
       setNewAddress({ recipientName: "", phone: "", zipCode: "", address1: "", address2: "", isDefault: false });
     } catch {
-      alert("배송지 저장에 실패했습니다.");
+      alert(t("order.saveFailed"));
     }
   };
 
@@ -127,7 +129,7 @@ export default function OrderPage() {
       if (paymentProvider === "TossPayments" && paymentClientKey && finalAmount > 0) {
         const tossPayments = (window as unknown as Record<string, unknown>).TossPayments as ((clientKey: string) => { requestPayment: (method: string, options: Record<string, unknown>) => Promise<void> }) | undefined;
         if (!tossPayments) {
-          alert("결제 모듈을 불러오는 중입니다. 잠시 후 다시 시도해 주세요.");
+          alert(t("order.paymentLoading"));
           setSubmitting(false);
           return;
         }
@@ -147,7 +149,7 @@ export default function OrderPage() {
         router.push(`/order/complete?id=${orderId}`);
       }
     } catch {
-      alert("주문에 실패했습니다. 다시 시도해 주세요.");
+      alert(t("order.orderFailed"));
       setSubmitting(false);
     }
   };
@@ -157,19 +159,19 @@ export default function OrderPage() {
       {paymentProvider === "TossPayments" && (
         <Script src="https://js.tosspayments.com/v1" strategy="afterInteractive" />
       )}
-      <h1 className="text-2xl font-bold text-[var(--color-secondary)] mb-8">주문서</h1>
+      <h1 className="text-2xl font-bold text-[var(--color-secondary)] mb-8">{t("order.title")}</h1>
 
       {/* Shipping Address */}
       <section className="bg-white rounded-xl shadow-sm p-6 mb-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-bold text-[var(--color-secondary)] flex items-center gap-2">
-            <MapPin size={18} /> 배송지
+            <MapPin size={18} /> {t("order.shippingAddress")}
           </h2>
           <button
             onClick={() => setShowNewAddress(!showNewAddress)}
             className="text-sm text-[var(--color-primary)] hover:underline flex items-center gap-1"
           >
-            <Plus size={14} /> 새 배송지 추가
+            <Plus size={14} /> {t("order.addNewAddress")}
           </button>
         </div>
 
@@ -177,14 +179,14 @@ export default function OrderPage() {
           <div className="border border-[var(--color-primary)] rounded-lg p-4 mb-4 space-y-3">
             <input
               type="text"
-              placeholder="수령인 이름"
+              placeholder={t("order.recipientName")}
               value={newAddress.recipientName}
               onChange={(e) => setNewAddress({ ...newAddress, recipientName: e.target.value })}
               className="w-full px-3 py-2 border rounded-lg text-sm"
             />
             <input
               type="text"
-              placeholder="전화번호"
+              placeholder={t("order.phone")}
               value={newAddress.phone}
               onChange={(e) => setNewAddress({ ...newAddress, phone: e.target.value })}
               className="w-full px-3 py-2 border rounded-lg text-sm"
@@ -192,14 +194,14 @@ export default function OrderPage() {
             <div className="flex gap-2">
               <input
                 type="text"
-                placeholder="우편번호"
+                placeholder={t("order.zipCode")}
                 value={newAddress.zipCode}
                 onChange={(e) => setNewAddress({ ...newAddress, zipCode: e.target.value })}
                 className="w-32 px-3 py-2 border rounded-lg text-sm"
               />
               <input
                 type="text"
-                placeholder="기본 주소"
+                placeholder={t("order.baseAddress")}
                 value={newAddress.address1}
                 onChange={(e) => setNewAddress({ ...newAddress, address1: e.target.value })}
                 className="flex-1 px-3 py-2 border rounded-lg text-sm"
@@ -207,7 +209,7 @@ export default function OrderPage() {
             </div>
             <input
               type="text"
-              placeholder="상세 주소 (선택)"
+              placeholder={t("order.detailAddress")}
               value={newAddress.address2}
               onChange={(e) => setNewAddress({ ...newAddress, address2: e.target.value })}
               className="w-full px-3 py-2 border rounded-lg text-sm"
@@ -219,20 +221,20 @@ export default function OrderPage() {
                   checked={newAddress.isDefault}
                   onChange={(e) => setNewAddress({ ...newAddress, isDefault: e.target.checked })}
                 />
-                기본 배송지로 설정
+                {t("order.setDefault")}
               </label>
               <button
                 onClick={handleSaveAddress}
                 className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg text-sm hover:opacity-90"
               >
-                저장
+                {t("common.save")}
               </button>
             </div>
           </div>
         )}
 
         {addresses.length === 0 && !showNewAddress ? (
-          <p className="text-gray-500 text-sm">등록된 배송지가 없습니다. 새 배송지를 추가해 주세요.</p>
+          <p className="text-gray-500 text-sm">{t("order.noAddress")}</p>
         ) : (
           <div className="space-y-2">
             {addresses.map((addr) => (
@@ -255,7 +257,7 @@ export default function OrderPage() {
                   <p className="font-medium text-sm text-[var(--color-secondary)]">
                     {addr.recipientName}
                     {addr.isDefault && (
-                      <span className="ml-2 text-xs text-[var(--color-primary)] font-normal">기본</span>
+                      <span className="ml-2 text-xs text-[var(--color-primary)] font-normal">{t("mypage.addresses.defaultLabel")}</span>
                     )}
                   </p>
                   <p className="text-sm text-gray-500">{addr.phone}</p>
@@ -269,7 +271,7 @@ export default function OrderPage() {
 
       {/* Order Items */}
       <section className="bg-white rounded-xl shadow-sm p-6 mb-6">
-        <h2 className="font-bold text-[var(--color-secondary)] mb-4">주문 상품 ({cart.totalQuantity}개)</h2>
+        <h2 className="font-bold text-[var(--color-secondary)] mb-4">{t("order.orderItems", { count: cart.totalQuantity })}</h2>
         <div className="space-y-3">
           {cart.items.map((item) => (
             <div key={item.id} className="flex gap-3 py-3 border-b border-gray-50 last:border-0">
@@ -293,11 +295,11 @@ export default function OrderPage() {
 
       {/* Note */}
       <section className="bg-white rounded-xl shadow-sm p-6 mb-6">
-        <h2 className="font-bold text-[var(--color-secondary)] mb-3">배송 메모</h2>
+        <h2 className="font-bold text-[var(--color-secondary)] mb-3">{t("order.shippingMemo")}</h2>
         <textarea
           value={note}
           onChange={(e) => setNote(e.target.value)}
-          placeholder="배송 시 요청사항을 입력해 주세요 (선택)"
+          placeholder={t("order.memoPlaceholder")}
           className="w-full px-3 py-2 border rounded-lg text-sm resize-none h-20"
         />
       </section>
@@ -305,7 +307,7 @@ export default function OrderPage() {
       {/* Coupon */}
       <section className="bg-white rounded-xl shadow-sm p-6 mb-6">
         <h2 className="font-bold text-[var(--color-secondary)] mb-3 flex items-center gap-2">
-          <Tag size={18} /> 쿠폰
+          <Tag size={18} /> {t("order.coupon")}
         </h2>
         {appliedCoupon ? (
           <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200">
@@ -318,7 +320,7 @@ export default function OrderPage() {
               onClick={() => { setAppliedCoupon(null); setCouponCode(""); }}
               className="text-xs text-gray-500 hover:text-red-500"
             >
-              취소
+              {t("common.cancel")}
             </button>
           </div>
         ) : (
@@ -328,7 +330,7 @@ export default function OrderPage() {
                 type="text"
                 value={couponCode}
                 onChange={(e) => { setCouponCode(e.target.value.toUpperCase()); setCouponError(""); }}
-                placeholder="쿠폰 코드 입력"
+                placeholder={t("order.couponCode")}
                 className="flex-1 px-3 py-2 border rounded-lg text-sm"
               />
               <button
@@ -341,21 +343,21 @@ export default function OrderPage() {
                       setAppliedCoupon({ code: couponCode.trim(), name: matched?.couponName || couponCode.trim(), discount: result.discountAmount });
                       setCouponError("");
                     } else {
-                      setCouponError(result.errorMessage || "사용할 수 없는 쿠폰입니다.");
+                      setCouponError(result.errorMessage || t("order.couponInvalid"));
                     }
                   } catch {
-                    setCouponError("쿠폰 확인에 실패했습니다.");
+                    setCouponError(t("order.couponCheckFailed"));
                   }
                 }}
                 className="px-4 py-2 bg-[var(--color-secondary)] text-white rounded-lg text-sm hover:opacity-90"
               >
-                적용
+                {t("common.apply")}
               </button>
             </div>
             {couponError && <p className="text-xs text-red-500 mb-2">{couponError}</p>}
             {myCoupons.length > 0 && (
               <div className="space-y-1">
-                <p className="text-xs text-gray-400 mb-1">보유 쿠폰</p>
+                <p className="text-xs text-gray-400 mb-1">{t("order.myCoupons")}</p>
                 {myCoupons.map((c) => (
                   <button
                     key={c.code}
@@ -364,7 +366,7 @@ export default function OrderPage() {
                   >
                     <span className="font-medium">{c.couponName}</span>
                     <span className="text-gray-400 text-xs ml-2">
-                      ({c.discountType === "Percentage" ? `${c.discountValue}%` : formatPrice(c.discountValue)} 할인)
+                      ({c.discountType === "Percentage" ? `${c.discountValue}%` : formatPrice(c.discountValue)} {t("order.discountLabel")})
                     </span>
                   </button>
                 ))}
@@ -377,7 +379,7 @@ export default function OrderPage() {
       {/* Points */}
       <section className="bg-white rounded-xl shadow-sm p-6 mb-6">
         <h2 className="font-bold text-[var(--color-secondary)] mb-3 flex items-center gap-2">
-          <Coins size={18} /> 포인트
+          <Coins size={18} /> {t("order.points")}
         </h2>
         <div className="flex items-center gap-3">
           <input
@@ -389,18 +391,18 @@ export default function OrderPage() {
               const v = Math.min(Number(e.target.value) || 0, pointBalance);
               setPointsToUse(v);
             }}
-            placeholder="사용할 포인트"
+            placeholder={t("order.pointsPlaceholder")}
             className="flex-1 px-3 py-2 border rounded-lg text-sm"
           />
           <button
             onClick={() => setPointsToUse(pointBalance)}
             className="px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50"
           >
-            전액 사용
+            {t("order.pointsUseAll")}
           </button>
         </div>
         <p className="text-xs text-gray-400 mt-2">
-          보유 포인트: <span className="font-medium text-[var(--color-primary)]">{pointBalance.toLocaleString()}</span>P
+          {t("order.pointsBalance")}: <span className="font-medium text-[var(--color-primary)]">{pointBalance.toLocaleString()}</span>P
         </p>
       </section>
 
@@ -408,27 +410,27 @@ export default function OrderPage() {
       <section className="bg-white rounded-xl shadow-sm p-6">
         <div className="space-y-3 text-sm mb-6">
           <div className="flex justify-between">
-            <span className="text-gray-500">상품 금액</span>
+            <span className="text-gray-500">{t("order.subtotal")}</span>
             <span>{formatPrice(cart.totalAmount)}</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-gray-500">배송비</span>
-            <span className="text-[var(--color-primary)]">무료</span>
+            <span className="text-gray-500">{t("order.shippingFee")}</span>
+            <span className="text-[var(--color-primary)]">{t("common.free")}</span>
           </div>
           {(appliedCoupon?.discount ?? 0) > 0 && (
             <div className="flex justify-between text-green-600">
-              <span>쿠폰 할인</span>
+              <span>{t("order.couponDiscount")}</span>
               <span>-{formatPrice(appliedCoupon!.discount)}</span>
             </div>
           )}
           {pointsToUse > 0 && (
             <div className="flex justify-between text-blue-600">
-              <span>포인트 사용</span>
+              <span>{t("order.pointsUsed")}</span>
               <span>-{formatPrice(pointsToUse)}</span>
             </div>
           )}
           <div className="border-t pt-3 flex justify-between">
-            <span className="font-bold text-[var(--color-secondary)]">총 결제금액</span>
+            <span className="font-bold text-[var(--color-secondary)]">{t("order.totalAmount")}</span>
             <span className="font-bold text-xl text-[var(--color-primary)]">
               {formatPrice(Math.max(0, cart.totalAmount - (appliedCoupon?.discount ?? 0) - pointsToUse))}
             </span>
@@ -440,7 +442,7 @@ export default function OrderPage() {
           disabled={submitting}
           className="w-full py-4 bg-[var(--color-primary)] text-white rounded-xl font-bold text-lg hover:opacity-90 transition-opacity disabled:opacity-60"
         >
-          {submitting ? "주문 처리 중..." : `${formatPrice(Math.max(0, cart.totalAmount - (appliedCoupon?.discount ?? 0) - pointsToUse))} 결제하기`}
+          {submitting ? t("order.processing") : t("order.pay", { amount: formatPrice(Math.max(0, cart.totalAmount - (appliedCoupon?.discount ?? 0) - pointsToUse)) })}
         </button>
       </section>
     </div>

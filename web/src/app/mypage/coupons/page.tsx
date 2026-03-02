@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Ticket } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { getMyCoupons, type UserCouponDto } from "@/lib/couponApi";
 
 function formatPrice(price: number): string {
@@ -9,6 +10,7 @@ function formatPrice(price: number): string {
 }
 
 export default function MyCouponsPage() {
+  const t = useTranslations();
   const [coupons, setCoupons] = useState<UserCouponDto[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -32,13 +34,13 @@ export default function MyCouponsPage() {
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold text-[var(--color-secondary)] mb-6">
-        내 쿠폰
+        {t("mypage.coupons.title")}
       </h1>
 
       {coupons.length === 0 ? (
         <div className="text-center py-20 text-gray-400">
           <Ticket size={48} className="mx-auto mb-3 opacity-30" />
-          <p>사용 가능한 쿠폰이 없습니다.</p>
+          <p>{t("mypage.coupons.empty")}</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -59,7 +61,7 @@ export default function MyCouponsPage() {
                       : formatPrice(coupon.discountValue).replace("원", "")}
                   </p>
                   <p className="text-xs">
-                    {coupon.discountType === "Percentage" ? "할인" : "원 할인"}
+                    {coupon.discountType === "Percentage" ? t("mypage.coupons.discount") : t("mypage.coupons.wonDiscount")}
                   </p>
                 </div>
 
@@ -74,10 +76,10 @@ export default function MyCouponsPage() {
                     </p>
                   )}
                   <div className="flex items-center gap-3 mt-2 text-xs text-gray-400">
-                    <span>코드: {coupon.code}</span>
+                    <span>{t("mypage.coupons.code")}: {coupon.code}</span>
                     {coupon.minOrderAmount > 0 && (
                       <span>
-                        {formatPrice(coupon.minOrderAmount)} 이상 주문 시
+                        {t("mypage.coupons.minOrder", { amount: formatPrice(coupon.minOrderAmount) })}
                       </span>
                     )}
                   </div>
@@ -87,8 +89,8 @@ export default function MyCouponsPage() {
                     }`}
                   >
                     {daysLeft > 0
-                      ? `${daysLeft}일 남음 (${new Date(coupon.endDate).toLocaleDateString("ko-KR")}까지)`
-                      : "만료"}
+                      ? t("mypage.coupons.daysLeft", { days: daysLeft, date: new Date(coupon.endDate).toLocaleDateString("ko-KR") })
+                      : t("mypage.points.expired")}
                   </p>
                 </div>
               </div>

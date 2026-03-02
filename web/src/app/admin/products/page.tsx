@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import { Plus, Edit2, Trash2, Search } from "lucide-react";
 import { getProducts } from "@/lib/productApi";
 import { deleteProduct } from "@/lib/adminApi";
@@ -13,6 +14,7 @@ function formatPrice(price: number): string {
 }
 
 export default function AdminProductsPage() {
+  const t = useTranslations();
   const [data, setData] = useState<PagedResponse<ProductSummary> | null>(null);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
@@ -32,12 +34,12 @@ export default function AdminProductsPage() {
   }, [page, search]);
 
   const handleDelete = async (id: number, name: string) => {
-    if (!confirm(`"${name}" 상품을 삭제하시겠습니까?`)) return;
+    if (!confirm(t("admin.products.deleteConfirm", { name }))) return;
     try {
       await deleteProduct(id);
       load();
     } catch {
-      alert("삭제에 실패했습니다.");
+      alert(t("admin.products.deleteFailed"));
     }
   };
 
@@ -51,13 +53,13 @@ export default function AdminProductsPage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-[var(--color-secondary)]">
-          상품 관리
+          {t("admin.products.title")}
         </h1>
         <Link
           href="/admin/products/new"
           className="flex items-center gap-2 px-4 py-2.5 bg-[var(--color-primary)] text-white rounded-lg text-sm font-medium hover:opacity-90"
         >
-          <Plus size={16} /> 상품 등록
+          <Plus size={16} /> {t("admin.products.addNew")}
         </Link>
       </div>
 
@@ -73,7 +75,7 @@ export default function AdminProductsPage() {
               type="text"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              placeholder="상품명 검색..."
+              placeholder={t("admin.products.searchPlaceholder")}
               className="w-full pl-9 pr-3 py-2.5 border rounded-lg text-sm"
             />
           </div>
@@ -81,7 +83,7 @@ export default function AdminProductsPage() {
             type="submit"
             className="px-4 py-2.5 bg-[var(--color-secondary)] text-white rounded-lg text-sm"
           >
-            검색
+            {t("common.search")}
           </button>
         </div>
       </form>
@@ -89,7 +91,7 @@ export default function AdminProductsPage() {
       {/* Product count */}
       {data && (
         <p className="text-sm text-gray-500 mb-3">
-          총 {data.totalCount.toLocaleString()}개 상품
+          {t("admin.products.totalCount", { count: data.totalCount.toLocaleString() })}
         </p>
       )}
 
@@ -99,7 +101,7 @@ export default function AdminProductsPage() {
         </div>
       ) : !data || data.items.length === 0 ? (
         <div className="text-center py-20 text-gray-400">
-          <p>등록된 상품이 없습니다.</p>
+          <p>{t("admin.products.noProducts")}</p>
         </div>
       ) : (
         <>
@@ -108,19 +110,19 @@ export default function AdminProductsPage() {
               <thead className="bg-gray-50 border-b">
                 <tr>
                   <th className="text-left p-3 font-medium text-gray-500">
-                    이미지
+                    {t("admin.products.image")}
                   </th>
                   <th className="text-left p-3 font-medium text-gray-500">
-                    상품명
+                    {t("admin.products.name")}
                   </th>
                   <th className="text-left p-3 font-medium text-gray-500">
-                    카테고리
+                    {t("admin.products.category")}
                   </th>
                   <th className="text-right p-3 font-medium text-gray-500">
-                    가격
+                    {t("admin.products.price")}
                   </th>
                   <th className="text-center p-3 font-medium text-gray-500">
-                    관리
+                    {t("admin.products.actions")}
                   </th>
                 </tr>
               </thead>
@@ -157,7 +159,7 @@ export default function AdminProductsPage() {
                     <td className="p-3 text-right">
                       {product.priceType === "Inquiry" ? (
                         <span className="text-[var(--color-primary)] font-medium">
-                          상담요망
+                          {t("admin.products.inquiry")}
                         </span>
                       ) : (
                         <span className="font-medium">
@@ -195,7 +197,7 @@ export default function AdminProductsPage() {
                 disabled={page === 1}
                 className="px-3 py-2 text-sm border rounded-lg disabled:opacity-40"
               >
-                이전
+                {t("admin.products.prev")}
               </button>
               <span className="text-sm text-gray-500">
                 {page} / {Math.ceil(data.totalCount / 20)}
@@ -205,7 +207,7 @@ export default function AdminProductsPage() {
                 disabled={page * 20 >= data.totalCount}
                 className="px-3 py-2 text-sm border rounded-lg disabled:opacity-40"
               >
-                다음
+                {t("admin.products.next")}
               </button>
             </div>
           )}

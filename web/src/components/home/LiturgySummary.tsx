@@ -1,20 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { Church, ChevronRight } from "lucide-react";
 import { getTodayLiturgy } from "@/lib/liturgyApi";
 import type { LiturgyTodayDto } from "@/types/liturgy";
 
-const SEASON_LABELS: Record<string, string> = {
-  Advent: "대림 시기",
-  Christmas: "성탄 시기",
-  OrdinaryTime1: "연중 시기",
-  Lent: "사순 시기",
-  Triduum: "성삼일",
-  Easter: "부활 시기",
-  OrdinaryTime2: "연중 시기",
-};
+// Season labels are now resolved via t(`liturgy.season.${seasonName}`) inside the component
 
 const COLOR_BG: Record<string, string> = {
   purple: "bg-purple-600",
@@ -24,6 +17,7 @@ const COLOR_BG: Record<string, string> = {
 };
 
 export function LiturgySummary() {
+  const t = useTranslations();
   const [data, setData] = useState<LiturgyTodayDto | null>(null);
 
   useEffect(() => {
@@ -46,13 +40,13 @@ export function LiturgySummary() {
                 <Church size={22} />
               </div>
               <div>
-                <p className="text-xs text-gray-400 mb-0.5">오늘의 전례</p>
+                <p className="text-xs text-gray-400 mb-0.5">{t("liturgy.today")}</p>
                 <h3 className="font-bold text-[var(--color-secondary)]">
-                  {SEASON_LABELS[data.currentSeason.seasonName] || data.currentSeason.seasonName}
+                  {t(`liturgy.season.${data.currentSeason.seasonName}`)}
                 </h3>
                 {data.todaySaints.length > 0 && (
                   <p className="text-sm text-[var(--color-primary)]">
-                    축일: {data.todaySaints.map(s => s.koreanName).join(", ")}
+                    {t("liturgy.feastDay")}: {data.todaySaints.map(s => s.koreanName).join(", ")}
                   </p>
                 )}
               </div>

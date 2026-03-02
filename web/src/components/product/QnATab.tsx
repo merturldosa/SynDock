@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { MessageCircle, Lock, Trash2 } from "lucide-react";
 import { getProductQnAs, createQnA, deleteQnA } from "@/lib/reviewApi";
 import { useAuthStore } from "@/stores/authStore";
@@ -15,6 +16,7 @@ function formatDate(dateStr: string): string {
 }
 
 export function QnATab({ productId }: QnATabProps) {
+  const t = useTranslations();
   const { isAuthenticated, user } = useAuthStore();
   const [data, setData] = useState<PagedQnA | null>(null);
   const [page, setPage] = useState(1);
@@ -41,33 +43,33 @@ export function QnATab({ productId }: QnATabProps) {
       setIsSecret(false);
       load();
     } catch {
-      alert("질문 등록에 실패했습니다.");
+      alert(t("qna.writeFailed"));
     }
     setSubmitting(false);
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm("질문을 삭제하시겠습니까?")) return;
+    if (!confirm(t("qna.deleteConfirm"))) return;
     try {
       await deleteQnA(id);
       load();
     } catch {
-      alert("삭제에 실패했습니다.");
+      alert(t("qna.deleteFailed"));
     }
   };
 
-  if (!data) return <div className="py-8 text-center text-gray-400">로딩 중...</div>;
+  if (!data) return <div className="py-8 text-center text-gray-400">{t("common.loading")}</div>;
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <p className="text-sm text-gray-500">총 {data.totalCount}개의 문의</p>
+        <p className="text-sm text-gray-500">{t("qna.totalCount", { count: data.totalCount })}</p>
         {isAuthenticated && (
           <button
             onClick={() => setShowForm(!showForm)}
             className="px-4 py-2 text-sm bg-[var(--color-primary)] text-white rounded-lg hover:opacity-90"
           >
-            문의하기
+            {t("qna.writeQuestion")}
           </button>
         )}
       </div>
@@ -78,28 +80,28 @@ export function QnATab({ productId }: QnATabProps) {
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="문의 제목"
+            placeholder={t("qna.questionTitle")}
             className="w-full px-3 py-2 border rounded-lg text-sm"
           />
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            placeholder="문의 내용을 입력해 주세요..."
+            placeholder={t("qna.questionContent")}
             className="w-full px-3 py-2 border rounded-lg text-sm resize-none h-24"
           />
           <div className="flex items-center justify-between">
             <label className="flex items-center gap-2 text-sm text-gray-500">
               <input type="checkbox" checked={isSecret} onChange={(e) => setIsSecret(e.target.checked)} />
-              <Lock size={14} /> 비밀글
+              <Lock size={14} /> {t("qna.secret")}
             </label>
             <div className="flex gap-2">
-              <button onClick={() => setShowForm(false)} className="px-4 py-2 text-sm text-gray-500 hover:text-gray-700">취소</button>
+              <button onClick={() => setShowForm(false)} className="px-4 py-2 text-sm text-gray-500 hover:text-gray-700">{t("common.cancel")}</button>
               <button
                 onClick={handleSubmit}
                 disabled={submitting || !title.trim() || !content.trim()}
                 className="px-4 py-2 text-sm bg-[var(--color-primary)] text-white rounded-lg hover:opacity-90 disabled:opacity-60"
               >
-                {submitting ? "등록 중..." : "등록"}
+                {submitting ? t("common.submitting") : t("common.submit")}
               </button>
             </div>
           </div>
@@ -107,7 +109,7 @@ export function QnATab({ productId }: QnATabProps) {
       )}
 
       {data.items.length === 0 ? (
-        <p className="text-center text-gray-400 py-8">아직 문의가 없습니다.</p>
+        <p className="text-center text-gray-400 py-8">{t("qna.noQuestions")}</p>
       ) : (
         <div className="space-y-4">
           {data.items.map((qna) => (
@@ -117,7 +119,7 @@ export function QnATab({ productId }: QnATabProps) {
                   <div className="flex items-center gap-2 mb-1">
                     {qna.isSecret && <Lock size={12} className="text-gray-400" />}
                     <span className={`text-xs px-2 py-0.5 rounded-full ${qna.isAnswered ? "bg-emerald-100 text-emerald-700" : "bg-yellow-100 text-yellow-700"}`}>
-                      {qna.isAnswered ? "답변완료" : "답변대기"}
+                      {qna.isAnswered ? t("qna.answered") : t("qna.waiting")}
                     </span>
                     <span className="text-sm font-medium text-[var(--color-secondary)]">{qna.userName}</span>
                     <span className="text-xs text-gray-400">{formatDate(qna.createdAt)}</span>

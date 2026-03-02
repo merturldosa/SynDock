@@ -7,12 +7,14 @@ import { useRouter } from "next/navigation";
 import { ShoppingCart, Trash2, Minus, Plus, ArrowRight } from "lucide-react";
 import { useCartStore } from "@/stores/cartStore";
 import { useAuthStore } from "@/stores/authStore";
+import { useTranslations } from "next-intl";
 
 function formatPrice(price: number): string {
-  return price.toLocaleString("ko-KR") + "원";
+  return price.toLocaleString("ko-KR") + "\uC6D0";
 }
 
 export default function CartPage() {
+  const t = useTranslations();
   const router = useRouter();
   const { cart, isLoading, fetchCart, updateQuantity, removeItem, clearCart } = useCartStore();
   const { isAuthenticated } = useAuthStore();
@@ -27,13 +29,13 @@ export default function CartPage() {
     return (
       <div className="max-w-7xl mx-auto px-4 py-20 text-center">
         <ShoppingCart size={64} className="mx-auto text-gray-300 mb-6" />
-        <h1 className="text-2xl font-bold text-[var(--color-secondary)] mb-3">장바구니</h1>
-        <p className="text-gray-500 mb-8">로그인 후 이용할 수 있습니다.</p>
+        <h1 className="text-2xl font-bold text-[var(--color-secondary)] mb-3">{t("cart.title")}</h1>
+        <p className="text-gray-500 mb-8">{t("cart.loginRequired")}</p>
         <Link
           href="/login"
           className="inline-block px-6 py-3 bg-[var(--color-primary)] text-white rounded-lg font-medium hover:opacity-90 transition-opacity"
         >
-          로그인하기
+          {t("cart.loginAction")}
         </Link>
       </div>
     );
@@ -43,7 +45,7 @@ export default function CartPage() {
     return (
       <div className="max-w-7xl mx-auto px-4 py-20 text-center">
         <div className="w-12 h-12 border-4 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-        <p className="text-gray-500">장바구니를 불러오는 중...</p>
+        <p className="text-gray-500">{t("common.loadingCart")}</p>
       </div>
     );
   }
@@ -52,13 +54,13 @@ export default function CartPage() {
     return (
       <div className="max-w-7xl mx-auto px-4 py-20 text-center">
         <ShoppingCart size={64} className="mx-auto text-gray-300 mb-6" />
-        <h1 className="text-2xl font-bold text-[var(--color-secondary)] mb-3">장바구니가 비어있습니다</h1>
-        <p className="text-gray-500 mb-8">마음에 드는 상품을 담아보세요.</p>
+        <h1 className="text-2xl font-bold text-[var(--color-secondary)] mb-3">{t("cart.empty")}</h1>
+        <p className="text-gray-500 mb-8">{t("cart.emptyDesc")}</p>
         <Link
           href="/products"
           className="inline-block px-6 py-3 bg-[var(--color-primary)] text-white rounded-lg font-medium hover:opacity-90 transition-opacity"
         >
-          상품 둘러보기
+          {t("cart.browseProducts")}
         </Link>
       </div>
     );
@@ -72,13 +74,13 @@ export default function CartPage() {
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-2xl font-bold text-[var(--color-secondary)]">
-          장바구니 <span className="text-[var(--color-primary)]">({cart.totalQuantity})</span>
+          {t("cart.title")} <span className="text-[var(--color-primary)]">({cart.totalQuantity})</span>
         </h1>
         <button
           onClick={() => clearCart()}
           className="text-sm text-gray-400 hover:text-red-500 transition-colors"
         >
-          전체 삭제
+          {t("common.deleteAll")}
         </button>
       </div>
 
@@ -164,19 +166,19 @@ export default function CartPage() {
         {/* Order Summary */}
         <div className="lg:col-span-1">
           <div className="bg-white rounded-xl shadow-sm p-6 sticky top-24">
-            <h2 className="font-bold text-[var(--color-secondary)] mb-4">주문 요약</h2>
+            <h2 className="font-bold text-[var(--color-secondary)] mb-4">{t("cart.orderSummary")}</h2>
 
             <div className="space-y-3 text-sm">
               <div className="flex justify-between">
-                <span className="text-gray-500">상품 금액</span>
+                <span className="text-gray-500">{t("cart.subtotal")}</span>
                 <span className="font-medium">{formatPrice(cart.totalAmount)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">배송비</span>
-                <span className="font-medium text-[var(--color-primary)]">무료</span>
+                <span className="text-gray-500">{t("cart.shippingFee")}</span>
+                <span className="font-medium text-[var(--color-primary)]">{t("common.free")}</span>
               </div>
               <div className="border-t pt-3 flex justify-between">
-                <span className="font-bold text-[var(--color-secondary)]">총 결제금액</span>
+                <span className="font-bold text-[var(--color-secondary)]">{t("cart.totalAmount")}</span>
                 <span className="font-bold text-lg text-[var(--color-primary)]">
                   {formatPrice(cart.totalAmount)}
                 </span>
@@ -187,7 +189,7 @@ export default function CartPage() {
               onClick={handleCheckout}
               className="w-full mt-6 py-3 bg-[var(--color-primary)] text-white rounded-lg font-medium hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
             >
-              주문하기
+              {t("cart.checkout")}
               <ArrowRight size={18} />
             </button>
 
@@ -195,7 +197,7 @@ export default function CartPage() {
               href="/products"
               className="block text-center mt-3 text-sm text-gray-500 hover:text-[var(--color-primary)] transition-colors"
             >
-              쇼핑 계속하기
+              {t("cart.continueShopping")}
             </Link>
           </div>
         </div>

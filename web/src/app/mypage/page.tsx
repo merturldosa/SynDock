@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Package, Coins, Ticket, Bell, Cross } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 import { Button } from "@/components/ui/Button";
@@ -14,6 +15,7 @@ import type { BaptismalNameInfo } from "@/types/saint";
 
 export default function MyPage() {
   const router = useRouter();
+  const t = useTranslations();
   const { user, logout } = useAuthStore();
   const [baptismalName, setBaptismalName] = useState("");
   const [baptismalInfo, setBaptismalInfo] = useState<BaptismalNameInfo | null>(null);
@@ -73,45 +75,45 @@ export default function MyPage() {
         <div className="bg-white rounded-xl shadow-sm p-4 text-center">
           <Package size={24} className="mx-auto text-[var(--color-primary)] mb-2" />
           <p className="text-2xl font-bold text-[var(--color-secondary)]">{recentOrderCount}</p>
-          <p className="text-xs text-gray-500">주문</p>
+          <p className="text-xs text-gray-500">{t("mypage.summary.orders")}</p>
         </div>
         <div className="bg-white rounded-xl shadow-sm p-4 text-center">
           <Coins size={24} className="mx-auto text-[var(--color-primary)] mb-2" />
           <p className="text-2xl font-bold text-[var(--color-secondary)]">
             {pointBalance !== null ? pointBalance.toLocaleString("ko-KR") : "-"}
           </p>
-          <p className="text-xs text-gray-500">포인트</p>
+          <p className="text-xs text-gray-500">{t("mypage.summary.points")}</p>
         </div>
         <div className="bg-white rounded-xl shadow-sm p-4 text-center">
           <Ticket size={24} className="mx-auto text-[var(--color-primary)] mb-2" />
           <p className="text-2xl font-bold text-[var(--color-secondary)]">
             {couponCount !== null ? couponCount.toLocaleString("ko-KR") : "-"}
           </p>
-          <p className="text-xs text-gray-500">쿠폰</p>
+          <p className="text-xs text-gray-500">{t("mypage.summary.coupons")}</p>
         </div>
         <div className="bg-white rounded-xl shadow-sm p-4 text-center">
           <Bell size={24} className="mx-auto text-[var(--color-primary)] mb-2" />
           <p className="text-2xl font-bold text-[var(--color-secondary)]">
             {unreadNotifications !== null ? unreadNotifications.toLocaleString("ko-KR") : "-"}
           </p>
-          <p className="text-xs text-gray-500">알림</p>
+          <p className="text-xs text-gray-500">{t("mypage.nav.notifications")}</p>
         </div>
       </div>
 
       {/* User info */}
       <div className="bg-white rounded-xl shadow-sm p-6">
-        <h2 className="font-semibold text-[var(--color-secondary)] mb-4">내 정보</h2>
+        <h2 className="font-semibold text-[var(--color-secondary)] mb-4">{t("mypage.myInfo")}</h2>
         <div className="space-y-3">
           <div className="flex justify-between py-2 border-b border-gray-100">
-            <span className="text-gray-500 text-sm">아이디</span>
+            <span className="text-gray-500 text-sm">{t("auth.username")}</span>
             <span className="font-medium text-sm text-[var(--color-secondary)]">{user.username}</span>
           </div>
           <div className="flex justify-between py-2 border-b border-gray-100">
-            <span className="text-gray-500 text-sm">이름</span>
+            <span className="text-gray-500 text-sm">{t("auth.name")}</span>
             <span className="font-medium text-sm text-[var(--color-secondary)]">{user.name}</span>
           </div>
           <div className="flex justify-between py-2 border-b border-gray-100">
-            <span className="text-gray-500 text-sm">이메일</span>
+            <span className="text-gray-500 text-sm">{t("auth.email")}</span>
             <span className="font-medium text-sm text-[var(--color-secondary)]">{user.email}</span>
           </div>
         </div>
@@ -121,23 +123,23 @@ export default function MyPage() {
       <div className="bg-white rounded-xl shadow-sm p-6">
         <h2 className="font-semibold text-[var(--color-secondary)] mb-3 flex items-center gap-2">
           <Cross size={18} className="text-[var(--color-primary)]" />
-          세례명 / 수호성인
+          {t("mypage.baptismalNameSection")}
         </h2>
         {baptismalInfo?.baptismalName ? (
           <div className="space-y-2">
             <div className="flex justify-between">
-              <span className="text-gray-500 text-sm">세례명</span>
+              <span className="text-gray-500 text-sm">{t("mypage.baptismalName")}</span>
               <span className="font-medium text-[var(--color-secondary)]">{baptismalInfo.baptismalName}</span>
             </div>
             {baptismalInfo.patronSaint && (
               <>
                 <div className="flex justify-between">
-                  <span className="text-gray-500 text-sm">수호성인</span>
+                  <span className="text-gray-500 text-sm">{t("mypage.patronSaint")}</span>
                   <span className="font-medium text-[var(--color-secondary)]">{baptismalInfo.patronSaint.koreanName}</span>
                 </div>
                 {baptismalInfo.patronSaint.feastDay && (
                   <div className="flex justify-between">
-                    <span className="text-gray-500 text-sm">축일</span>
+                    <span className="text-gray-500 text-sm">{t("mypage.feastDay")}</span>
                     <span className="text-sm text-gray-600">
                       {new Date(baptismalInfo.patronSaint.feastDay).toLocaleDateString("ko-KR", { month: "long", day: "numeric" })}
                     </span>
@@ -145,7 +147,7 @@ export default function MyPage() {
                 )}
                 {baptismalInfo.patronSaint.patronage && (
                   <div className="flex justify-between">
-                    <span className="text-gray-500 text-sm">수호 분야</span>
+                    <span className="text-gray-500 text-sm">{t("mypage.patronage")}</span>
                     <span className="text-sm text-gray-600">{baptismalInfo.patronSaint.patronage}</span>
                   </div>
                 )}
@@ -155,7 +157,7 @@ export default function MyPage() {
               onClick={() => setBaptismalInfo(null)}
               className="text-xs text-[var(--color-primary)] hover:underline mt-1"
             >
-              변경하기
+              {t("mypage.change")}
             </button>
           </div>
         ) : (
@@ -164,7 +166,7 @@ export default function MyPage() {
               type="text"
               value={baptismalName}
               onChange={(e) => setBaptismalName(e.target.value)}
-              placeholder="세례명을 입력하세요 (예: 베드로)"
+              placeholder={t("mypage.baptismalNamePlaceholder")}
               className="flex-1 px-3 py-2 border rounded-lg text-sm"
             />
             <button
@@ -172,7 +174,7 @@ export default function MyPage() {
               disabled={savingBaptismal || !baptismalName.trim()}
               className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg text-sm font-medium hover:opacity-90 disabled:opacity-50"
             >
-              {savingBaptismal ? "저장 중..." : "저장"}
+              {savingBaptismal ? t("common.saving") : t("common.save")}
             </button>
           </div>
         )}
@@ -186,7 +188,7 @@ export default function MyPage() {
         }}
         className="w-full"
       >
-        로그아웃
+        {t("header.logout")}
       </Button>
     </div>
   );

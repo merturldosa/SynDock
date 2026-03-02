@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Heart, Trash2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { getWishlist, toggleWishlist } from "@/lib/reviewApi";
 import { useAuthStore } from "@/stores/authStore";
 import { useCartStore } from "@/stores/cartStore";
@@ -14,6 +15,7 @@ function formatPrice(price: number): string {
 }
 
 export default function WishlistPage() {
+  const t = useTranslations();
   const { isAuthenticated } = useAuthStore();
   const { addToCart } = useCartStore();
   const [items, setItems] = useState<WishlistItem[]>([]);
@@ -37,8 +39,8 @@ export default function WishlistPage() {
   if (!isAuthenticated) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-20 text-center">
-        <p className="text-gray-500 mb-4">로그인 후 이용할 수 있습니다.</p>
-        <Link href="/login" className="text-[var(--color-primary)] hover:underline">로그인하기</Link>
+        <p className="text-gray-500 mb-4">{t("cart.loginRequired")}</p>
+        <Link href="/login" className="text-[var(--color-primary)] hover:underline">{t("cart.loginAction")}</Link>
       </div>
     );
   }
@@ -54,24 +56,24 @@ export default function WishlistPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       <div className="flex items-center gap-2 text-sm text-gray-500 mb-6">
-        <Link href="/mypage" className="hover:text-[var(--color-primary)]">마이페이지</Link>
+        <Link href="/mypage" className="hover:text-[var(--color-primary)]">{t("mypage.title")}</Link>
         <span>/</span>
-        <span className="text-[var(--color-secondary)] font-medium">찜 목록</span>
+        <span className="text-[var(--color-secondary)] font-medium">{t("mypage.wishlist.title")}</span>
       </div>
 
       <h1 className="text-2xl font-bold text-[var(--color-secondary)] mb-6">
-        찜 목록 <span className="text-[var(--color-primary)]">({items.length})</span>
+        {t("mypage.wishlist.title")} <span className="text-[var(--color-primary)]">({items.length})</span>
       </h1>
 
       {items.length === 0 ? (
         <div className="text-center py-20">
           <Heart size={64} className="mx-auto text-gray-300 mb-6" />
-          <p className="text-gray-500 mb-4">찜한 상품이 없습니다.</p>
+          <p className="text-gray-500 mb-4">{t("mypage.wishlist.empty")}</p>
           <Link
             href="/products"
             className="inline-block px-6 py-3 bg-[var(--color-primary)] text-white rounded-lg font-medium hover:opacity-90"
           >
-            상품 둘러보기
+            {t("mypage.wishlist.browseProducts")}
           </Link>
         </div>
       ) : (
@@ -101,7 +103,7 @@ export default function WishlistPage() {
                 </Link>
                 <div className="flex items-baseline gap-1 mt-1">
                   {item.priceType === "Inquiry" ? (
-                    <span className="text-sm font-bold text-[var(--color-primary)]">상담요망</span>
+                    <span className="text-sm font-bold text-[var(--color-primary)]">{t("products.inquiryPrice")}</span>
                   ) : (
                     <>
                       <span className="text-sm font-bold text-[var(--color-secondary)]">{formatPrice(item.salePrice ?? item.price)}</span>
@@ -114,7 +116,7 @@ export default function WishlistPage() {
                     onClick={() => handleAddToCart(item.productId)}
                     className="w-full mt-2 py-2 text-xs bg-[var(--color-secondary)] text-white rounded-lg hover:opacity-90 transition-opacity"
                   >
-                    장바구니 담기
+                    {t("products.addToCart")}
                   </button>
                 )}
               </div>

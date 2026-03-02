@@ -5,24 +5,28 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { MessageCircle, Send } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { ReactionPicker } from "@/components/ui/ReactionPicker";
 import { getPost, toggleReaction, addComment } from "@/lib/postApi";
 import { useAuthStore } from "@/stores/authStore";
 import type { PostDto } from "@/types/post";
 
-function timeAgo(dateStr: string): string {
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return "방금 전";
-  if (mins < 60) return `${mins}분 전`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}시간 전`;
-  return new Date(dateStr).toLocaleDateString("ko-KR");
-}
-
 export default function PostDetailClient() {
+  const t = useTranslations();
   const params = useParams();
   const { isAuthenticated, user } = useAuthStore();
+
+  const timeAgo = (dateStr: string): string => {
+    const diff = Date.now() - new Date(dateStr).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return t("feed.justNow");
+    if (mins < 60) return t("feed.minutesAgo", { count: mins });
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return t("feed.hoursAgo", { count: hrs });
+    const days = Math.floor(hrs / 24);
+    if (days < 30) return t("feed.daysAgo", { count: days });
+    return new Date(dateStr).toLocaleDateString();
+  };
   const [post, setPost] = useState<PostDto | null>(null);
   const [loading, setLoading] = useState(true);
   const [comment, setComment] = useState("");
@@ -68,7 +72,7 @@ export default function PostDetailClient() {
       setReplyTo(null);
       load();
     } catch {
-      alert("댓글 작성에 실패했습니다.");
+      alert(t("feed.commentFailed"));
     }
     setSubmitting(false);
   };
@@ -84,9 +88,9 @@ export default function PostDetailClient() {
   if (!post) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-20 text-center">
-        <p className="text-gray-500">게시글을 찾을 수 없습니다.</p>
+        <p className="text-gray-500">{t("feed.postNotFound")}</p>
         <Link href="/feed" className="text-[var(--color-primary)] hover:underline mt-2 inline-block">
-          피드로 돌아가기
+          {t("feed.backToFeed")}
         </Link>
       </div>
     );
@@ -98,7 +102,7 @@ export default function PostDetailClient() {
         href="/feed"
         className="text-sm text-gray-500 hover:text-[var(--color-primary)] mb-4 inline-block"
       >
-        ← 피드로 돌아가기
+        &larr; {t("feed.backToFeed")}
       </Link>
 
       <div className="bg-white rounded-xl shadow-sm p-6">
@@ -202,7 +206,7 @@ export default function PostDetailClient() {
                       onClick={() => setReplyTo(c.id)}
                       className="text-xs text-gray-400 hover:text-[var(--color-primary)] mt-1"
                     >
-                      답글
+                      {t("feed.reply")}
                     </button>
                   )}
 
@@ -234,12 +238,12 @@ export default function PostDetailClient() {
           <div className="mt-4 pt-4 border-t border-gray-100">
             {replyTo && (
               <p className="text-xs text-[var(--color-primary)] mb-2">
-                답글 작성 중...{" "}
+                {t("feed.writingReply")}{" "}
                 <button
                   onClick={() => setReplyTo(null)}
                   className="text-gray-400 hover:text-gray-600"
                 >
-                  취소
+                  {t("feed.cancel")}
                 </button>
               </p>
             )}
@@ -254,7 +258,7 @@ export default function PostDetailClient() {
                     handleComment();
                   }
                 }}
-                placeholder="댓글을 입력하세요..."
+                placeholder={t("feed.writeComment")}
                 className="flex-1 px-3 py-2.5 border rounded-lg text-sm"
               />
               <button

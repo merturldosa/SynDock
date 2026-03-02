@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Package, MapPin, ArrowLeft, Truck, Clock, Search } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { getOrderById, cancelOrder, getShippingTracking, type TrackingEvent } from "@/lib/orderApi";
 import { useAuthStore } from "@/stores/authStore";
 import type { Order } from "@/types/order";
@@ -48,20 +49,15 @@ const STATUS_COLORS: Record<string, string> = {
   Refunded: "bg-red-100 text-red-700",
 };
 
-const PROGRESS_STEPS: { key: string; label: string }[] = [
-  { key: "Pending", label: "주문접수" },
-  { key: "Confirmed", label: "주문확인" },
-  { key: "Processing", label: "준비중" },
-  { key: "Shipped", label: "배송중" },
-  { key: "Delivered", label: "배송완료" },
-];
+const PROGRESS_STEP_KEYS = ["Pending", "Confirmed", "Processing", "Shipped", "Delivered"] as const;
 
 function getProgressIndex(status: string): number {
-  const idx = PROGRESS_STEPS.findIndex((s) => s.key === status);
+  const idx = PROGRESS_STEP_KEYS.indexOf(status as typeof PROGRESS_STEP_KEYS[number]);
   return idx >= 0 ? idx : -1;
 }
 
 export default function MypageOrderDetailPage() {
+  const t = useTranslations();
   const params = useParams();
   const { isAuthenticated } = useAuthStore();
   const [order, setOrder] = useState<ExtendedOrder | null>(null);
@@ -84,8 +80,8 @@ export default function MypageOrderDetailPage() {
   if (!isAuthenticated) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-20 text-center">
-        <p className="text-gray-500 mb-4">로그인 후 이용할 수 있습니다.</p>
-        <Link href="/login" className="text-[var(--color-primary)] hover:underline">로그인하기</Link>
+        <p className="text-gray-500 mb-4">{t("cart.loginRequired")}</p>
+        <Link href="/login" className="text-[var(--color-primary)] hover:underline">{t("cart.loginAction")}</Link>
       </div>
     );
   }
@@ -101,8 +97,8 @@ export default function MypageOrderDetailPage() {
   if (!order) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-20 text-center">
-        <p className="text-gray-500 mb-4">주문을 찾을 수 없습니다.</p>
-        <Link href="/mypage/orders" className="text-[var(--color-primary)] hover:underline">주문내역 보기</Link>
+        <p className="text-gray-500 mb-4">{t("mypage.orders.notFound")}</p>
+        <Link href="/mypage/orders" className="text-[var(--color-primary)] hover:underline">{t("mypage.orders.viewOrders")}</Link>
       </div>
     );
   }
@@ -115,10 +111,10 @@ export default function MypageOrderDetailPage() {
         setTrackingEvents(result.events);
         setTrackingStatus(result.currentStatus);
       } else {
-        alert(result.error || "배송 조회에 실패했습니다.");
+        alert(result.error || t("mypage.orders.trackingFailed"));
       }
     } catch {
-      alert("배송 조회에 실패했습니다.");
+      alert(t("mypage.orders.trackingFailed"));
     }
     setTrackingLoading(false);
   };
@@ -130,13 +126,13 @@ export default function MypageOrderDetailPage() {
   const progressIndex = getProgressIndex(order.status);
 
   const handleCancel = async () => {
-    if (!confirm("주문을 취소하시겠습니까?")) return;
+    if (!confirm(t("mypage.orders.cancelConfirm"))) return;
     setCancelling(true);
     try {
       await cancelOrder(order.id);
       setOrder({ ...order, status: "Cancelled" });
     } catch {
-      alert("주문 취소에 실패했습니다.");
+      alert(t("mypage.orders.cancelFailed"));
     }
     setCancelling(false);
   };
@@ -145,18 +141,18 @@ export default function MypageOrderDetailPage() {
     <div className="max-w-4xl mx-auto px-4 py-8">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-gray-500 mb-6">
-        <Link href="/mypage" className="hover:text-[var(--color-primary)]">마이페이지</Link>
+        <Link href="/mypage" className="hover:text-[var(--color-primary)]">{t("mypage.title")}</Link>
         <span>/</span>
-        <Link href="/mypage/orders" className="hover:text-[var(--color-primary)]">주문내역</Link>
+        <Link href="/mypage/orders" className="hover:text-[var(--color-primary)]">{t("mypage.orders.title")}</Link>
         <span>/</span>
-        <span className="text-[var(--color-secondary)] font-medium">주문 상세</span>
+        <span className="text-[var(--color-secondary)] font-medium">{t("mypage.orders.detail")}</span>
       </div>
 
       {/* Order Header */}
       <div className="flex items-start justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-[var(--color-secondary)]">주문 상세</h1>
-          <p className="text-sm text-gray-500 mt-1">주문번호: {order.orderNumber}</p>
+          <h1 className="text-2xl font-bold text-[var(--color-secondary)]">{t("mypage.orders.detail")}</h1>
+          <p className="text-sm text-gray-500 mt-1">{t("mypage.orders.orderNumber")}: {order.orderNumber}</p>
           <p className="text-sm text-gray-400">{formatDate(order.createdAt)}</p>
         </div>
         <span className={`px-3 py-1 rounded-full text-sm font-medium ${statusColor}`}>
@@ -168,7 +164,7 @@ export default function MypageOrderDetailPage() {
       {isCancelled && (
         <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
           <p className="text-red-700 font-medium">
-            {order.status === "Cancelled" ? "이 주문은 취소되었습니다." : "이 주문은 환불 처리되었습니다."}
+            {order.status === "Cancelled" ? t("mypage.orders.cancelledNotice") : t("mypage.orders.refundedNotice")}
           </p>
         </div>
       )}
@@ -177,11 +173,11 @@ export default function MypageOrderDetailPage() {
       {!isCancelled && progressIndex >= 0 && (
         <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
           <div className="flex items-center justify-between">
-            {PROGRESS_STEPS.map((step, i) => {
+            {PROGRESS_STEP_KEYS.map((stepKey, i) => {
               const isActive = i <= progressIndex;
               const isCurrent = i === progressIndex;
               return (
-                <div key={step.key} className="flex-1 flex flex-col items-center relative">
+                <div key={stepKey} className="flex-1 flex flex-col items-center relative">
                   {i > 0 && (
                     <div className={`absolute top-4 right-1/2 w-full h-0.5 -z-0 ${
                       i <= progressIndex ? "bg-[var(--color-primary)]" : "bg-gray-200"
@@ -199,7 +195,7 @@ export default function MypageOrderDetailPage() {
                   <span className={`text-xs mt-2 font-medium ${
                     isActive ? "text-[var(--color-primary)]" : "text-gray-400"
                   }`}>
-                    {step.label}
+                    {t(`mypage.orders.status.${stepKey}`)}
                   </span>
                 </div>
               );
@@ -213,7 +209,7 @@ export default function MypageOrderDetailPage() {
         <section className="bg-purple-50 border border-purple-200 rounded-xl p-5 mb-6">
           <div className="flex items-center justify-between mb-2">
             <h2 className="font-bold text-purple-800 flex items-center gap-2">
-              <Truck size={18} /> 배송 추적
+              <Truck size={18} /> {t("mypage.orders.tracking")}
             </h2>
             <button
               onClick={handleTrackShipping}
@@ -221,16 +217,16 @@ export default function MypageOrderDetailPage() {
               className="flex items-center gap-1 px-3 py-1.5 text-sm bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-60 transition-colors"
             >
               <Search size={14} />
-              {trackingLoading ? "조회 중..." : "실시간 조회"}
+              {trackingLoading ? t("mypage.orders.tracking_loading") : t("mypage.orders.trackRealtime")}
             </button>
           </div>
           <div className="text-sm text-purple-700 space-y-1">
             {order.trackingCarrier && (
-              <p>택배사: <strong>{order.trackingCarrier}</strong></p>
+              <p>{t("mypage.orders.carrier")}: <strong>{order.trackingCarrier}</strong></p>
             )}
-            <p>운송장번호: <strong className="font-mono">{order.trackingNumber}</strong></p>
+            <p>{t("mypage.orders.trackingNumber")}: <strong className="font-mono">{order.trackingNumber}</strong></p>
             {trackingStatus && (
-              <p className="mt-2 font-medium text-purple-900">현재 상태: {trackingStatus}</p>
+              <p className="mt-2 font-medium text-purple-900">{t("mypage.orders.currentStatus")}: {trackingStatus}</p>
             )}
           </div>
 
@@ -263,7 +259,7 @@ export default function MypageOrderDetailPage() {
       {order.histories && order.histories.length > 0 && (
         <section className="bg-white rounded-xl shadow-sm p-6 mb-6">
           <h2 className="font-bold text-[var(--color-secondary)] flex items-center gap-2 mb-4">
-            <Clock size={18} /> 주문 진행 상황
+            <Clock size={18} /> {t("mypage.orders.timeline")}
           </h2>
           <div className="relative">
             <div className="absolute left-[9px] top-2 bottom-2 w-0.5 bg-gray-200" />
@@ -280,7 +276,7 @@ export default function MypageOrderDetailPage() {
                     {h.note && <p className="text-xs text-gray-500 mt-0.5">{h.note}</p>}
                     {h.trackingNumber && (
                       <p className="text-xs text-purple-600 mt-0.5 font-mono">
-                        운송장: {h.trackingNumber}
+                        {t("mypage.orders.trackingNumber")}: {h.trackingNumber}
                       </p>
                     )}
                     <p className="text-xs text-gray-400 mt-1">{formatDate(h.createdAt)}</p>
@@ -295,7 +291,7 @@ export default function MypageOrderDetailPage() {
       {/* Items */}
       <section className="bg-white rounded-xl shadow-sm p-6 mb-6">
         <h2 className="font-bold text-[var(--color-secondary)] flex items-center gap-2 mb-4">
-          <Package size={18} /> 주문 상품
+          <Package size={18} /> {t("mypage.orders.orderItems")}
         </h2>
         <div className="space-y-3">
           {order.items.map((item) => (
@@ -326,7 +322,7 @@ export default function MypageOrderDetailPage() {
       {order.shippingAddress && (
         <section className="bg-white rounded-xl shadow-sm p-6 mb-6">
           <h2 className="font-bold text-[var(--color-secondary)] flex items-center gap-2 mb-3">
-            <MapPin size={18} /> 배송지 정보
+            <MapPin size={18} /> {t("mypage.orders.shippingInfo")}
           </h2>
           <div className="text-sm text-gray-600 space-y-1">
             <p className="font-medium">{order.shippingAddress.recipientName}</p>
@@ -338,7 +334,7 @@ export default function MypageOrderDetailPage() {
 
       {order.note && (
         <section className="bg-white rounded-xl shadow-sm p-6 mb-6">
-          <h2 className="font-bold text-[var(--color-secondary)] mb-2">배송 메모</h2>
+          <h2 className="font-bold text-[var(--color-secondary)] mb-2">{t("mypage.orders.shippingMemo")}</h2>
           <p className="text-sm text-gray-600">{order.note}</p>
         </section>
       )}
@@ -347,27 +343,27 @@ export default function MypageOrderDetailPage() {
       <section className="bg-white rounded-xl shadow-sm p-6 mb-6">
         <div className="space-y-3 text-sm">
           <div className="flex justify-between">
-            <span className="text-gray-500">상품 금액</span>
+            <span className="text-gray-500">{t("cart.subtotal")}</span>
             <span>{formatPrice(order.totalAmount)}</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-gray-500">배송비</span>
-            <span>{order.shippingFee > 0 ? formatPrice(order.shippingFee) : "무료"}</span>
+            <span className="text-gray-500">{t("cart.shippingFee")}</span>
+            <span>{order.shippingFee > 0 ? formatPrice(order.shippingFee) : t("common.free")}</span>
           </div>
           {(order.discountAmount ?? 0) > 0 && (
             <div className="flex justify-between text-red-500">
-              <span>할인</span>
+              <span>{t("mypage.coupons.discount")}</span>
               <span>-{formatPrice(order.discountAmount ?? 0)}</span>
             </div>
           )}
           {(order.pointsUsed ?? 0) > 0 && (
             <div className="flex justify-between text-orange-500">
-              <span>포인트 사용</span>
+              <span>{t("order.pointsUsed")}</span>
               <span>-{formatPrice(order.pointsUsed ?? 0)}</span>
             </div>
           )}
           <div className="border-t pt-3 flex justify-between">
-            <span className="font-bold text-[var(--color-secondary)]">총 결제금액</span>
+            <span className="font-bold text-[var(--color-secondary)]">{t("cart.totalAmount")}</span>
             <span className="font-bold text-lg text-[var(--color-primary)]">
               {formatPrice(order.totalAmount + order.shippingFee - (order.discountAmount ?? 0) - (order.pointsUsed ?? 0))}
             </span>
@@ -382,7 +378,7 @@ export default function MypageOrderDetailPage() {
           disabled={cancelling}
           className="w-full py-3 border border-red-300 text-red-500 rounded-xl font-medium hover:bg-red-50 transition-colors disabled:opacity-60"
         >
-          {cancelling ? "취소 처리 중..." : "주문 취소"}
+          {cancelling ? t("mypage.orders.cancelling") : t("mypage.orders.cancelOrder")}
         </button>
       )}
     </div>

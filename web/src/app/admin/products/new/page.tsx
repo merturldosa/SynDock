@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Upload, X } from "lucide-react";
 import { getCategories } from "@/lib/productApi";
 import { createProduct } from "@/lib/adminApi";
@@ -11,6 +12,7 @@ import type { CategoryInfo } from "@/types/product";
 
 export default function AdminProductNewPage() {
   const router = useRouter();
+  const t = useTranslations();
   const [categories, setCategories] = useState<CategoryInfo[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [imageUrls, setImageUrls] = useState<string[]>([]);
@@ -55,7 +57,7 @@ export default function AdminProductNewPage() {
         setImageUrls((prev) => [...prev, url]);
       }
     } catch {
-      alert("이미지 업로드에 실패했습니다.");
+      alert(t("admin.products.imageUploadFailed"));
     }
     setUploading(false);
     e.target.value = "";
@@ -64,7 +66,7 @@ export default function AdminProductNewPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name || !form.categoryId) {
-      alert("상품명과 카테고리를 입력해 주세요.");
+      alert(t("admin.products.nameAndCategoryRequired"));
       return;
     }
     setSubmitting(true);
@@ -73,10 +75,10 @@ export default function AdminProductNewPage() {
         ...form,
         imageUrls,
       });
-      alert("상품이 등록되었습니다.");
+      alert(t("admin.products.registered"));
       router.push("/admin/products");
     } catch {
-      alert("상품 등록에 실패했습니다.");
+      alert(t("admin.products.registerFailed"));
     }
     setSubmitting(false);
   };
@@ -84,19 +86,19 @@ export default function AdminProductNewPage() {
   return (
     <div className="max-w-3xl">
       <h1 className="text-2xl font-bold text-[var(--color-secondary)] mb-6">
-        상품 등록
+        {t("admin.products.addNew")}
       </h1>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Basic Info */}
         <div className="bg-white rounded-xl shadow-sm p-6">
           <h2 className="font-semibold text-[var(--color-secondary)] mb-4">
-            기본 정보
+            {t("admin.products.basicInfo")}
           </h2>
           <div className="space-y-4">
             <div>
               <label className="block text-sm text-gray-500 mb-1">
-                상품명 *
+                {t("admin.products.nameRequired")}
               </label>
               <input
                 type="text"
@@ -118,7 +120,7 @@ export default function AdminProductNewPage() {
             </div>
             <div>
               <label className="block text-sm text-gray-500 mb-1">
-                카테고리 *
+                {t("admin.products.categoryRequired")}
               </label>
               <select
                 value={form.categoryId}
@@ -128,7 +130,7 @@ export default function AdminProductNewPage() {
                 className="w-full px-3 py-2.5 border rounded-lg text-sm"
                 required
               >
-                <option value={0}>선택하세요</option>
+                <option value={0}>{t("admin.products.selectCategory")}</option>
                 {categories.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.name}
@@ -138,7 +140,7 @@ export default function AdminProductNewPage() {
             </div>
             <div>
               <label className="block text-sm text-gray-500 mb-1">
-                상품 설명
+                {t("admin.products.description")}
               </label>
               <textarea
                 value={form.description}
@@ -156,7 +158,7 @@ export default function AdminProductNewPage() {
               </div>
             </div>
             <div>
-              <label className="block text-sm text-gray-500 mb-1">규격</label>
+              <label className="block text-sm text-gray-500 mb-1">{t("admin.products.specification")}</label>
               <input
                 type="text"
                 value={form.specification}
@@ -172,12 +174,12 @@ export default function AdminProductNewPage() {
         {/* Price */}
         <div className="bg-white rounded-xl shadow-sm p-6">
           <h2 className="font-semibold text-[var(--color-secondary)] mb-4">
-            가격 정보
+            {t("admin.products.priceInfo")}
           </h2>
           <div className="space-y-4">
             <div>
               <label className="block text-sm text-gray-500 mb-1">
-                가격 유형
+                {t("admin.products.priceType")}
               </label>
               <select
                 value={form.priceType}
@@ -186,15 +188,15 @@ export default function AdminProductNewPage() {
                 }
                 className="w-full px-3 py-2.5 border rounded-lg text-sm"
               >
-                <option value="Fixed">정가</option>
-                <option value="Inquiry">상담요망</option>
+                <option value="Fixed">{t("admin.products.priceTypeFixed")}</option>
+                <option value="Inquiry">{t("admin.products.priceTypeInquiry")}</option>
               </select>
             </div>
             {form.priceType === "Fixed" && (
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm text-gray-500 mb-1">
-                    판매가 (원)
+                    {t("admin.products.priceWon")}
                   </label>
                   <input
                     type="number"
@@ -207,7 +209,7 @@ export default function AdminProductNewPage() {
                 </div>
                 <div>
                   <label className="block text-sm text-gray-500 mb-1">
-                    할인가 (원)
+                    {t("admin.products.salePriceWon")}
                   </label>
                   <input
                     type="number"
@@ -221,7 +223,7 @@ export default function AdminProductNewPage() {
                       }))
                     }
                     className="w-full px-3 py-2.5 border rounded-lg text-sm"
-                    placeholder="없으면 비워두세요"
+                    placeholder={t("admin.products.salePricePlaceholder")}
                   />
                 </div>
               </div>
@@ -232,7 +234,7 @@ export default function AdminProductNewPage() {
         {/* Images */}
         <div className="bg-white rounded-xl shadow-sm p-6">
           <h2 className="font-semibold text-[var(--color-secondary)] mb-4">
-            이미지
+            {t("admin.products.images")}
           </h2>
           <div className="flex flex-wrap gap-3 mb-3">
             {imageUrls.map((url, i) => (
@@ -256,7 +258,7 @@ export default function AdminProductNewPage() {
                 </button>
                 {i === 0 && (
                   <span className="absolute bottom-0 left-0 right-0 bg-[var(--color-primary)] text-white text-[10px] text-center py-0.5">
-                    대표
+                    {t("admin.products.primaryLabel")}
                   </span>
                 )}
               </div>
@@ -264,7 +266,7 @@ export default function AdminProductNewPage() {
             <label className="w-24 h-24 border-2 border-dashed rounded-lg flex flex-col items-center justify-center cursor-pointer text-gray-400 hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] transition-colors">
               <Upload size={20} />
               <span className="text-[10px] mt-1">
-                {uploading ? "업로드 중..." : "이미지 추가"}
+                {uploading ? t("admin.products.uploading") : t("admin.products.addImage")}
               </span>
               <input
                 type="file"
@@ -281,7 +283,7 @@ export default function AdminProductNewPage() {
         {/* Options */}
         <div className="bg-white rounded-xl shadow-sm p-6">
           <h2 className="font-semibold text-[var(--color-secondary)] mb-4">
-            옵션
+            {t("admin.products.options")}
           </h2>
           <div className="flex flex-wrap gap-4">
             <label className="flex items-center gap-2 text-sm">
@@ -292,7 +294,7 @@ export default function AdminProductNewPage() {
                   setForm((f) => ({ ...f, isActive: e.target.checked }))
                 }
               />
-              판매 중
+              {t("admin.products.active")}
             </label>
             <label className="flex items-center gap-2 text-sm">
               <input
@@ -302,7 +304,7 @@ export default function AdminProductNewPage() {
                   setForm((f) => ({ ...f, isFeatured: e.target.checked }))
                 }
               />
-              추천 상품
+              {t("admin.products.featured")}
             </label>
             <label className="flex items-center gap-2 text-sm">
               <input
@@ -312,7 +314,7 @@ export default function AdminProductNewPage() {
                   setForm((f) => ({ ...f, isNew: e.target.checked }))
                 }
               />
-              신상품
+              {t("admin.products.isNew")}
             </label>
           </div>
         </div>
@@ -324,14 +326,14 @@ export default function AdminProductNewPage() {
             onClick={() => router.back()}
             className="flex-1 py-3 border rounded-lg text-sm font-medium text-gray-500 hover:bg-gray-50"
           >
-            취소
+            {t("common.cancel")}
           </button>
           <button
             type="submit"
             disabled={submitting}
             className="flex-1 py-3 bg-[var(--color-primary)] text-white rounded-lg text-sm font-medium hover:opacity-90 disabled:opacity-60"
           >
-            {submitting ? "등록 중..." : "상품 등록"}
+            {submitting ? t("admin.products.registering") : t("admin.products.addNew")}
           </button>
         </div>
       </form>

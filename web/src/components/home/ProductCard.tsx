@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { ShoppingCart } from "lucide-react";
+import { useTranslations } from "next-intl";
 import type { ProductSummary } from "@/types/product";
 
 interface ProductCardProps {
@@ -15,6 +16,7 @@ function formatPrice(price: number): string {
 }
 
 export function ProductCard({ product, onAddToCart }: ProductCardProps) {
+  const t = useTranslations("products");
   const discount = product.salePrice
     ? Math.round((1 - product.salePrice / product.price) * 100)
     : 0;
@@ -44,17 +46,17 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
 
           {product.isFeatured && (
             <span className="absolute top-3 left-3 px-3 py-1 text-xs font-bold rounded-full text-white bg-[var(--color-primary)]">
-              베스트
+              {t("best")}
             </span>
           )}
           {product.isNew && (
             <span className="absolute top-3 left-3 px-3 py-1 text-xs font-bold rounded-full text-white bg-emerald-500">
-              신상품
+              {t("new")}
             </span>
           )}
           {discount > 0 && (
             <span className="absolute top-3 left-3 px-3 py-1 text-xs font-bold rounded-full text-white bg-red-500">
-              할인 {discount}%
+              {t("discount", { percent: discount })}
             </span>
           )}
 
@@ -85,7 +87,7 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
 
           <div className="flex items-baseline gap-2 mt-auto">
             {isInquiry ? (
-              <span className="text-sm font-bold text-[var(--color-primary)]">상담요망</span>
+              <span className="text-sm font-bold text-[var(--color-primary)]">{t("inquiryPrice")}</span>
             ) : (
               <>
                 <span className="text-lg font-bold text-[var(--color-secondary)]">

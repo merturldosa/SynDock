@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Share2, Check } from "lucide-react";
 
 interface ShareButtonProps {
@@ -10,6 +11,7 @@ interface ShareButtonProps {
 }
 
 export function ShareButton({ title, text, url }: ShareButtonProps) {
+  const t = useTranslations();
   const [copied, setCopied] = useState(false);
 
   const handleShare = async () => {
@@ -36,7 +38,7 @@ export function ShareButton({ title, text, url }: ShareButtonProps) {
     <button
       onClick={handleShare}
       className="p-4 rounded-xl border-2 border-gray-200 text-gray-400 hover:border-blue-300 hover:text-blue-500 transition-colors"
-      title="공유하기"
+      title={t("share.title")}
     >
       {copied ? <Check size={22} className="text-emerald-500" /> : <Share2 size={22} />}
     </button>

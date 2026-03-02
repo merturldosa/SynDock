@@ -10,13 +10,14 @@ import {
   CreditCard,
   ChevronLeft,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useAuthStore } from "@/stores/authStore";
 
 const NAV_ITEMS = [
-  { href: "/superadmin", icon: LayoutDashboard, label: "대시보드" },
-  { href: "/superadmin/tenants", icon: Store, label: "쇼핑몰 관리" },
-  { href: "/superadmin/tenants/new", icon: Plus, label: "쇼핑몰 분양" },
-  { href: "/superadmin/billing", icon: CreditCard, label: "빌링" },
+  { href: "/superadmin", icon: LayoutDashboard, labelKey: "dashboard" },
+  { href: "/superadmin/tenants", icon: Store, labelKey: "tenants" },
+  { href: "/superadmin/tenants/new", icon: Plus, labelKey: "newTenant" },
+  { href: "/superadmin/billing", icon: CreditCard, labelKey: "billing" },
 ];
 
 export default function SuperAdminLayout({
@@ -24,6 +25,7 @@ export default function SuperAdminLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const t = useTranslations();
   const router = useRouter();
   const pathname = usePathname();
   const { user, isAuthenticated, isLoading, fetchMe } = useAuthStore();
@@ -61,7 +63,7 @@ export default function SuperAdminLayout({
             className="flex items-center gap-2 text-sm text-white/60 hover:text-white"
           >
             <ChevronLeft size={14} />
-            쇼핑몰로 돌아가기
+            {t("superadmin.backToShop")}
           </Link>
         </div>
 
@@ -88,7 +90,7 @@ export default function SuperAdminLayout({
                 }`}
               >
                 <item.icon size={18} />
-                {item.label}
+                {t(`superadmin.nav.${item.labelKey}`)}
               </Link>
             );
           })}

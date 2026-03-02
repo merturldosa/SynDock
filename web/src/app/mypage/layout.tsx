@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import {
   User, Package, MapPin, Heart, Star, MessageCircleQuestion,
   FolderOpen, Coins, Ticket, Bell,
@@ -10,21 +11,22 @@ import {
 import { useAuthStore } from "@/stores/authStore";
 
 const NAV_ITEMS = [
-  { href: "/mypage", label: "내 정보", icon: User, exact: true },
-  { href: "/mypage/orders", label: "주문내역", icon: Package },
-  { href: "/mypage/addresses", label: "배송지 관리", icon: MapPin },
-  { href: "/mypage/wishlist", label: "찜 목록", icon: Heart },
-  { href: "/mypage/reviews", label: "내 리뷰", icon: Star },
-  { href: "/mypage/qna", label: "내 QnA", icon: MessageCircleQuestion },
-  { href: "/mypage/collections", label: "컬렉션", icon: FolderOpen },
-  { href: "/mypage/points", label: "포인트", icon: Coins },
-  { href: "/mypage/coupons", label: "쿠폰", icon: Ticket },
-  { href: "/mypage/notifications", label: "알림", icon: Bell },
+  { href: "/mypage", labelKey: "info", icon: User, exact: true },
+  { href: "/mypage/orders", labelKey: "orders", icon: Package },
+  { href: "/mypage/addresses", labelKey: "addresses", icon: MapPin },
+  { href: "/mypage/wishlist", labelKey: "wishlist", icon: Heart },
+  { href: "/mypage/reviews", labelKey: "reviews", icon: Star },
+  { href: "/mypage/qna", labelKey: "qna", icon: MessageCircleQuestion },
+  { href: "/mypage/collections", labelKey: "collections", icon: FolderOpen },
+  { href: "/mypage/points", labelKey: "points", icon: Coins },
+  { href: "/mypage/coupons", labelKey: "coupons", icon: Ticket },
+  { href: "/mypage/notifications", labelKey: "notifications", icon: Bell },
 ];
 
 export default function MypageLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
+  const t = useTranslations("mypage");
   const { user, isAuthenticated, isLoading, fetchMe } = useAuthStore();
 
   useEffect(() => {
@@ -57,7 +59,7 @@ export default function MypageLayout({ children }: { children: React.ReactNode }
           <User size={20} className="text-white" />
         </div>
         <div>
-          <h1 className="text-lg font-bold text-[var(--color-secondary)]">마이페이지</h1>
+          <h1 className="text-lg font-bold text-[var(--color-secondary)]">{t("title")}</h1>
           <p className="text-sm text-gray-500">{user?.name}</p>
         </div>
       </div>
@@ -66,7 +68,7 @@ export default function MypageLayout({ children }: { children: React.ReactNode }
         {/* Sidebar (desktop) */}
         <nav className="hidden lg:block w-56 shrink-0">
           <div className="bg-white rounded-xl shadow-sm p-3 sticky top-24 space-y-1">
-            {NAV_ITEMS.map(({ href, label, icon: Icon, exact }) => (
+            {NAV_ITEMS.map(({ href, labelKey, icon: Icon, exact }) => (
               <Link
                 key={href}
                 href={href}
@@ -77,7 +79,7 @@ export default function MypageLayout({ children }: { children: React.ReactNode }
                 }`}
               >
                 <Icon size={18} />
-                {label}
+                {t(`nav.${labelKey}`)}
               </Link>
             ))}
           </div>
@@ -86,7 +88,7 @@ export default function MypageLayout({ children }: { children: React.ReactNode }
         {/* Mobile tabs */}
         <nav className="lg:hidden overflow-x-auto -mx-4 px-4">
           <div className="flex gap-1 min-w-max pb-2">
-            {NAV_ITEMS.map(({ href, label, icon: Icon, exact }) => (
+            {NAV_ITEMS.map(({ href, labelKey, icon: Icon, exact }) => (
               <Link
                 key={href}
                 href={href}
@@ -97,7 +99,7 @@ export default function MypageLayout({ children }: { children: React.ReactNode }
                 }`}
               >
                 <Icon size={14} />
-                {label}
+                {t(`nav.${labelKey}`)}
               </Link>
             ))}
           </div>

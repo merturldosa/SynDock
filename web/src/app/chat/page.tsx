@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Send, Bot, User, Loader2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { sendChatMessage, type ChatMessageDto } from "@/lib/chatApi";
 import { useAuthStore } from "@/stores/authStore";
 import { useTenantStore } from "@/stores/tenantStore";
@@ -12,23 +13,22 @@ interface Message {
 }
 
 export default function ChatPage() {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      role: "assistant",
-      content:
-        "안녕하세요! 쇼핑에 관한 궁금한 점이 있으시면 무엇이든 물어보세요. 상품 추천, 주문 문의, 배송 관련 질문 등 도움을 드리겠습니다.",
-    },
-  ]);
+  const t = useTranslations();
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const user = useAuthStore((s) => s.user);
   const { config } = useTenantStore();
-  const chatName = config?.chatPersona?.name || "AI 쇼핑 어시스턴트";
+  const chatName = config?.chatPersona?.name || t("chat.defaultAssistantName");
 
+  // Initialize default greeting
   useEffect(() => {
-    if (config?.chatPersona?.greeting && messages.length === 1 && messages[0].role === "assistant") {
+    if (messages.length === 0) {
+      const greeting = config?.chatPersona?.greeting || t("chat.defaultGreeting");
+      setMessages([{ role: "assistant", content: greeting }]);
+    } else if (config?.chatPersona?.greeting && messages.length === 1 && messages[0].role === "assistant") {
       setMessages([{ role: "assistant", content: config.chatPersona.greeting }]);
     }
   }, [config]);
@@ -63,7 +63,7 @@ export default function ChatPage() {
         ...prev,
         {
           role: "assistant",
-          content: "죄송합니다. 일시적인 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.",
+          content: t("chat.errorMessage"),
         },
       ]);
     } finally {
@@ -137,7 +137,7 @@ export default function ChatPage() {
               <div className="bg-white text-gray-500 rounded-2xl px-4 py-3 border border-gray-200 shadow-sm">
                 <div className="flex items-center gap-2">
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  <span className="text-sm">답변을 작성하고 있습니다...</span>
+                  <span className="text-sm">{t("chat.thinking")}</span>
                 </div>
               </div>
             </div>
@@ -149,11 +149,10 @@ export default function ChatPage() {
         <div className="border-t border-gray-200 pt-4">
           {!user ? (
             <div className="text-center py-3 text-sm text-gray-500">
-              AI 채팅을 이용하려면{" "}
+              {t("chat.loginRequired")}{" "}
               <a href="/login" className="text-[var(--color-primary)] hover:underline font-medium">
-                로그인
+                {t("chat.login")}
               </a>
-              이 필요합니다.
             </div>
           ) : (
             <div className="flex items-center gap-3">
@@ -163,7 +162,7 @@ export default function ChatPage() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="메시지를 입력하세요..."
+                placeholder={t("chat.placeholder")}
                 disabled={isLoading}
                 className="flex-1 rounded-full border border-gray-300 px-5 py-3 text-sm focus:outline-none focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)] disabled:opacity-50"
               />

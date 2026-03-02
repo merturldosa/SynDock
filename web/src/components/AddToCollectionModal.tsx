@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { X, Plus, FolderPlus } from "lucide-react";
 import {
   getMyCollections,
@@ -20,6 +21,7 @@ export function AddToCollectionModal({
   isOpen,
   onClose,
 }: AddToCollectionModalProps) {
+  const t = useTranslations();
   const [collections, setCollections] = useState<CollectionSummary[]>([]);
   const [loading, setLoading] = useState(false);
   const [creating, setCreating] = useState(false);
@@ -42,10 +44,10 @@ export function AddToCollectionModal({
     try {
       const { collectionId } = await createCollection(newName.trim());
       await addToCollection(collectionId, productId);
-      alert("새 컬렉션에 추가되었습니다.");
+      alert(t("collection.addedToNew"));
       onClose();
     } catch {
-      alert("컬렉션 생성에 실패했습니다.");
+      alert(t("collection.createFailed"));
     }
     setCreating(false);
   };
@@ -54,10 +56,10 @@ export function AddToCollectionModal({
     setAdding(collectionId);
     try {
       await addToCollection(collectionId, productId);
-      alert("컬렉션에 추가되었습니다.");
+      alert(t("collection.added"));
       onClose();
     } catch {
-      alert("이미 추가된 상품이거나 추가에 실패했습니다.");
+      alert(t("collection.addFailed"));
     }
     setAdding(null);
   };
@@ -69,7 +71,7 @@ export function AddToCollectionModal({
       <div className="bg-white rounded-2xl w-full max-w-md mx-4 shadow-2xl">
         <div className="flex items-center justify-between p-4 border-b">
           <h3 className="font-bold text-[var(--color-secondary)]">
-            컬렉션에 추가
+            {t("collection.addToCollection")}
           </h3>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
             <X size={20} />
@@ -92,14 +94,14 @@ export function AddToCollectionModal({
                 >
                   <div className="text-left">
                     <p className="text-sm font-medium text-gray-800">{col.name}</p>
-                    <p className="text-xs text-gray-400">{col.itemCount}개 상품</p>
+                    <p className="text-xs text-gray-400">{t("mypage.collections.itemCount", { count: col.itemCount })}</p>
                   </div>
                   <Plus size={16} className="text-gray-400" />
                 </button>
               ))}
               {collections.length === 0 && (
                 <p className="text-center text-sm text-gray-400 py-4">
-                  아직 컬렉션이 없습니다.
+                  {t("collection.noCollections")}
                 </p>
               )}
             </div>
@@ -112,7 +114,7 @@ export function AddToCollectionModal({
               type="text"
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
-              placeholder="새 컬렉션 이름"
+              placeholder={t("collection.newCollectionName")}
               className="flex-1 px-3 py-2 border rounded-lg text-sm"
               onKeyDown={(e) => e.key === "Enter" && handleCreate()}
             />
@@ -122,7 +124,7 @@ export function AddToCollectionModal({
               className="flex items-center gap-1 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg text-sm font-medium hover:opacity-90 disabled:opacity-50"
             >
               <FolderPlus size={14} />
-              {creating ? "..." : "만들기"}
+              {creating ? t("collection.creating") : t("collection.create")}
             </button>
           </div>
         </div>

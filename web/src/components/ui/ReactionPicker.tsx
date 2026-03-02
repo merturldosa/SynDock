@@ -1,14 +1,15 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
-const DEFAULT_REACTIONS = [
-  { emoji: "🙏", label: "기도" },
-  { emoji: "✝️", label: "아멘" },
-  { emoji: "❤️", label: "사랑" },
-  { emoji: "🕊️", label: "축복" },
-  { emoji: "🙌", label: "감사" },
-  { emoji: "⭐", label: "할렐루야" },
+const DEFAULT_REACTION_KEYS = [
+  { emoji: "🙏", key: "prayer" },
+  { emoji: "✝️", key: "amen" },
+  { emoji: "❤️", key: "love" },
+  { emoji: "🕊️", key: "blessing" },
+  { emoji: "🙌", key: "thanks" },
+  { emoji: "⭐", key: "hallelujah" },
 ];
 
 interface ReactionPickerProps {
@@ -26,12 +27,19 @@ export function ReactionPicker({
   onReact,
   disabled = false,
 }: ReactionPickerProps) {
+  const t = useTranslations();
   const [showPicker, setShowPicker] = useState(false);
+
+  const DEFAULT_REACTIONS = DEFAULT_REACTION_KEYS.map((r) => ({
+    emoji: r.emoji,
+    label: t(`reaction.${r.key}`),
+    key: r.key,
+  }));
 
   const reactionList = reactions
     ? reactions.map((r) => {
         const found = DEFAULT_REACTIONS.find((d) => d.label === r || d.emoji === r);
-        return found || { emoji: r, label: r };
+        return found || { emoji: r, label: r, key: r };
       })
     : DEFAULT_REACTIONS;
 

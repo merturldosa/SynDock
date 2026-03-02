@@ -10,9 +10,12 @@ import { Menu, X, ShoppingCart, User, Search, Bell, MessageCircle } from "lucide
 import { getCategories } from "@/lib/productApi";
 import { getUnreadCount } from "@/lib/notificationApi";
 import { useNotificationStore } from "@/stores/notificationStore";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { useTranslations } from "next-intl";
 import type { CategoryInfo } from "@/types/product";
 
 export function Header() {
+  const t = useTranslations();
   const router = useRouter();
   const { user, isAuthenticated, isLoading, logout, fetchMe } = useAuthStore();
   const { name: tenantName } = useTenantStore();
@@ -54,17 +57,18 @@ export function Header() {
       {/* Top bar */}
       <div className="border-b border-white/10">
         <div className="max-w-7xl mx-auto px-4 h-8 flex items-center justify-end text-xs text-white/50 gap-4">
+          <LanguageSwitcher />
           {!isLoading && isAuthenticated ? (
             <>
-              <span className="text-[var(--color-primary-light)]">{user?.name}님</span>
+              <span className="text-[var(--color-primary-light)]">{t("header.greeting", { name: user?.name ?? "" })}</span>
               <button onClick={handleLogout} className="hover:text-white transition-colors">
-                로그아웃
+                {t("header.logout")}
               </button>
             </>
           ) : !isLoading ? (
             <>
-              <Link href="/login" className="hover:text-white transition-colors">로그인</Link>
-              <Link href="/register" className="hover:text-white transition-colors">회원가입</Link>
+              <Link href="/login" className="hover:text-white transition-colors">{t("header.login")}</Link>
+              <Link href="/register" className="hover:text-white transition-colors">{t("header.register")}</Link>
             </>
           ) : null}
         </div>
@@ -79,7 +83,7 @@ export function Header() {
         {/* Desktop Nav */}
         <nav className="hidden md:flex items-center gap-8">
           <Link href="/products" className="text-sm hover:text-[var(--color-primary)] transition-colors">
-            전체상품
+            {t("common.allProducts")}
           </Link>
           {navCategories.map((cat) => (
             <Link
@@ -95,15 +99,15 @@ export function Header() {
         {/* Right icons */}
         <div className="flex items-center gap-3">
           <Link href="/feed" className="hidden md:block text-xs px-2 py-1 hover:text-[var(--color-primary)] transition-colors">
-            커뮤니티
+            {t("common.community")}
           </Link>
           <Link href="/liturgy" className="hidden md:block text-xs px-2 py-1 hover:text-[var(--color-primary)] transition-colors">
-            전례
+            {t("common.liturgy")}
           </Link>
           <Link href="/search" className="hidden md:block p-2 hover:text-[var(--color-primary)] transition-colors">
             <Search size={20} />
           </Link>
-          <Link href="/chat" className="hidden md:block p-2 hover:text-[var(--color-primary)] transition-colors" title="AI 채팅">
+          <Link href="/chat" className="hidden md:block p-2 hover:text-[var(--color-primary)] transition-colors" title={t("common.aiChat")}>
             <MessageCircle size={20} />
           </Link>
           {isAuthenticated && (
@@ -121,12 +125,12 @@ export function Header() {
               </Link>
               {(user?.role === "Admin" || user?.role === "PlatformAdmin") && (
                 <Link href="/admin" className="hidden md:block text-xs px-2 py-1 bg-[var(--color-primary)] rounded text-white hover:opacity-90">
-                  관리자
+                  {t("header.admin")}
                 </Link>
               )}
               {user?.role === "PlatformAdmin" && (
                 <Link href="/superadmin" className="hidden md:block text-xs px-2 py-1 bg-emerald-600 rounded text-white hover:bg-emerald-700">
-                  플랫폼
+                  {t("header.platform")}
                 </Link>
               )}
             </>
@@ -156,7 +160,7 @@ export function Header() {
               onClick={() => setMobileOpen(false)}
               className="py-2 px-2 rounded hover:bg-white/5 hover:text-[var(--color-primary)] transition-colors"
             >
-              전체상품
+              {t("common.allProducts")}
             </Link>
             {categories.map((cat) => (
               <Link

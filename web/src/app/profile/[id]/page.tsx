@@ -4,22 +4,27 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { UserCheck, UserPlus } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { getSocialProfile, toggleFollow, getFeed } from "@/lib/postApi";
 import { useAuthStore } from "@/stores/authStore";
 import type { SocialProfile, PagedPosts } from "@/types/post";
 
-function timeAgo(dateStr: string): string {
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 60) return `${mins}분 전`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}시간 전`;
-  return new Date(dateStr).toLocaleDateString("ko-KR");
-}
-
 export default function ProfilePage() {
+  const t = useTranslations();
   const params = useParams();
   const { isAuthenticated, user } = useAuthStore();
+
+  const timeAgo = (dateStr: string): string => {
+    const diff = Date.now() - new Date(dateStr).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return t("feed.justNow");
+    if (mins < 60) return t("feed.minutesAgo", { count: mins });
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return t("feed.hoursAgo", { count: hrs });
+    const days = Math.floor(hrs / 24);
+    if (days < 30) return t("feed.daysAgo", { count: days });
+    return new Date(dateStr).toLocaleDateString();
+  };
   const [profile, setProfile] = useState<SocialProfile | null>(null);
   const [posts, setPosts] = useState<PagedPosts | null>(null);
   const [loading, setLoading] = useState(true);
@@ -65,7 +70,7 @@ export default function ProfilePage() {
   if (!profile) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-20 text-center text-gray-500">
-        사용자를 찾을 수 없습니다.
+        {t("profile.userNotFound")}
       </div>
     );
   }
@@ -97,11 +102,11 @@ export default function ProfilePage() {
             >
               {profile.isFollowing ? (
                 <>
-                  <UserCheck size={16} /> 팔로잉
+                  <UserCheck size={16} /> {t("profile.following")}
                 </>
               ) : (
                 <>
-                  <UserPlus size={16} /> 팔로우
+                  <UserPlus size={16} /> {t("profile.follow")}
                 </>
               )}
             </button>
@@ -113,30 +118,30 @@ export default function ProfilePage() {
             <p className="text-lg font-bold text-[var(--color-secondary)]">
               {profile.postCount}
             </p>
-            <p className="text-xs text-gray-400">게시글</p>
+            <p className="text-xs text-gray-400">{t("profile.posts")}</p>
           </div>
           <div className="text-center">
             <p className="text-lg font-bold text-[var(--color-secondary)]">
               {profile.followerCount}
             </p>
-            <p className="text-xs text-gray-400">팔로워</p>
+            <p className="text-xs text-gray-400">{t("profile.followers")}</p>
           </div>
           <div className="text-center">
             <p className="text-lg font-bold text-[var(--color-secondary)]">
               {profile.followingCount}
             </p>
-            <p className="text-xs text-gray-400">팔로잉</p>
+            <p className="text-xs text-gray-400">{t("profile.following")}</p>
           </div>
         </div>
       </div>
 
       {/* Posts */}
       <h2 className="text-lg font-semibold text-[var(--color-secondary)] mb-4">
-        게시글
+        {t("profile.posts")}
       </h2>
       {!posts || posts.items.length === 0 ? (
         <p className="text-center py-10 text-gray-400">
-          아직 게시글이 없습니다.
+          {t("profile.noPosts")}
         </p>
       ) : (
         <div className="space-y-3">

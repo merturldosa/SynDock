@@ -9,10 +9,12 @@ import { LiturgySummary } from "@/components/home/LiturgySummary";
 import { PromoBanner } from "@/components/home/PromoBanner";
 import { useAuthStore } from "@/stores/authStore";
 import { useCartStore } from "@/stores/cartStore";
+import { useTranslations } from "next-intl";
 import { getProducts, getCategories } from "@/lib/productApi";
 import type { ProductSummary, CategoryInfo } from "@/types/product";
 
 export default function Home() {
+  const t = useTranslations("products");
   const router = useRouter();
   const { isAuthenticated } = useAuthStore();
   const { addToCart } = useCartStore();
@@ -59,7 +61,7 @@ export default function Home() {
       {section1.category && (
         <ProductSection
           title={section1.category.name}
-          subtitle={`${section1.category.name} 카테고리의 인기 상품`}
+          subtitle={t("popularInCategory", { name: section1.category.name })}
           products={section1.products}
           moreHref={`/products?category=${section1.category.slug}`}
           onAddToCart={handleAddToCart}
@@ -68,7 +70,7 @@ export default function Home() {
       {section2.category && (
         <ProductSection
           title={section2.category.name}
-          subtitle={`${section2.category.name} 카테고리의 인기 상품`}
+          subtitle={t("popularInCategory", { name: section2.category.name })}
           products={section2.products}
           moreHref={`/products?category=${section2.category.slug}`}
           onAddToCart={handleAddToCart}

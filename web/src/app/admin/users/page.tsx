@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { getAdminUsers, updateUser, type UserSummary } from "@/lib/adminApi";
 
 export default function AdminUsersPage() {
+  const t = useTranslations();
   const [users, setUsers] = useState<UserSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<number | null>(null);
@@ -19,26 +21,28 @@ export default function AdminUsersPage() {
   useEffect(load, []);
 
   const handleRoleChange = async (user: UserSummary, newRole: string) => {
-    if (!confirm(`${user.name}님의 역할을 ${newRole}(으)로 변경하시겠습니까?`)) return;
+    if (!confirm(t("admin.users.roleChangeConfirm", { name: user.name, role: newRole }))) return;
     setUpdatingId(user.id);
     try {
       await updateUser(user.id, newRole, user.isActive);
       load();
     } catch {
-      alert("역할 변경에 실패했습니다.");
+      alert(t("admin.users.roleChangeFailed"));
     }
     setUpdatingId(null);
   };
 
   const handleActiveToggle = async (user: UserSummary) => {
-    const action = user.isActive ? "비활성화" : "활성화";
-    if (!confirm(`${user.name}님을 ${action}하시겠습니까?`)) return;
+    const msg = user.isActive
+      ? t("admin.users.deactivateConfirm", { name: user.name })
+      : t("admin.users.activateConfirm", { name: user.name });
+    if (!confirm(msg)) return;
     setUpdatingId(user.id);
     try {
       await updateUser(user.id, user.role, !user.isActive);
       load();
     } catch {
-      alert("상태 변경에 실패했습니다.");
+      alert(t("admin.users.statusChangeFailed"));
     }
     setUpdatingId(null);
   };
@@ -46,12 +50,12 @@ export default function AdminUsersPage() {
   return (
     <div>
       <h1 className="text-2xl font-bold text-[var(--color-secondary)] mb-6">
-        회원 관리
+        {t("admin.users.title")}
       </h1>
 
       {users.length > 0 && (
         <p className="text-sm text-gray-500 mb-3">
-          총 {users.length}명
+          {t("admin.users.totalCount", { count: users.length })}
         </p>
       )}
 
@@ -61,19 +65,19 @@ export default function AdminUsersPage() {
         </div>
       ) : users.length === 0 ? (
         <div className="text-center py-20 text-gray-400">
-          <p>등록된 회원이 없습니다.</p>
+          <p>{t("admin.users.noUsersRegistered")}</p>
         </div>
       ) : (
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
           <table className="w-full text-sm">
             <thead className="bg-gray-50 border-b">
               <tr>
-                <th className="text-left p-3 font-medium text-gray-500">이름</th>
-                <th className="text-left p-3 font-medium text-gray-500">아이디</th>
-                <th className="text-left p-3 font-medium text-gray-500">이메일</th>
-                <th className="text-center p-3 font-medium text-gray-500">역할</th>
-                <th className="text-center p-3 font-medium text-gray-500">상태</th>
-                <th className="text-left p-3 font-medium text-gray-500">가입일</th>
+                <th className="text-left p-3 font-medium text-gray-500">{t("admin.users.name")}</th>
+                <th className="text-left p-3 font-medium text-gray-500">{t("admin.users.username")}</th>
+                <th className="text-left p-3 font-medium text-gray-500">{t("admin.users.email")}</th>
+                <th className="text-center p-3 font-medium text-gray-500">{t("admin.users.role")}</th>
+                <th className="text-center p-3 font-medium text-gray-500">{t("admin.users.status")}</th>
+                <th className="text-left p-3 font-medium text-gray-500">{t("admin.users.joinDate")}</th>
               </tr>
             </thead>
             <tbody>
@@ -104,7 +108,7 @@ export default function AdminUsersPage() {
                   <td className="p-3 text-center">
                     {user.role === "PlatformAdmin" ? (
                       <span className="px-2 py-0.5 text-xs rounded-full bg-emerald-100 text-emerald-700">
-                        활성
+                        {t("admin.users.active")}
                       </span>
                     ) : (
                       <button

@@ -1,21 +1,23 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useTenantStore } from "@/stores/tenantStore";
 
 export default function TermsPage() {
+  const t = useTranslations();
   const { name } = useTenantStore();
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold text-[var(--color-secondary)] mb-6">
-        이용약관
+        {t("legal.termsOfService")}
       </h1>
 
       <div className="space-y-8 text-sm text-gray-700 leading-relaxed">
         {/* 1. 목적 */}
         <section>
           <h2 className="text-lg font-semibold text-[var(--color-secondary)] mb-3">
-            제1조 (목적)
+            {t("legal.terms.section1Title")}
           </h2>
           <p>
             이 약관은 {name}(이하 &quot;회사&quot;)가 운영하는 온라인
@@ -27,7 +29,7 @@ export default function TermsPage() {
         {/* 2. 정의 */}
         <section>
           <h2 className="text-lg font-semibold text-[var(--color-secondary)] mb-3">
-            제2조 (정의)
+            {t("legal.terms.section2Title")}
           </h2>
           <ul className="list-disc pl-5 space-y-1">
             <li>&quot;쇼핑몰&quot;이란 회사가 재화 또는 용역을 이용자에게 제공하기 위하여 설정한 가상의 영업장을 말합니다.</li>
@@ -39,7 +41,7 @@ export default function TermsPage() {
         {/* 3. 약관의 게시와 개정 */}
         <section>
           <h2 className="text-lg font-semibold text-[var(--color-secondary)] mb-3">
-            제3조 (약관의 게시와 개정)
+            {t("legal.terms.section3Title")}
           </h2>
           <ul className="list-decimal pl-5 space-y-1">
             <li>회사는 이 약관의 내용을 이용자가 쉽게 알 수 있도록 서비스 초기 화면에 게시합니다.</li>
@@ -51,7 +53,7 @@ export default function TermsPage() {
         {/* 4. 서비스의 제공 및 변경 */}
         <section>
           <h2 className="text-lg font-semibold text-[var(--color-secondary)] mb-3">
-            제4조 (서비스의 제공 및 변경)
+            {t("legal.terms.section4Title")}
           </h2>
           <p>회사는 다음과 같은 업무를 수행합니다.</p>
           <ul className="list-disc pl-5 mt-2 space-y-1">
@@ -64,7 +66,7 @@ export default function TermsPage() {
         {/* 5. 구매신청 및 결제 */}
         <section>
           <h2 className="text-lg font-semibold text-[var(--color-secondary)] mb-3">
-            제5조 (구매신청 및 결제)
+            {t("legal.terms.section5Title")}
           </h2>
           <p>
             이용자는 쇼핑몰에서 다음의 방법으로 구매를 신청하며, 회사는
@@ -83,7 +85,7 @@ export default function TermsPage() {
         {/* 6. 청약철회 */}
         <section>
           <h2 className="text-lg font-semibold text-[var(--color-secondary)] mb-3">
-            제6조 (청약철회 등)
+            {t("legal.terms.section6Title")}
           </h2>
           <ul className="list-decimal pl-5 space-y-1">
             <li>
@@ -105,13 +107,13 @@ export default function TermsPage() {
         {/* 7. 개인정보보호 */}
         <section>
           <h2 className="text-lg font-semibold text-[var(--color-secondary)] mb-3">
-            제7조 (개인정보보호)
+            {t("legal.terms.section7Title")}
           </h2>
           <p>
             회사는 이용자의 개인정보 수집 시 서비스제공을 위하여 필요한
             범위에서 최소한의 개인정보를 수집합니다. 자세한 사항은{" "}
             <a href="/privacy" className="text-[var(--color-primary)] hover:underline">
-              개인정보처리방침
+              {t("legal.privacyPolicy")}
             </a>
             을 참조하시기 바랍니다.
           </p>
@@ -120,7 +122,7 @@ export default function TermsPage() {
         {/* 8. 분쟁해결 */}
         <section>
           <h2 className="text-lg font-semibold text-[var(--color-secondary)] mb-3">
-            제8조 (분쟁해결)
+            {t("legal.terms.section8Title")}
           </h2>
           <ul className="list-decimal pl-5 space-y-1">
             <li>

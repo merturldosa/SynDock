@@ -2,12 +2,14 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { CheckCircle, AlertCircle, Loader2 } from "lucide-react";
 import { confirmPayment } from "@/lib/orderApi";
 
 function PaymentSuccessContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const t = useTranslations();
   const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -18,7 +20,7 @@ function PaymentSuccessContent() {
 
     if (!paymentKey || !orderId || !amount) {
       setStatus("error");
-      setErrorMessage("결제 정보가 올바르지 않습니다.");
+      setErrorMessage(t("order.success.invalidInfo"));
       return;
     }
 
@@ -31,7 +33,7 @@ function PaymentSuccessContent() {
       })
       .catch((err) => {
         setStatus("error");
-        setErrorMessage(err?.response?.data?.error || "결제 승인에 실패했습니다.");
+        setErrorMessage(err?.response?.data?.error || t("order.success.failed"));
       });
   }, [searchParams, router]);
 
@@ -40,29 +42,29 @@ function PaymentSuccessContent() {
       {status === "loading" && (
         <>
           <Loader2 size={64} className="mx-auto text-[var(--color-primary)] animate-spin mb-6" />
-          <h1 className="text-xl font-bold text-[var(--color-secondary)] mb-2">결제 승인 중...</h1>
-          <p className="text-gray-500 text-sm">잠시만 기다려 주세요.</p>
+          <h1 className="text-xl font-bold text-[var(--color-secondary)] mb-2">{t("order.success.approving")}</h1>
+          <p className="text-gray-500 text-sm">{t("order.success.pleaseWait")}</p>
         </>
       )}
 
       {status === "success" && (
         <>
           <CheckCircle size={64} className="mx-auto text-emerald-500 mb-6" />
-          <h1 className="text-xl font-bold text-[var(--color-secondary)] mb-2">결제가 완료되었습니다</h1>
-          <p className="text-gray-500 text-sm">주문 완료 페이지로 이동합니다...</p>
+          <h1 className="text-xl font-bold text-[var(--color-secondary)] mb-2">{t("order.success.completed")}</h1>
+          <p className="text-gray-500 text-sm">{t("order.success.redirecting")}</p>
         </>
       )}
 
       {status === "error" && (
         <>
           <AlertCircle size={64} className="mx-auto text-red-500 mb-6" />
-          <h1 className="text-xl font-bold text-[var(--color-secondary)] mb-2">결제 승인 실패</h1>
+          <h1 className="text-xl font-bold text-[var(--color-secondary)] mb-2">{t("order.success.failed")}</h1>
           <p className="text-red-500 text-sm mb-6">{errorMessage}</p>
           <button
             onClick={() => router.push("/order")}
             className="px-6 py-3 bg-[var(--color-primary)] text-white rounded-lg font-medium hover:opacity-90 transition-opacity"
           >
-            주문서로 돌아가기
+            {t("order.success.backToOrder")}
           </button>
         </>
       )}

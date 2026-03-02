@@ -4,9 +4,11 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { createCoupon } from "@/lib/couponApi";
 
 export default function CreateCouponPage() {
+  const t = useTranslations();
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -50,7 +52,7 @@ export default function CreateCouponPage() {
       });
       router.push("/admin/coupons");
     } catch {
-      setError("쿠폰 생성에 실패했습니다.");
+      setError(t("admin.coupons.createFailed"));
     } finally {
       setSubmitting(false);
     }
@@ -62,11 +64,11 @@ export default function CreateCouponPage() {
         href="/admin/coupons"
         className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 mb-4"
       >
-        <ChevronLeft size={16} /> 쿠폰 목록
+        <ChevronLeft size={16} /> {t("admin.coupons.couponList")}
       </Link>
 
       <h1 className="text-2xl font-bold text-[var(--color-secondary)] mb-6">
-        쿠폰 생성
+        {t("admin.coupons.addNew")}
       </h1>
 
       {error && (
@@ -80,26 +82,26 @@ export default function CreateCouponPage() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                쿠폰 코드
+                {t("admin.coupons.code")}
               </label>
               <input
                 type="text"
                 value={form.code}
                 onChange={(e) => update("code", e.target.value)}
-                placeholder="예: WELCOME2026"
+                placeholder={t("admin.coupons.codePlaceholder")}
                 className="w-full px-3 py-2.5 border rounded-lg text-sm font-mono"
                 required
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                쿠폰명
+                {t("admin.coupons.name")}
               </label>
               <input
                 type="text"
                 value={form.name}
                 onChange={(e) => update("name", e.target.value)}
-                placeholder="예: 신규 가입 쿠폰"
+                placeholder={t("admin.coupons.namePlaceholder")}
                 className="w-full px-3 py-2.5 border rounded-lg text-sm"
                 required
               />
@@ -108,7 +110,7 @@ export default function CreateCouponPage() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              설명
+              {t("admin.coupons.description")}
             </label>
             <input
               type="text"
@@ -121,20 +123,20 @@ export default function CreateCouponPage() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                할인 유형
+                {t("admin.coupons.discountType")}
               </label>
               <select
                 value={form.discountType}
                 onChange={(e) => update("discountType", e.target.value)}
                 className="w-full px-3 py-2.5 border rounded-lg text-sm"
               >
-                <option value="Fixed">정액 할인 (원)</option>
-                <option value="Percentage">정률 할인 (%)</option>
+                <option value="Fixed">{t("admin.coupons.fixedDiscount")}</option>
+                <option value="Percentage">{t("admin.coupons.percentDiscount")}</option>
               </select>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                할인 값
+                {t("admin.coupons.discountValue")}
               </label>
               <input
                 type="number"
@@ -150,7 +152,7 @@ export default function CreateCouponPage() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                최소 주문 금액
+                {t("admin.coupons.minOrderAmount")}
               </label>
               <input
                 type="number"
@@ -164,7 +166,7 @@ export default function CreateCouponPage() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                최대 할인 금액 (% 할인 시)
+                {t("admin.coupons.maxDiscountAmount")}
               </label>
               <input
                 type="number"
@@ -181,7 +183,7 @@ export default function CreateCouponPage() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                시작일
+                {t("admin.coupons.startDate")}
               </label>
               <input
                 type="date"
@@ -193,7 +195,7 @@ export default function CreateCouponPage() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                종료일
+                {t("admin.coupons.endDate")}
               </label>
               <input
                 type="date"
@@ -207,7 +209,7 @@ export default function CreateCouponPage() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              최대 사용 횟수 (0 = 무제한)
+              {t("admin.coupons.maxUsesZeroUnlimited")}
             </label>
             <input
               type="number"
@@ -225,14 +227,14 @@ export default function CreateCouponPage() {
             disabled={submitting}
             className="px-6 py-2.5 bg-[var(--color-primary)] text-white rounded-lg text-sm font-medium hover:opacity-90 disabled:opacity-50"
           >
-            {submitting ? "생성 중..." : "쿠폰 생성"}
+            {submitting ? t("admin.coupons.creating") : t("admin.coupons.addNew")}
           </button>
           <button
             type="button"
             onClick={() => router.back()}
             className="px-6 py-2.5 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50"
           >
-            취소
+            {t("common.cancel")}
           </button>
         </div>
       </form>

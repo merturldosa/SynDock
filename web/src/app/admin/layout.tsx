@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import {
   LayoutDashboard,
   Package,
@@ -13,23 +14,27 @@ import {
   BarChart3,
   Warehouse,
   Mail,
+  Bell,
+  TrendingUp,
   Settings,
   ChevronLeft,
 } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 
 const NAV_ITEMS = [
-  { href: "/admin", icon: LayoutDashboard, label: "대시보드" },
-  { href: "/admin/products", icon: Package, label: "상품 관리" },
-  { href: "/admin/categories", icon: FolderTree, label: "카테고리 관리" },
-  { href: "/admin/orders", icon: ShoppingCart, label: "주문 관리" },
-  { href: "/admin/inventory", icon: Warehouse, label: "재고 관리" },
-  { href: "/admin/coupons", icon: Ticket, label: "쿠폰 관리" },
-  { href: "/admin/users", icon: Users, label: "회원 관리" },
-  { href: "/admin/analytics", icon: BarChart3, label: "매출 분석" },
-  { href: "/admin/email", icon: Mail, label: "이메일" },
-  { href: "/admin/settings", icon: Settings, label: "설정" },
-];
+  { href: "/admin", icon: LayoutDashboard, labelKey: "admin.nav.dashboard" },
+  { href: "/admin/products", icon: Package, labelKey: "admin.nav.products" },
+  { href: "/admin/categories", icon: FolderTree, labelKey: "admin.nav.categories" },
+  { href: "/admin/orders", icon: ShoppingCart, labelKey: "admin.nav.orders" },
+  { href: "/admin/inventory", icon: Warehouse, labelKey: "admin.nav.inventory" },
+  { href: "/admin/coupons", icon: Ticket, labelKey: "admin.nav.coupons" },
+  { href: "/admin/users", icon: Users, labelKey: "admin.nav.users" },
+  { href: "/admin/analytics", icon: BarChart3, labelKey: "admin.nav.analytics" },
+  { href: "/admin/forecast", icon: TrendingUp, labelKey: "admin.nav.forecast" },
+  { href: "/admin/email", icon: Mail, labelKey: "admin.nav.email" },
+  { href: "/admin/notifications", icon: Bell, labelKey: "admin.nav.notifications" },
+  { href: "/admin/settings", icon: Settings, labelKey: "admin.nav.settings" },
+] as const;
 
 export default function AdminLayout({
   children,
@@ -39,6 +44,7 @@ export default function AdminLayout({
   const router = useRouter();
   const pathname = usePathname();
   const { user, isAuthenticated, isLoading, fetchMe } = useAuthStore();
+  const t = useTranslations();
 
   useEffect(() => {
     fetchMe();
@@ -69,12 +75,12 @@ export default function AdminLayout({
             className="flex items-center gap-2 text-sm text-white/60 hover:text-white"
           >
             <ChevronLeft size={14} />
-            쇼핑몰로 돌아가기
+            {t("admin.nav.backToShop")}
           </Link>
         </div>
 
         <div className="p-4 border-b border-white/10">
-          <p className="text-xs text-white/40">관리자</p>
+          <p className="text-xs text-white/40">{t("admin.nav.admin")}</p>
           <p className="font-medium truncate">{user.name}</p>
         </div>
 
@@ -94,7 +100,7 @@ export default function AdminLayout({
                 }`}
               >
                 <item.icon size={18} />
-                {item.label}
+                {t(item.labelKey)}
               </Link>
             );
           })}

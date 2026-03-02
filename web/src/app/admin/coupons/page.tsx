@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Plus, Trash2, Send } from "lucide-react";
+import { useTranslations } from "next-intl";
 import {
   getCoupons,
   deleteCoupon,
@@ -16,6 +17,7 @@ function formatPrice(price: number): string {
 }
 
 export default function AdminCouponsPage() {
+  const t = useTranslations();
   const [data, setData] = useState<PagedCoupons | null>(null);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -33,22 +35,22 @@ export default function AdminCouponsPage() {
   }, [page]);
 
   const handleDelete = async (id: number, name: string) => {
-    if (!confirm(`"${name}" 쿠폰을 삭제하시겠습니까?`)) return;
+    if (!confirm(t("admin.coupons.deleteConfirm", { name }))) return;
     try {
       await deleteCoupon(id);
       load();
     } catch {
-      alert("삭제에 실패했습니다.");
+      alert(t("admin.coupons.deleteFailed"));
     }
   };
 
   const handleIssueAll = async (id: number, name: string) => {
-    if (!confirm(`"${name}" 쿠폰을 전체 회원에게 발급하시겠습니까?`)) return;
+    if (!confirm(t("admin.coupons.issueConfirm", { name }))) return;
     try {
       const result = await issueCoupon(id);
-      alert(`${result.issuedCount}명에게 발급되었습니다.`);
+      alert(t("admin.coupons.issuedCount", { count: result.issuedCount }));
     } catch {
-      alert("발급에 실패했습니다.");
+      alert(t("admin.coupons.issueFailed"));
     }
   };
 
@@ -56,19 +58,19 @@ export default function AdminCouponsPage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-[var(--color-secondary)]">
-          쿠폰 관리
+          {t("admin.coupons.title")}
         </h1>
         <Link
           href="/admin/coupons/new"
           className="flex items-center gap-2 px-4 py-2.5 bg-[var(--color-primary)] text-white rounded-lg text-sm font-medium hover:opacity-90"
         >
-          <Plus size={16} /> 쿠폰 생성
+          <Plus size={16} /> {t("admin.coupons.addNew")}
         </Link>
       </div>
 
       {data && (
         <p className="text-sm text-gray-500 mb-3">
-          총 {data.totalCount}개 쿠폰
+          {t("admin.coupons.totalCount", { count: data.totalCount })}
         </p>
       )}
 
@@ -78,20 +80,20 @@ export default function AdminCouponsPage() {
         </div>
       ) : !data || data.items.length === 0 ? (
         <div className="text-center py-20 text-gray-400">
-          <p>등록된 쿠폰이 없습니다.</p>
+          <p>{t("admin.coupons.noCoupons")}</p>
         </div>
       ) : (
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
           <table className="w-full text-sm">
             <thead className="bg-gray-50 border-b">
               <tr>
-                <th className="text-left p-3 font-medium text-gray-500">쿠폰명</th>
-                <th className="text-left p-3 font-medium text-gray-500">코드</th>
-                <th className="text-left p-3 font-medium text-gray-500">할인</th>
-                <th className="text-center p-3 font-medium text-gray-500">사용/한도</th>
-                <th className="text-left p-3 font-medium text-gray-500">기간</th>
-                <th className="text-center p-3 font-medium text-gray-500">상태</th>
-                <th className="text-center p-3 font-medium text-gray-500">관리</th>
+                <th className="text-left p-3 font-medium text-gray-500">{t("admin.coupons.name")}</th>
+                <th className="text-left p-3 font-medium text-gray-500">{t("admin.coupons.code")}</th>
+                <th className="text-left p-3 font-medium text-gray-500">{t("admin.coupons.discount")}</th>
+                <th className="text-center p-3 font-medium text-gray-500">{t("admin.coupons.usageSlash")}</th>
+                <th className="text-left p-3 font-medium text-gray-500">{t("admin.coupons.period")}</th>
+                <th className="text-center p-3 font-medium text-gray-500">{t("admin.coupons.statusLabel")}</th>
+                <th className="text-center p-3 font-medium text-gray-500">{t("admin.coupons.manage")}</th>
               </tr>
             </thead>
             <tbody>
@@ -110,7 +112,7 @@ export default function AdminCouponsPage() {
                         : formatPrice(coupon.discountValue)}
                     </td>
                     <td className="p-3 text-center text-gray-500">
-                      {coupon.currentUsageCount} / {coupon.maxUsageCount || "무제한"}
+                      {coupon.currentUsageCount} / {coupon.maxUsageCount || t("admin.coupons.unlimited")}
                     </td>
                     <td className="p-3 text-xs text-gray-500">
                       {new Date(coupon.startDate).toLocaleDateString("ko-KR")} ~{" "}
@@ -126,7 +128,7 @@ export default function AdminCouponsPage() {
                             : "bg-red-100 text-red-700"
                         }`}
                       >
-                        {expired ? "만료" : coupon.isActive ? "활성" : "비활성"}
+                        {expired ? t("admin.coupons.expired") : coupon.isActive ? t("admin.coupons.active") : t("admin.coupons.inactive")}
                       </span>
                     </td>
                     <td className="p-3">
@@ -134,7 +136,7 @@ export default function AdminCouponsPage() {
                         <button
                           onClick={() => handleIssueAll(coupon.id, coupon.name)}
                           className="p-1.5 text-gray-400 hover:text-blue-500 transition-colors"
-                          title="전체 발급"
+                          title={t("admin.coupons.issueAll")}
                         >
                           <Send size={16} />
                         </button>

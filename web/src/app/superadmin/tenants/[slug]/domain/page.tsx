@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { ChevronLeft, Globe, Shield, Copy, Check, RefreshCw } from "lucide-react";
+import { useTranslations } from "next-intl";
 import {
   getTenantDomainConfig,
   updateTenantDomain,
@@ -20,6 +21,7 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 export default function DomainManagementPage() {
+  const t = useTranslations();
   const params = useParams();
   const router = useRouter();
   const slug = params.slug as string;
@@ -53,9 +55,9 @@ export default function DomainManagementPage() {
         subdomain: subdomain || undefined,
       });
       setConfig(result);
-      setMessage({ type: "success", text: "도메인 설정이 저장되었습니다." });
+      setMessage({ type: "success", text: t("superadmin.domain.saveSuccess") });
     } catch {
-      setMessage({ type: "error", text: "저장에 실패했습니다." });
+      setMessage({ type: "error", text: t("superadmin.domain.saveFailed") });
     }
     setSaving(false);
   };
@@ -73,7 +75,7 @@ export default function DomainManagementPage() {
       const updated = await getTenantDomainConfig(slug);
       setConfig(updated);
     } catch {
-      setMessage({ type: "error", text: "도메인 확인에 실패했습니다." });
+      setMessage({ type: "error", text: t("superadmin.domain.verifyFailed") });
     }
     setVerifying(false);
   };
@@ -99,12 +101,12 @@ export default function DomainManagementPage() {
         href={`/superadmin/tenants/${slug}`}
         className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 mb-4"
       >
-        <ChevronLeft size={16} /> 테넌트 상세로 돌아가기
+        <ChevronLeft size={16} /> {t("superadmin.domain.backToDetail")}
       </Link>
 
       <h1 className="text-2xl font-bold text-gray-900 mb-6">
         <Globe className="inline mr-2" size={24} />
-        도메인 관리
+        {t("superadmin.domain.title")}
       </h1>
 
       {message && (
@@ -120,18 +122,18 @@ export default function DomainManagementPage() {
       {/* Current Status */}
       {config && (
         <div className="bg-white rounded-xl shadow-sm p-5 mb-6">
-          <h2 className="font-semibold text-gray-900 mb-4">현재 상태</h2>
+          <h2 className="font-semibold text-gray-900 mb-4">{t("superadmin.domain.currentStatus")}</h2>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <p className="text-sm text-gray-500">커스텀 도메인</p>
+              <p className="text-sm text-gray-500">{t("superadmin.domain.customDomain")}</p>
               <p className="font-medium">{config.customDomain || "-"}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-500">서브도메인</p>
+              <p className="text-sm text-gray-500">{t("superadmin.domain.subdomain")}</p>
               <p className="font-medium">{config.subdomain || "-"}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-500">검증 상태</p>
+              <p className="text-sm text-gray-500">{t("superadmin.domain.verificationStatus")}</p>
               <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[config.verificationStatus] || STATUS_COLORS.None}`}>
                 {config.verificationStatus}
               </span>
@@ -142,7 +144,7 @@ export default function DomainManagementPage() {
               )}
             </div>
             <div>
-              <p className="text-sm text-gray-500">SSL 상태</p>
+              <p className="text-sm text-gray-500">{t("superadmin.domain.sslStatus")}</p>
               <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[config.sslStatus] || STATUS_COLORS.None}`}>
                 <Shield size={12} />
                 {config.sslStatus}
@@ -154,9 +156,9 @@ export default function DomainManagementPage() {
 
       {/* Domain Settings */}
       <div className="bg-white rounded-xl shadow-sm p-5 mb-6 space-y-4">
-        <h2 className="font-semibold text-gray-900">도메인 설정</h2>
+        <h2 className="font-semibold text-gray-900">{t("superadmin.domain.domainSettings")}</h2>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">커스텀 도메인</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">{t("superadmin.domain.customDomain")}</label>
           <input
             type="text"
             value={customDomain}
@@ -164,10 +166,10 @@ export default function DomainManagementPage() {
             className="w-full px-3 py-2.5 border rounded-lg text-sm"
             placeholder="shop.example.com"
           />
-          <p className="text-xs text-gray-400 mt-1">사용할 커스텀 도메인을 입력하세요.</p>
+          <p className="text-xs text-gray-400 mt-1">{t("superadmin.domain.customDomainHint")}</p>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">서브도메인</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">{t("superadmin.domain.subdomain")}</label>
           <div className="flex items-center gap-2">
             <input
               type="text"
@@ -184,23 +186,23 @@ export default function DomainManagementPage() {
           disabled={saving}
           className="px-6 py-2.5 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700 disabled:opacity-50"
         >
-          {saving ? "저장 중..." : "도메인 설정 저장"}
+          {saving ? t("superadmin.domain.saving") : t("superadmin.domain.save")}
         </button>
       </div>
 
       {/* DNS Instructions */}
       {config && config.dnsInstructions.length > 0 && (
         <div className="bg-white rounded-xl shadow-sm p-5 mb-6">
-          <h2 className="font-semibold text-gray-900 mb-4">DNS 설정 안내</h2>
+          <h2 className="font-semibold text-gray-900 mb-4">{t("superadmin.domain.dnsInstructions")}</h2>
           <p className="text-sm text-gray-500 mb-4">
-            도메인 등록 업체의 DNS 관리 페이지에서 아래 레코드를 추가해 주세요.
+            {t("superadmin.domain.dnsInstructionsDesc")}
           </p>
           <div className="space-y-3">
             {config.dnsInstructions.map((dns, i) => (
               <div key={i} className="bg-gray-50 rounded-lg p-4">
                 <div className="grid grid-cols-3 gap-4 text-sm">
                   <div>
-                    <p className="text-xs text-gray-500 mb-1">레코드 타입</p>
+                    <p className="text-xs text-gray-500 mb-1">{t("superadmin.domain.recordType")}</p>
                     <p className="font-mono font-medium">{dns.type}</p>
                   </div>
                   <div>
@@ -209,13 +211,13 @@ export default function DomainManagementPage() {
                   </div>
                   <div className="flex items-start justify-between">
                     <div>
-                      <p className="text-xs text-gray-500 mb-1">Target / Value</p>
+                      <p className="text-xs text-gray-500 mb-1">{t("superadmin.domain.targetValue")}</p>
                       <p className="font-mono text-xs break-all">{dns.target}</p>
                     </div>
                     <button
                       onClick={() => copyToClipboard(dns.target, i)}
                       className="ml-2 p-1.5 text-gray-400 hover:text-gray-600 flex-shrink-0"
-                      title="복사"
+                      title={t("superadmin.domain.copy")}
                     >
                       {copiedIndex === i ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
                     </button>
@@ -230,9 +232,9 @@ export default function DomainManagementPage() {
       {/* Verify */}
       {config?.customDomain && (
         <div className="bg-white rounded-xl shadow-sm p-5 mb-6">
-          <h2 className="font-semibold text-gray-900 mb-3">도메인 확인</h2>
+          <h2 className="font-semibold text-gray-900 mb-3">{t("superadmin.domain.verifyDomain")}</h2>
           <p className="text-sm text-gray-500 mb-4">
-            DNS 설정이 완료되었다면 아래 버튼으로 도메인을 확인하세요.
+            {t("superadmin.domain.verifyDomainDesc")}
           </p>
           <button
             onClick={handleVerify}
@@ -240,7 +242,7 @@ export default function DomainManagementPage() {
             className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
           >
             <RefreshCw size={16} className={verifying ? "animate-spin" : ""} />
-            {verifying ? "확인 중..." : "도메인 확인"}
+            {verifying ? t("superadmin.domain.verifying") : t("superadmin.domain.verifyDomain")}
           </button>
         </div>
       )}
@@ -249,7 +251,7 @@ export default function DomainManagementPage() {
         onClick={() => router.push(`/superadmin/tenants/${slug}`)}
         className="px-6 py-2.5 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50"
       >
-        목록으로
+        {t("superadmin.domain.backToList")}
       </button>
     </div>
   );

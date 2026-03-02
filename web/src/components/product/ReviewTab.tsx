@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { Star, Trash2, Camera, X } from "lucide-react";
 import { getProductReviews, createReview, deleteReview } from "@/lib/reviewApi";
@@ -35,6 +36,7 @@ function formatDate(dateStr: string): string {
 }
 
 export function ReviewTab({ productId }: ReviewTabProps) {
+  const t = useTranslations();
   const { isAuthenticated, user } = useAuthStore();
   const [data, setData] = useState<ReviewSummary | null>(null);
   const [page, setPage] = useState(1);
@@ -65,7 +67,7 @@ export function ReviewTab({ productId }: ReviewTabProps) {
       });
       setNewImageUrl(result.url);
     } catch {
-      alert("이미지 업로드에 실패했습니다.");
+      alert(t("review.uploadFailed"));
     }
     setUploading(false);
   };
@@ -81,22 +83,22 @@ export function ReviewTab({ productId }: ReviewTabProps) {
       setNewImageUrl("");
       load();
     } catch {
-      alert("리뷰 작성에 실패했습니다.");
+      alert(t("review.writeFailed"));
     }
     setSubmitting(false);
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm("리뷰를 삭제하시겠습니까?")) return;
+    if (!confirm(t("review.deleteConfirm"))) return;
     try {
       await deleteReview(id);
       load();
     } catch {
-      alert("삭제에 실패했습니다.");
+      alert(t("review.deleteFailed"));
     }
   };
 
-  if (!data) return <div className="py-8 text-center text-gray-400">로딩 중...</div>;
+  if (!data) return <div className="py-8 text-center text-gray-400">{t("common.loading")}</div>;
 
   const filteredReviews = photoOnly
     ? data.reviews.filter((r) => r.imageUrl)
@@ -111,7 +113,7 @@ export function ReviewTab({ productId }: ReviewTabProps) {
         <div className="flex items-center gap-3">
           <StarRating rating={Math.round(data.averageRating)} />
           <span className="text-lg font-bold text-[var(--color-secondary)]">{data.averageRating.toFixed(1)}</span>
-          <span className="text-sm text-gray-400">({data.totalCount}개)</span>
+          <span className="text-sm text-gray-400">{t("review.count", { count: data.totalCount })}</span>
         </div>
 
         {/* Rating Distribution */}
@@ -123,7 +125,7 @@ export function ReviewTab({ productId }: ReviewTabProps) {
               const pct = data.totalCount > 0 ? (count / data.totalCount) * 100 : 0;
               return (
                 <div key={rating} className="flex items-center gap-2 text-xs">
-                  <span className="w-8 text-right text-gray-500">{rating}점</span>
+                  <span className="w-8 text-right text-gray-500">{rating}{t("review.ratingUnit")}</span>
                   <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
                     <div className="h-full bg-yellow-400 rounded-full" style={{ width: `${pct}%` }} />
                   </div>
@@ -139,7 +141,7 @@ export function ReviewTab({ productId }: ReviewTabProps) {
       {photoReviews.length > 0 && (
         <div className="mb-6">
           <p className="text-sm font-medium text-[var(--color-secondary)] mb-2">
-            포토 리뷰 ({data.photoReviewCount})
+            {t("review.photoReview")} ({data.photoReviewCount})
           </p>
           <div className="flex gap-2 overflow-x-auto pb-2">
             {photoReviews.map((r) => (
@@ -166,7 +168,7 @@ export function ReviewTab({ productId }: ReviewTabProps) {
               }`}
             >
               <Camera size={14} className="inline mr-1" />
-              포토 리뷰만
+              {t("review.photoOnly")}
             </button>
           )}
         </div>
@@ -175,7 +177,7 @@ export function ReviewTab({ productId }: ReviewTabProps) {
             onClick={() => setShowForm(!showForm)}
             className="px-4 py-2 text-sm bg-[var(--color-primary)] text-white rounded-lg hover:opacity-90"
           >
-            리뷰 작성
+            {t("review.writeReview")}
           </button>
         )}
       </div>
@@ -184,23 +186,23 @@ export function ReviewTab({ productId }: ReviewTabProps) {
       {showForm && (
         <div className="bg-gray-50 rounded-xl p-4 mb-6 space-y-3">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-[var(--color-secondary)]">별점:</span>
+            <span className="text-sm font-medium text-[var(--color-secondary)]">{t("review.rating")}:</span>
             <StarRating rating={newRating} onRate={setNewRating} interactive />
           </div>
           <textarea
             value={newContent}
             onChange={(e) => setNewContent(e.target.value)}
-            placeholder="리뷰를 작성해 주세요..."
+            placeholder={t("review.placeholder")}
             className="w-full px-3 py-2 border rounded-lg text-sm resize-none h-24"
           />
           {/* Photo upload */}
           <div>
             <label className="flex items-center gap-2 text-sm text-gray-500 cursor-pointer hover:text-[var(--color-primary)]">
               <Camera size={16} />
-              <span>사진 첨부</span>
+              <span>{t("review.attachPhoto")}</span>
               <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" disabled={uploading} />
             </label>
-            {uploading && <span className="text-xs text-gray-400 ml-2">업로드 중...</span>}
+            {uploading && <span className="text-xs text-gray-400 ml-2">{t("review.uploading")}</span>}
             {newImageUrl && (
               <div className="mt-2 flex items-start gap-2">
                 <div className="w-20 h-20 rounded-lg overflow-hidden bg-gray-100">
@@ -213,13 +215,13 @@ export function ReviewTab({ productId }: ReviewTabProps) {
             )}
           </div>
           <div className="flex justify-end gap-2">
-            <button onClick={() => { setShowForm(false); setNewImageUrl(""); }} className="px-4 py-2 text-sm text-gray-500 hover:text-gray-700">취소</button>
+            <button onClick={() => { setShowForm(false); setNewImageUrl(""); }} className="px-4 py-2 text-sm text-gray-500 hover:text-gray-700">{t("common.cancel")}</button>
             <button
               onClick={handleSubmit}
               disabled={submitting}
               className="px-4 py-2 text-sm bg-[var(--color-primary)] text-white rounded-lg hover:opacity-90 disabled:opacity-60"
             >
-              {submitting ? "등록 중..." : "등록"}
+              {submitting ? t("common.submitting") : t("common.submit")}
             </button>
           </div>
         </div>
@@ -228,7 +230,7 @@ export function ReviewTab({ productId }: ReviewTabProps) {
       {/* Reviews list */}
       {filteredReviews.length === 0 ? (
         <p className="text-center text-gray-400 py-8">
-          {photoOnly ? "포토 리뷰가 없습니다." : "아직 리뷰가 없습니다."}
+          {photoOnly ? t("review.noPhotoReviews") : t("review.noReviews")}
         </p>
       ) : (
         <div className="space-y-4">

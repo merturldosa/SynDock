@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import { getTenantSettings, updateTenantSettings, type TenantSettings } from "@/lib/adminApi";
 import api from "@/lib/api";
 
 export default function AdminSettingsPage() {
+  const t = useTranslations();
   const [settings, setSettings] = useState<TenantSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -69,7 +71,7 @@ export default function AdminSettingsPage() {
       });
       setForm((f) => ({ ...f, [field]: data.url }));
     } catch {
-      alert("업로드에 실패했습니다.");
+      alert(t("admin.settings.uploadFailed"));
     }
   };
 
@@ -98,9 +100,9 @@ export default function AdminSettingsPage() {
           background: form.themeBackground || null,
         },
       });
-      setSuccess("설정이 저장되었습니다.");
+      setSuccess(t("admin.settings.saveSuccess"));
     } catch {
-      setError("저장에 실패했습니다.");
+      setError(t("admin.settings.saveFailed"));
     }
     setSaving(false);
   };
@@ -115,39 +117,39 @@ export default function AdminSettingsPage() {
 
   return (
     <div className="max-w-3xl">
-      <h1 className="text-2xl font-bold text-[var(--color-secondary)] mb-6">설정</h1>
+      <h1 className="text-2xl font-bold text-[var(--color-secondary)] mb-6">{t("admin.settings.title")}</h1>
 
       {error && <div className="p-3 mb-4 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600">{error}</div>}
       {success && <div className="p-3 mb-4 bg-emerald-50 border border-emerald-200 rounded-lg text-sm text-emerald-600">{success}</div>}
 
       {/* Company Info */}
       <div className="bg-white rounded-xl shadow-sm p-6 mb-6 space-y-4">
-        <h2 className="font-semibold text-[var(--color-secondary)]">회사 정보</h2>
+        <h2 className="font-semibold text-[var(--color-secondary)]">{t("admin.settings.companyInfo")}</h2>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm text-gray-500 mb-1">회사명</label>
+            <label className="block text-sm text-gray-500 mb-1">{t("admin.settings.companyName")}</label>
             <input type="text" value={form.companyName} onChange={(e) => setForm((f) => ({ ...f, companyName: e.target.value }))} className="w-full px-3 py-2.5 border rounded-lg text-sm" />
           </div>
           <div>
-            <label className="block text-sm text-gray-500 mb-1">대표자명</label>
+            <label className="block text-sm text-gray-500 mb-1">{t("admin.settings.ceoName")}</label>
             <input type="text" value={form.ceoName} onChange={(e) => setForm((f) => ({ ...f, ceoName: e.target.value }))} className="w-full px-3 py-2.5 border rounded-lg text-sm" />
           </div>
         </div>
         <div>
-          <label className="block text-sm text-gray-500 mb-1">사업자등록번호</label>
+          <label className="block text-sm text-gray-500 mb-1">{t("admin.settings.businessNumber")}</label>
           <input type="text" value={form.businessNumber} onChange={(e) => setForm((f) => ({ ...f, businessNumber: e.target.value }))} className="w-full px-3 py-2.5 border rounded-lg text-sm" placeholder="000-00-00000" />
         </div>
         <div>
-          <label className="block text-sm text-gray-500 mb-1">주소</label>
+          <label className="block text-sm text-gray-500 mb-1">{t("admin.settings.companyAddress")}</label>
           <input type="text" value={form.companyAddress} onChange={(e) => setForm((f) => ({ ...f, companyAddress: e.target.value }))} className="w-full px-3 py-2.5 border rounded-lg text-sm" />
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm text-gray-500 mb-1">연락처</label>
+            <label className="block text-sm text-gray-500 mb-1">{t("admin.settings.contactPhone")}</label>
             <input type="text" value={form.contactPhone} onChange={(e) => setForm((f) => ({ ...f, contactPhone: e.target.value }))} className="w-full px-3 py-2.5 border rounded-lg text-sm" />
           </div>
           <div>
-            <label className="block text-sm text-gray-500 mb-1">이메일</label>
+            <label className="block text-sm text-gray-500 mb-1">{t("admin.settings.contactEmail")}</label>
             <input type="email" value={form.contactEmail} onChange={(e) => setForm((f) => ({ ...f, contactEmail: e.target.value }))} className="w-full px-3 py-2.5 border rounded-lg text-sm" />
           </div>
         </div>
@@ -155,7 +157,7 @@ export default function AdminSettingsPage() {
 
       {/* Theme */}
       <div className="bg-white rounded-xl shadow-sm p-6 mb-6 space-y-4">
-        <h2 className="font-semibold text-[var(--color-secondary)]">테마 색상</h2>
+        <h2 className="font-semibold text-[var(--color-secondary)]">{t("admin.settings.theme")}</h2>
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           {([
             { key: "themePrimary" as const, label: "Primary" },
@@ -184,7 +186,7 @@ export default function AdminSettingsPage() {
         </div>
         {/* Live Preview */}
         <div className="mt-4 p-4 rounded-xl border" style={{ backgroundColor: form.themeBackground || "#fff" }}>
-          <p className="text-sm font-medium mb-2" style={{ color: form.themeSecondary || "#333" }}>테마 미리보기</p>
+          <p className="text-sm font-medium mb-2" style={{ color: form.themeSecondary || "#333" }}>{t("admin.settings.themePreview")}</p>
           <div className="flex gap-2">
             <span className="px-3 py-1.5 rounded-lg text-white text-xs" style={{ backgroundColor: form.themePrimary || "#ccc" }}>Primary</span>
             <span className="px-3 py-1.5 rounded-lg text-white text-xs" style={{ backgroundColor: form.themeSecondary || "#ccc" }}>Secondary</span>
@@ -194,27 +196,27 @@ export default function AdminSettingsPage() {
 
       {/* Hero Section */}
       <div className="bg-white rounded-xl shadow-sm p-6 mb-6 space-y-4">
-        <h2 className="font-semibold text-[var(--color-secondary)]">Hero 섹션</h2>
+        <h2 className="font-semibold text-[var(--color-secondary)]">{t("admin.settings.heroSection")}</h2>
         <div>
-          <label className="block text-sm text-gray-500 mb-1">부제목</label>
+          <label className="block text-sm text-gray-500 mb-1">{t("admin.settings.heroSubtitle")}</label>
           <input type="text" value={form.heroSubtitle} onChange={(e) => setForm((f) => ({ ...f, heroSubtitle: e.target.value }))} className="w-full px-3 py-2.5 border rounded-lg text-sm" />
         </div>
         <div>
-          <label className="block text-sm text-gray-500 mb-1">태그라인</label>
+          <label className="block text-sm text-gray-500 mb-1">{t("admin.settings.heroTagline")}</label>
           <input type="text" value={form.heroTagline} onChange={(e) => setForm((f) => ({ ...f, heroTagline: e.target.value }))} className="w-full px-3 py-2.5 border rounded-lg text-sm" />
         </div>
         <div>
-          <label className="block text-sm text-gray-500 mb-1">설명</label>
+          <label className="block text-sm text-gray-500 mb-1">{t("admin.settings.heroDescription")}</label>
           <textarea value={form.heroDescription} onChange={(e) => setForm((f) => ({ ...f, heroDescription: e.target.value }))} rows={3} className="w-full px-3 py-2.5 border rounded-lg text-sm resize-none" />
         </div>
       </div>
 
       {/* Logo & Favicon */}
       <div className="bg-white rounded-xl shadow-sm p-6 mb-6 space-y-4">
-        <h2 className="font-semibold text-[var(--color-secondary)]">로고 / 파비콘</h2>
+        <h2 className="font-semibold text-[var(--color-secondary)]">{t("admin.settings.logoFavicon")}</h2>
         <div className="grid grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm text-gray-500 mb-1">로고</label>
+            <label className="block text-sm text-gray-500 mb-1">{t("admin.settings.logo")}</label>
             <input type="file" accept="image/*" onChange={(e) => handleImageUpload("logoUrl", e)} className="text-sm" />
             {form.logoUrl && (
               <div className="mt-2 w-32 h-16 bg-gray-50 rounded-lg overflow-hidden flex items-center justify-center">
@@ -223,7 +225,7 @@ export default function AdminSettingsPage() {
             )}
           </div>
           <div>
-            <label className="block text-sm text-gray-500 mb-1">파비콘</label>
+            <label className="block text-sm text-gray-500 mb-1">{t("admin.settings.favicon")}</label>
             <input type="file" accept="image/*" onChange={(e) => handleImageUpload("faviconUrl", e)} className="text-sm" />
             {form.faviconUrl && (
               <div className="mt-2 w-10 h-10 bg-gray-50 rounded-lg overflow-hidden flex items-center justify-center">
@@ -240,7 +242,7 @@ export default function AdminSettingsPage() {
         disabled={saving}
         className="w-full py-3 bg-[var(--color-primary)] text-white rounded-lg text-sm font-medium hover:opacity-90 disabled:opacity-60"
       >
-        {saving ? "저장 중..." : "설정 저장"}
+        {saving ? t("admin.settings.saving") : t("admin.settings.settingsSave")}
       </button>
     </div>
   );

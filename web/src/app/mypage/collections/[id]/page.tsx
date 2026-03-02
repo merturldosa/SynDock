@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { ChevronLeft, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 import {
   getCollectionDetail,
   removeFromCollection,
@@ -16,6 +17,7 @@ function formatPrice(price: number): string {
 }
 
 export default function CollectionDetailPage() {
+  const t = useTranslations();
   const params = useParams();
   const router = useRouter();
   const [collection, setCollection] = useState<CollectionDetail | null>(null);
@@ -39,7 +41,7 @@ export default function CollectionDetailPage() {
       await removeFromCollection(collection.id, productId);
       fetchData();
     } catch {
-      alert("제거에 실패했습니다.");
+      alert(t("mypage.collections.deleteFailed"));
     }
   };
 
@@ -54,7 +56,7 @@ export default function CollectionDetailPage() {
   if (!collection) {
     return (
       <div className="text-center py-20 text-gray-400">
-        컬렉션을 찾을 수 없습니다.
+        {t("mypage.collections.notFound")}
       </div>
     );
   }
@@ -65,7 +67,7 @@ export default function CollectionDetailPage() {
         onClick={() => router.back()}
         className="flex items-center gap-1 text-sm text-gray-500 hover:text-[var(--color-secondary)] mb-4"
       >
-        <ChevronLeft size={16} /> 돌아가기
+        <ChevronLeft size={16} /> {t("common.back")}
       </button>
 
       <div className="mb-6">
@@ -76,13 +78,13 @@ export default function CollectionDetailPage() {
           <p className="text-gray-500 mt-1">{collection.description}</p>
         )}
         <p className="text-sm text-gray-400 mt-2">
-          {collection.items.length}개 상품 · {collection.isPublic ? "공개" : "비공개"}
+          {t("mypage.collections.itemCount", { count: collection.items.length })} · {collection.isPublic ? t("mypage.collections.public") : t("mypage.collections.private")}
         </p>
       </div>
 
       {collection.items.length === 0 ? (
         <div className="text-center py-20 text-gray-400">
-          아직 상품이 없습니다.
+          {t("mypage.collections.emptyItems")}
         </div>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
