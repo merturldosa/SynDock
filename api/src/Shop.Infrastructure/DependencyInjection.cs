@@ -8,8 +8,10 @@ using Shop.Infrastructure.Payments;
 using Shop.Infrastructure.Repositories;
 using Shop.Infrastructure.Services;
 using Shop.Infrastructure.Shipping;
+using Shop.Infrastructure.Jobs;
 using Shop.Application.Liturgy.Services;
 using Shop.Infrastructure.AI;
+using Shop.Infrastructure.Integration;
 using Shop.Infrastructure.Storage;
 using SynDock.Core.Interfaces;
 
@@ -59,7 +61,29 @@ public static class DependencyInjection
 
         // AI
         services.AddHttpClient<IAIChatProvider, ClaudeAIChatProvider>();
-        services.AddScoped<IRecommendationEngine, SimpleRecommendationEngine>();
+        services.AddHttpClient<IImageGenerator, DalleImageGenerator>();
+        services.AddScoped<IRecommendationEngine, CollaborativeFilteringEngine>();
+        services.AddScoped<IAiForecastInsightService, ClaudeAiForecastInsightService>();
+        services.AddScoped<IDemandForecastService, DemandForecastService>();
+
+        // MES Integration
+        services.AddScoped<IMesProductMapper, MesProductMapper>();
+        if (configuration.GetValue<bool>("Mes:Enabled"))
+        {
+            services.AddHttpClient<IMesClient, MesHttpClient>();
+        }
+        else
+        {
+            services.AddSingleton<IMesClient, NullMesClient>();
+        }
+
+        // Plan enforcement
+        services.AddScoped<IPlanEnforcer, PlanEnforcer>();
+
+        // Background jobs
+        services.AddHostedService<BillingScheduler>();
+        services.AddHostedService<TrialExpiryJob>();
+        services.AddHostedService<MesInventorySyncJob>();
 
         // Redis
         var redisConnection = configuration.GetConnectionString("Redis");

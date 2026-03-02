@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Shop.Application.Common.Interfaces;
+using Shop.Application.Orders.Events;
 using Shop.Domain.Entities;
 using Shop.Domain.Enums;
 using SynDock.Core.Common;
@@ -22,14 +23,16 @@ public class UpdateOrderStatusCommandHandler : IRequestHandler<UpdateOrderStatus
     private readonly IUnitOfWork _unitOfWork;
     private readonly IEmailService _emailService;
     private readonly IAdminDashboardNotifier _adminNotifier;
+    private readonly IMediator _mediator;
 
-    public UpdateOrderStatusCommandHandler(IShopDbContext db, ICurrentUserService currentUser, IUnitOfWork unitOfWork, IEmailService emailService, IAdminDashboardNotifier adminNotifier)
+    public UpdateOrderStatusCommandHandler(IShopDbContext db, ICurrentUserService currentUser, IUnitOfWork unitOfWork, IEmailService emailService, IAdminDashboardNotifier adminNotifier, IMediator mediator)
     {
         _db = db;
         _currentUser = currentUser;
         _unitOfWork = unitOfWork;
         _emailService = emailService;
         _adminNotifier = adminNotifier;
+        _mediator = mediator;
     }
 
     public async Task<Result<bool>> Handle(UpdateOrderStatusCommand request, CancellationToken cancellationToken)
@@ -111,6 +114,13 @@ public class UpdateOrderStatusCommandHandler : IRequestHandler<UpdateOrderStatus
         }
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        // Publish MES order forwarding event for confirmed orders
+        if (request.Status == nameof(OrderStatus.Confirmed))
+        {
+            try { await _mediator.Publish(new OrderConfirmedEvent(order.Id, order.TenantId, order.OrderNumber), cancellationToken); }
+            catch { /* MES forwarding failure should not block order confirmation */ }
+        }
 
         // Notify admin dashboard
         try { await _adminNotifier.NotifyOrderStatusChanged(order.TenantId, order.OrderNumber, request.Status, cancellationToken); }
