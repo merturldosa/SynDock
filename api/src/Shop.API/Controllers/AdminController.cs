@@ -162,16 +162,24 @@ public class AdminController : ControllerBase
     [HttpPost("email/broadcast")]
     public async Task<IActionResult> SendMarketingEmail([FromBody] MarketingEmailRequest request)
     {
-        var users = await _db.Users
-            .AsNoTracking()
-            .Where(u => u.IsActive && !string.IsNullOrEmpty(u.Email))
-            .Select(u => u.Email)
-            .ToListAsync();
+        var usersQuery = _db.Users.AsNoTracking()
+            .Where(u => u.IsActive && !string.IsNullOrEmpty(u.Email));
+
+        var thirtyDaysAgo = DateTime.UtcNow.AddDays(-30);
+        usersQuery = request.Target switch
+        {
+            "new_users" => usersQuery.Where(u => u.CreatedAt >= thirtyDaysAgo),
+            "vip" => usersQuery.Where(u => u.Role == "VIP" || u.Role == "Admin"),
+            "inactive" => usersQuery.Where(u => u.CreatedAt < thirtyDaysAgo),
+            _ => usersQuery
+        };
+
+        var emails = await usersQuery.Select(u => u.Email).ToListAsync();
 
         var htmlBody = Shop.Infrastructure.Services.EmailTemplates.MarketingBroadcast(request.Title, request.Content);
         var sentCount = 0;
 
-        foreach (var email in users)
+        foreach (var email in emails)
         {
             try
             {
@@ -182,6 +190,36 @@ public class AdminController : ControllerBase
         }
 
         return Ok(new { sentCount });
+    }
+
+    // ── Email Campaigns ──
+
+    [HttpGet("campaigns")]
+    public async Task<IActionResult> GetCampaigns()
+    {
+        var result = await _mediator.Send(new Application.Admin.Queries.GetCampaignsQuery());
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.Error });
+        return Ok(result.Data);
+    }
+
+    [HttpPost("campaigns")]
+    public async Task<IActionResult> CreateCampaign([FromBody] CreateCampaignRequest request)
+    {
+        var result = await _mediator.Send(new Application.Admin.Commands.CreateCampaignCommand(
+            request.Title, request.Content, request.Target, request.ScheduledAt));
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.Error });
+        return Ok(new { campaignId = result.Data });
+    }
+
+    [HttpPost("campaigns/{id:int}/send")]
+    public async Task<IActionResult> SendCampaign(int id)
+    {
+        var result = await _mediator.Send(new Application.Admin.Commands.SendCampaignCommand(id));
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.Error });
+        return Ok(new { sentCount = result.Data });
     }
     [HttpGet("settings")]
     public async Task<IActionResult> GetTenantSettings()
@@ -213,6 +251,7 @@ public record UpdateStockRequest(int VariantId, int NewStock);
 public record BulkUpdateOrderStatusRequest(int[] OrderIds, string Status);
 public record BroadcastNotificationRequest(string Title, string Message, string Type);
 public record MarketingEmailRequest(string Title, string Content, string Target = "all");
+public record CreateCampaignRequest(string Title, string Content, string Target = "all", DateTime? ScheduledAt = null);
 public record UpdateTenantSettingsThemeRequest(string? Primary, string? PrimaryLight, string? Secondary, string? SecondaryLight, string? Background);
 public record UpdateUserRequest(string Role, bool IsActive);
 public record UpdateTenantSettingsRequest(

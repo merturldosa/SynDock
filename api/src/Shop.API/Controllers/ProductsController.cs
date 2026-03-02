@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Shop.Application.Common.Interfaces;
 using Shop.Application.Products.Commands;
 using Shop.Application.Products.Queries;
 
@@ -11,10 +12,12 @@ namespace Shop.API.Controllers;
 public class ProductsController : ControllerBase
 {
     private readonly IMediator _mediator;
+    private readonly IImageGenerator _imageGenerator;
 
-    public ProductsController(IMediator mediator)
+    public ProductsController(IMediator mediator, IImageGenerator imageGenerator)
     {
         _mediator = mediator;
+        _imageGenerator = imageGenerator;
     }
 
     [HttpGet]
@@ -129,6 +132,26 @@ public class ProductsController : ControllerBase
             return BadRequest(new { error = result.Error });
         return Ok(result.Data);
     }
+
+    [HttpPost("{id:int}/generate-image")]
+    [Authorize]
+    public async Task<IActionResult> GenerateImage(int id, [FromBody] GenerateImageRequest request)
+    {
+        var product = await _mediator.Send(new GetProductByIdQuery(id));
+        if (product == null)
+            return NotFound(new { error = "상품을 찾을 수 없습니다." });
+
+        var prompt = string.IsNullOrWhiteSpace(request.Prompt)
+            ? $"Professional product photography of {product.Name}. Clean white background, studio lighting, e-commerce style, high quality."
+            : request.Prompt;
+
+        var result = await _imageGenerator.GenerateAsync(prompt, request.Size ?? "1024x1024");
+
+        if (string.IsNullOrEmpty(result.Url))
+            return BadRequest(new { error = result.RevisedPrompt ?? "이미지 생성에 실패했습니다." });
+
+        return Ok(new { url = result.Url, revisedPrompt = result.RevisedPrompt });
+    }
 }
 
 public record CreateProductRequest(
@@ -149,3 +172,4 @@ public record UpdateProductRequest(
 
 public record UpdateVariantRequestItem(int? Id, string Name, string? Sku, decimal? Price, int Stock, int SortOrder, bool IsActive);
 public record UpdateProductVariantsRequest(List<UpdateVariantRequestItem> Variants);
+public record GenerateImageRequest(string? Prompt = null, string? Size = "1024x1024");

@@ -417,6 +417,39 @@ export async function sendMarketingEmail(
   return data;
 }
 
+// ── Email Campaigns ──
+export interface CampaignDto {
+  id: number;
+  title: string;
+  target: string;
+  status: string;
+  scheduledAt: string | null;
+  sentAt: string | null;
+  sentCount: number;
+  failCount: number;
+  createdAt: string;
+}
+
+export async function getCampaigns(): Promise<CampaignDto[]> {
+  const { data } = await api.get("/admin/campaigns");
+  return data;
+}
+
+export async function createCampaign(
+  title: string,
+  content: string,
+  target: string,
+  scheduledAt?: string
+): Promise<{ campaignId: number }> {
+  const { data } = await api.post("/admin/campaigns", { title, content, target, scheduledAt });
+  return data;
+}
+
+export async function sendCampaign(id: number): Promise<{ sentCount: number }> {
+  const { data } = await api.post(`/admin/campaigns/${id}/send`);
+  return data;
+}
+
 // ── Tenant Settings ──
 export interface TenantSettingsTheme {
   primary: string | null;
