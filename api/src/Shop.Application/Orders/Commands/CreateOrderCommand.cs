@@ -24,13 +24,15 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Res
     private readonly ICurrentUserService _currentUser;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IAdminDashboardNotifier _adminNotifier;
+    private readonly IPlanEnforcer _planEnforcer;
 
-    public CreateOrderCommandHandler(IShopDbContext db, ICurrentUserService currentUser, IUnitOfWork unitOfWork, IAdminDashboardNotifier adminNotifier)
+    public CreateOrderCommandHandler(IShopDbContext db, ICurrentUserService currentUser, IUnitOfWork unitOfWork, IAdminDashboardNotifier adminNotifier, IPlanEnforcer planEnforcer)
     {
         _db = db;
         _currentUser = currentUser;
         _unitOfWork = unitOfWork;
         _adminNotifier = adminNotifier;
+        _planEnforcer = planEnforcer;
     }
 
     public async Task<Result<CreateOrderResult>> Handle(CreateOrderCommand request, CancellationToken cancellationToken)
@@ -39,6 +41,12 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Res
             return Result<CreateOrderResult>.Failure("로그인이 필요합니다.");
 
         var userId = _currentUser.UserId.Value;
+
+        // Plan limit check
+        var user = await _db.Users.AsNoTracking().FirstAsync(u => u.Id == userId, cancellationToken);
+        var limitCheck = await _planEnforcer.CanPlaceOrder(user.TenantId, cancellationToken);
+        if (!limitCheck.IsSuccess)
+            return Result<CreateOrderResult>.Failure(limitCheck.Error!);
 
         // Get cart with items
         var cart = await _db.Carts
@@ -182,6 +190,9 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Res
         _db.CartItems.RemoveRange(cart.Items);
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        // Track usage
+        await _planEnforcer.IncrementOrderCount(user.TenantId, 1, cancellationToken);
 
         // Notify admin dashboard
         try { await _adminNotifier.NotifyNewOrder(order.TenantId, order.OrderNumber, order.TotalAmount, cancellationToken); }

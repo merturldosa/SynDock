@@ -2,40 +2,57 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, FileText, CheckCircle } from "lucide-react";
+import { useTranslations } from "next-intl";
 import {
   getTenantBilling,
   updateTenantBilling,
+  getTenantInvoices,
+  generateInvoice,
+  markInvoicePaid,
   type TenantBilling,
+  type InvoiceDto,
 } from "@/lib/platformApi";
 
 const PLANS = [
-  { type: "Free", price: 0, label: "무료" },
-  { type: "Basic", price: 29000, label: "베이직 (29,000원/월)" },
-  { type: "Pro", price: 79000, label: "프로 (79,000원/월)" },
-  { type: "Enterprise", price: 199000, label: "엔터프라이즈 (199,000원/월)" },
+  { type: "Free", price: 0, labelKey: "planFree" },
+  { type: "Basic", price: 29000, labelKey: "planBasic" },
+  { type: "Pro", price: 79000, labelKey: "planPro" },
+  { type: "Enterprise", price: 199000, labelKey: "planEnterprise" },
 ];
 
 const STATUSES = ["Active", "Trial", "Suspended", "Cancelled"];
 
+const INV_STATUS_COLORS: Record<string, string> = {
+  Pending: "bg-yellow-100 text-yellow-700",
+  Paid: "bg-emerald-100 text-emerald-700",
+  Failed: "bg-red-100 text-red-700",
+  Cancelled: "bg-gray-100 text-gray-500",
+};
+
 export default function TenantBillingPage() {
+  const t = useTranslations();
   const params = useParams();
   const router = useRouter();
   const slug = params.slug as string;
 
   const [billing, setBilling] = useState<TenantBilling | null>(null);
+  const [invoices, setInvoices] = useState<InvoiceDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState("Free");
   const [selectedStatus, setSelectedStatus] = useState("Trial");
+  const [tab, setTab] = useState<"plan" | "invoices">("plan");
 
   useEffect(() => {
-    getTenantBilling(slug)
-      .then((b) => {
+    Promise.all([
+      getTenantBilling(slug).then((b) => {
         setBilling(b);
         setSelectedPlan(b.planType);
         setSelectedStatus(b.billingStatus);
-      })
+      }),
+      getTenantInvoices(slug).then(setInvoices),
+    ])
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [slug]);
@@ -49,12 +66,35 @@ export default function TenantBillingPage() {
         monthlyPrice: plan?.price ?? 0,
         billingStatus: selectedStatus,
       });
-      alert("빌링 정보가 업데이트되었습니다.");
+      alert(t("superadmin.billing.updateSuccess"));
       router.push("/superadmin/billing");
     } catch {
-      alert("업데이트에 실패했습니다.");
+      alert(t("superadmin.billing.updateFailed"));
     }
     setSaving(false);
+  };
+
+  const handleGenerateInvoice = async () => {
+    const period = new Date().toISOString().slice(0, 7); // yyyy-MM
+    try {
+      await generateInvoice(slug, period);
+      const updated = await getTenantInvoices(slug);
+      setInvoices(updated);
+      alert(t("superadmin.billing.invoiceGenerated"));
+    } catch {
+      alert(t("superadmin.billing.invoiceGenerateFailed"));
+    }
+  };
+
+  const handleMarkPaid = async (id: number) => {
+    if (!confirm(t("superadmin.billing.markPaidConfirm"))) return;
+    try {
+      await markInvoicePaid(id, `TXN-${Date.now()}`, "Manual");
+      const updated = await getTenantInvoices(slug);
+      setInvoices(updated);
+    } catch {
+      alert(t("superadmin.billing.markPaidFailed"));
+    }
   };
 
   if (loading) {
@@ -66,101 +106,187 @@ export default function TenantBillingPage() {
   }
 
   return (
-    <div className="max-w-2xl">
+    <div className="max-w-3xl">
       <button
         onClick={() => router.back()}
         className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 mb-4"
       >
-        <ChevronLeft size={16} /> 돌아가기
+        <ChevronLeft size={16} /> {t("superadmin.billing.goBack")}
       </button>
 
       <h1 className="text-2xl font-bold text-gray-900 mb-6">
-        {billing?.tenantName || slug} 빌링 관리
+        {billing?.tenantName || slug} {t("superadmin.billing.title")}
       </h1>
 
-      {/* Current status */}
-      {billing && (
-        <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
-          <h2 className="font-semibold text-gray-900 mb-4">현재 상태</h2>
-          <div className="grid grid-cols-2 gap-4 text-sm">
+      {/* Tabs */}
+      <div className="flex gap-1 mb-6 bg-gray-100 rounded-lg p-1">
+        <button
+          onClick={() => setTab("plan")}
+          className={`flex-1 py-2 rounded-md text-sm font-medium transition-colors ${
+            tab === "plan" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500"
+          }`}
+        >
+          {t("superadmin.billing.planManagement")}
+        </button>
+        <button
+          onClick={() => setTab("invoices")}
+          className={`flex-1 py-2 rounded-md text-sm font-medium transition-colors ${
+            tab === "invoices" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500"
+          }`}
+        >
+          {t("superadmin.billing.invoices")} ({invoices.length})
+        </button>
+      </div>
+
+      {tab === "plan" && (
+        <>
+          {/* Current status */}
+          {billing && (
+            <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
+              <h2 className="font-semibold text-gray-900 mb-4">{t("superadmin.billing.currentStatus")}</h2>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p className="text-gray-400">{t("superadmin.billing.plan")}</p>
+                  <p className="font-medium">{billing.planType}</p>
+                </div>
+                <div>
+                  <p className="text-gray-400">{t("superadmin.billing.status")}</p>
+                  <p className="font-medium">{billing.billingStatus}</p>
+                </div>
+                <div>
+                  <p className="text-gray-400">{t("superadmin.billing.monthlyFee")}</p>
+                  <p className="font-medium">
+                    {billing.monthlyPrice > 0
+                      ? `${billing.monthlyPrice.toLocaleString()}원`
+                      : t("superadmin.billing.free")}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-gray-400">{t("superadmin.billing.nextPayment")}</p>
+                  <p className="font-medium">
+                    {billing.nextBillingAt
+                      ? new Date(billing.nextBillingAt).toLocaleDateString("ko-KR")
+                      : "-"}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Edit */}
+          <div className="bg-white rounded-xl shadow-sm p-6 space-y-4">
+            <h2 className="font-semibold text-gray-900 mb-4">{t("superadmin.billing.change")}</h2>
             <div>
-              <p className="text-gray-400">플랜</p>
-              <p className="font-medium">{billing.planType}</p>
+              <label className="block text-sm text-gray-500 mb-1">{t("superadmin.billing.plan")}</label>
+              <select
+                value={selectedPlan}
+                onChange={(e) => setSelectedPlan(e.target.value)}
+                className="w-full px-3 py-2.5 border rounded-lg text-sm"
+              >
+                {PLANS.map((p) => (
+                  <option key={p.type} value={p.type}>
+                    {t(`superadmin.billing.${p.labelKey}`)} {p.price > 0 ? `(${p.price.toLocaleString()}원/월)` : ""}
+                  </option>
+                ))}
+              </select>
             </div>
             <div>
-              <p className="text-gray-400">상태</p>
-              <p className="font-medium">{billing.billingStatus}</p>
+              <label className="block text-sm text-gray-500 mb-1">{t("superadmin.billing.status")}</label>
+              <select
+                value={selectedStatus}
+                onChange={(e) => setSelectedStatus(e.target.value)}
+                className="w-full px-3 py-2.5 border rounded-lg text-sm"
+              >
+                {STATUSES.map((s) => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
+              </select>
             </div>
-            <div>
-              <p className="text-gray-400">월 요금</p>
-              <p className="font-medium">
-                {billing.monthlyPrice > 0
-                  ? `${billing.monthlyPrice.toLocaleString()}원`
-                  : "무료"}
-              </p>
-            </div>
-            <div>
-              <p className="text-gray-400">다음 결제일</p>
-              <p className="font-medium">
-                {billing.nextBillingAt
-                  ? new Date(billing.nextBillingAt).toLocaleDateString("ko-KR")
-                  : "-"}
-              </p>
+            <div className="flex gap-3 pt-4">
+              <button
+                onClick={() => router.back()}
+                className="flex-1 py-3 border rounded-lg text-sm font-medium text-gray-500 hover:bg-gray-50"
+              >
+                {t("superadmin.billing.cancel")}
+              </button>
+              <button
+                onClick={handleSave}
+                disabled={saving}
+                className="flex-1 py-3 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700 disabled:opacity-60"
+              >
+                {saving ? t("superadmin.billing.saving") : t("superadmin.billing.save")}
+              </button>
             </div>
           </div>
-        </div>
+        </>
       )}
 
-      {/* Edit */}
-      <div className="bg-white rounded-xl shadow-sm p-6 space-y-4">
-        <h2 className="font-semibold text-gray-900 mb-4">변경</h2>
-
+      {tab === "invoices" && (
         <div>
-          <label className="block text-sm text-gray-500 mb-1">플랜</label>
-          <select
-            value={selectedPlan}
-            onChange={(e) => setSelectedPlan(e.target.value)}
-            className="w-full px-3 py-2.5 border rounded-lg text-sm"
-          >
-            {PLANS.map((p) => (
-              <option key={p.type} value={p.type}>
-                {p.label}
-              </option>
-            ))}
-          </select>
-        </div>
+          <div className="flex justify-end mb-4">
+            <button
+              onClick={handleGenerateInvoice}
+              className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700"
+            >
+              <FileText size={14} /> {t("superadmin.billing.generateInvoice")}
+            </button>
+          </div>
 
-        <div>
-          <label className="block text-sm text-gray-500 mb-1">상태</label>
-          <select
-            value={selectedStatus}
-            onChange={(e) => setSelectedStatus(e.target.value)}
-            className="w-full px-3 py-2.5 border rounded-lg text-sm"
-          >
-            {STATUSES.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
-          </select>
+          {invoices.length === 0 ? (
+            <div className="bg-white rounded-xl shadow-sm p-12 text-center text-gray-400 text-sm">
+              {t("superadmin.billing.noInvoices")}
+            </div>
+          ) : (
+            <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+              <table className="w-full text-sm">
+                <thead className="bg-gray-50 text-gray-500 text-xs">
+                  <tr>
+                    <th className="text-left px-4 py-3 font-medium">{t("superadmin.billing.invoiceNumber")}</th>
+                    <th className="text-left px-4 py-3 font-medium">{t("superadmin.billing.invoicePeriod")}</th>
+                    <th className="text-right px-4 py-3 font-medium">{t("superadmin.billing.amount")}</th>
+                    <th className="text-left px-4 py-3 font-medium">{t("superadmin.billing.invoiceStatus")}</th>
+                    <th className="text-left px-4 py-3 font-medium">{t("superadmin.billing.issuedAt")}</th>
+                    <th className="px-4 py-3"></th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
+                  {invoices.map((inv) => (
+                    <tr key={inv.id} className="hover:bg-gray-50">
+                      <td className="px-4 py-3 font-mono text-xs">
+                        {inv.invoiceNumber}
+                      </td>
+                      <td className="px-4 py-3">{inv.billingPeriod}</td>
+                      <td className="px-4 py-3 text-right font-medium">
+                        {inv.amount.toLocaleString()}원
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${INV_STATUS_COLORS[inv.status] || "bg-gray-100 text-gray-500"}`}>
+                          {inv.status}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-gray-500">
+                        {new Date(inv.issuedAt).toLocaleDateString("ko-KR")}
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        {inv.status === "Pending" && (
+                          <button
+                            onClick={() => handleMarkPaid(inv.id)}
+                            className="inline-flex items-center gap-1 text-xs text-emerald-600 hover:underline"
+                          >
+                            <CheckCircle size={12} /> {t("superadmin.billing.markPaid")}
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
-
-        <div className="flex gap-3 pt-4">
-          <button
-            onClick={() => router.back()}
-            className="flex-1 py-3 border rounded-lg text-sm font-medium text-gray-500 hover:bg-gray-50"
-          >
-            취소
-          </button>
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="flex-1 py-3 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700 disabled:opacity-60"
-          >
-            {saving ? "저장 중..." : "저장"}
-          </button>
-        </div>
-      </div>
+      )}
     </div>
   );
 }

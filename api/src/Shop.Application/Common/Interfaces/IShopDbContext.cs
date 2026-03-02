@@ -42,5 +42,8 @@ public interface IShopDbContext
     DbSet<CollectionItem> CollectionItems { get; }
     DbSet<TenantPlan> TenantPlans { get; }
     DbSet<ProductDetailSection> ProductDetailSections { get; }
+    DbSet<TenantUsage> TenantUsages { get; }
+    DbSet<Invoice> Invoices { get; }
+    DbSet<EmailCampaign> EmailCampaigns { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

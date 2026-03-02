@@ -135,6 +135,57 @@ public class PlatformController : ControllerBase
 
         return Ok(new { success = true });
     }
+    // ── Invoices ──
+
+    [HttpGet("invoices")]
+    public async Task<IActionResult> GetAllInvoices()
+    {
+        var result = await _mediator.Send(new GetInvoicesQuery());
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.Error });
+        return Ok(result.Data);
+    }
+
+    [HttpGet("{slug}/invoices")]
+    public async Task<IActionResult> GetTenantInvoices(string slug)
+    {
+        var result = await _mediator.Send(new GetInvoicesQuery(slug));
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.Error });
+        return Ok(result.Data);
+    }
+
+    [HttpPost("{slug}/invoices")]
+    public async Task<IActionResult> GenerateInvoice(string slug, [FromBody] GenerateInvoiceRequest request)
+    {
+        var tenant = await _db.Tenants.AsNoTracking().FirstOrDefaultAsync(t => t.Slug == slug);
+        if (tenant == null)
+            return NotFound(new { error = "테넌트를 찾을 수 없습니다." });
+
+        var result = await _mediator.Send(new GenerateInvoiceCommand(tenant.Id, request.BillingPeriod));
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.Error });
+        return Ok(new { invoiceId = result.Data });
+    }
+
+    [HttpPut("invoices/{id:int}/pay")]
+    public async Task<IActionResult> MarkInvoicePaid(int id, [FromBody] MarkInvoicePaidRequest request)
+    {
+        var result = await _mediator.Send(new MarkInvoicePaidCommand(id, request.TransactionId, request.PaymentMethod));
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.Error });
+        return Ok(new { success = true });
+    }
+
+    [HttpGet("{slug}/usage")]
+    public async Task<IActionResult> GetTenantUsage(string slug)
+    {
+        var result = await _mediator.Send(new GetTenantUsageQuery(slug));
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.Error });
+        return Ok(result.Data);
+    }
+
     [HttpGet("{slug}/domain")]
     public async Task<IActionResult> GetTenantDomainConfig(string slug)
     {
@@ -176,3 +227,5 @@ public record CreateTenantRequest(string Slug, string Name, string? CustomDomain
 public record UpdateTenantRequest(string? Name, string? CustomDomain, string? Subdomain, bool? IsActive, string? ConfigJson);
 public record UpdateBillingRequest(string? PlanType, decimal? MonthlyPrice, string? BillingStatus);
 public record UpdateDomainRequest(string? CustomDomain, string? Subdomain);
+public record GenerateInvoiceRequest(string BillingPeriod);
+public record MarkInvoicePaidRequest(string? TransactionId, string? PaymentMethod);

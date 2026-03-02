@@ -79,6 +79,67 @@ export async function updateTenantBilling(
   await api.put(`/platform/tenants/${slug}/billing`, req);
 }
 
+// ── Invoices ──
+export interface InvoiceDto {
+  id: number;
+  tenantId: number;
+  tenantName: string;
+  invoiceNumber: string;
+  amount: number;
+  status: string;
+  billingPeriod: string;
+  planType: string | null;
+  issuedAt: string;
+  paidAt: string | null;
+  transactionId: string | null;
+  paymentMethod: string | null;
+}
+
+export async function getAllInvoices(): Promise<InvoiceDto[]> {
+  const { data } = await api.get("/platform/tenants/invoices");
+  return data;
+}
+
+export async function getTenantInvoices(slug: string): Promise<InvoiceDto[]> {
+  const { data } = await api.get(`/platform/tenants/${slug}/invoices`);
+  return data;
+}
+
+export async function generateInvoice(slug: string, billingPeriod: string): Promise<{ invoiceId: number }> {
+  const { data } = await api.post(`/platform/tenants/${slug}/invoices`, { billingPeriod });
+  return data;
+}
+
+export async function markInvoicePaid(
+  id: number,
+  transactionId?: string,
+  paymentMethod?: string
+): Promise<void> {
+  await api.put(`/platform/tenants/invoices/${id}/pay`, { transactionId, paymentMethod });
+}
+
+// ── Usage ──
+export interface TenantUsage {
+  tenantId: number;
+  tenantName: string;
+  tenantSlug: string;
+  planType: string;
+  productCount: number;
+  maxProducts: number;
+  userCount: number;
+  maxUsers: number;
+  monthlyOrderCount: number;
+  maxMonthlyOrders: number;
+  storageUsedBytes: number;
+  maxStorageBytes: number;
+  currentPeriod: string;
+}
+
+export async function getTenantUsage(slug: string): Promise<TenantUsage> {
+  const { data } = await api.get(`/platform/tenants/${slug}/usage`);
+  return data;
+}
+
 // ── Domain Management ──
 export interface DnsInstruction {
   type: string;

@@ -25,17 +25,24 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, Result<Au
     private readonly ITokenService _tokenService;
     private readonly ITenantContext _tenantContext;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IPlanEnforcer _planEnforcer;
 
-    public RegisterCommandHandler(IShopDbContext db, ITokenService tokenService, ITenantContext tenantContext, IUnitOfWork unitOfWork)
+    public RegisterCommandHandler(IShopDbContext db, ITokenService tokenService, ITenantContext tenantContext, IUnitOfWork unitOfWork, IPlanEnforcer planEnforcer)
     {
         _db = db;
         _tokenService = tokenService;
         _tenantContext = tenantContext;
         _unitOfWork = unitOfWork;
+        _planEnforcer = planEnforcer;
     }
 
     public async Task<Result<AuthResponse>> Handle(RegisterCommand request, CancellationToken cancellationToken)
     {
+        // Plan limit check
+        var limitCheck = await _planEnforcer.CanRegisterUser(_tenantContext.TenantId, cancellationToken);
+        if (!limitCheck.IsSuccess)
+            return Result<AuthResponse>.Failure(limitCheck.Error!);
+
         if (await _db.Users.AnyAsync(u => u.Username == request.Username, cancellationToken))
             return Result<AuthResponse>.Failure("이미 사용 중인 사용자명입니다.");
 
@@ -57,6 +64,9 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, Result<Au
 
         await _db.Users.AddAsync(user, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        // Track usage
+        await _planEnforcer.IncrementUserCount(_tenantContext.TenantId, 1, cancellationToken);
 
         var refreshTokenValue = _tokenService.GenerateRefreshToken();
         var refreshToken = new RefreshToken

@@ -53,6 +53,9 @@ public class ShopDbContext : DbContext, IShopDbContext
     public DbSet<CollectionItem> CollectionItems { get; set; }
     public DbSet<TenantPlan> TenantPlans { get; set; }
     public DbSet<ProductDetailSection> ProductDetailSections { get; set; }
+    public DbSet<TenantUsage> TenantUsages { get; set; }
+    public DbSet<Invoice> Invoices { get; set; }
+    public DbSet<EmailCampaign> EmailCampaigns { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -99,6 +102,9 @@ public class ShopDbContext : DbContext, IShopDbContext
         ConfigureCollection(modelBuilder);
         ConfigureTenantPlan(modelBuilder);
         ConfigureProductDetailSection(modelBuilder);
+        ConfigureTenantUsage(modelBuilder);
+        ConfigureInvoice(modelBuilder);
+        ConfigureEmailCampaign(modelBuilder);
     }
 
     private void ApplyTenantFilter<T>(ModelBuilder modelBuilder) where T : class, ITenantEntity
@@ -691,6 +697,45 @@ public class ShopDbContext : DbContext, IShopDbContext
                 .WithMany(p => p.DetailSections)
                 .HasForeignKey(e => e.ProductId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+    }
+
+    private static void ConfigureTenantUsage(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<TenantUsage>(entity =>
+        {
+            entity.HasIndex(e => e.TenantId).IsUnique();
+
+            entity.HasOne(e => e.Tenant)
+                .WithMany()
+                .HasForeignKey(e => e.TenantId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+    }
+
+    private static void ConfigureInvoice(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Invoice>(entity =>
+        {
+            entity.HasIndex(e => e.InvoiceNumber).IsUnique();
+            entity.HasIndex(e => e.TenantId);
+            entity.HasIndex(e => e.Status);
+            entity.HasIndex(e => new { e.TenantId, e.BillingPeriod }).IsUnique();
+
+            entity.HasOne(e => e.Tenant)
+                .WithMany()
+                .HasForeignKey(e => e.TenantId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+    }
+
+    private static void ConfigureEmailCampaign(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<EmailCampaign>(entity =>
+        {
+            entity.HasIndex(e => e.TenantId);
+            entity.HasIndex(e => e.Status);
+            entity.HasIndex(e => e.ScheduledAt);
         });
     }
 }

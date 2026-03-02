@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { getAllBilling, type TenantBilling } from "@/lib/platformApi";
 
 const STATUS_COLORS: Record<string, string> = {
@@ -12,14 +13,8 @@ const STATUS_COLORS: Record<string, string> = {
   None: "bg-gray-100 text-gray-400",
 };
 
-const PLAN_LABELS: Record<string, string> = {
-  Free: "무료",
-  Basic: "베이직",
-  Pro: "프로",
-  Enterprise: "엔터프라이즈",
-};
-
 export default function BillingOverviewPage() {
+  const t = useTranslations();
   const [billings, setBillings] = useState<TenantBilling[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
@@ -50,28 +45,28 @@ export default function BillingOverviewPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">빌링 관리</h1>
+      <h1 className="text-2xl font-bold text-gray-900 mb-6">{t("superadmin.billing.title")}</h1>
 
       {/* Summary cards */}
       <div className="grid grid-cols-4 gap-4 mb-6">
         <div className="bg-white rounded-xl p-4 shadow-sm">
-          <p className="text-xs text-gray-400">전체 테넌트</p>
+          <p className="text-xs text-gray-400">{t("superadmin.billing.totalTenants")}</p>
           <p className="text-2xl font-bold text-gray-900">{billings.length}</p>
         </div>
         <div className="bg-white rounded-xl p-4 shadow-sm">
-          <p className="text-xs text-gray-400">활성 구독</p>
+          <p className="text-xs text-gray-400">{t("superadmin.billing.activeSubscriptions")}</p>
           <p className="text-2xl font-bold text-emerald-600">
             {billings.filter((b) => b.billingStatus === "Active").length}
           </p>
         </div>
         <div className="bg-white rounded-xl p-4 shadow-sm">
-          <p className="text-xs text-gray-400">체험 중</p>
+          <p className="text-xs text-gray-400">{t("superadmin.billing.onTrial")}</p>
           <p className="text-2xl font-bold text-blue-600">
             {billings.filter((b) => b.billingStatus === "Trial").length}
           </p>
         </div>
         <div className="bg-white rounded-xl p-4 shadow-sm">
-          <p className="text-xs text-gray-400">월 수익</p>
+          <p className="text-xs text-gray-400">{t("superadmin.billing.monthlyIncome")}</p>
           <p className="text-2xl font-bold text-gray-900">
             {totalRevenue.toLocaleString()}원
           </p>
@@ -90,7 +85,7 @@ export default function BillingOverviewPage() {
                 : "bg-gray-100 text-gray-600 hover:bg-gray-200"
             }`}
           >
-            {status === "all" ? "전체" : status}
+            {status === "all" ? t("superadmin.billing.all") : status}
           </button>
         ))}
       </div>
@@ -100,11 +95,11 @@ export default function BillingOverviewPage() {
         <table className="w-full text-sm">
           <thead className="bg-gray-50 text-gray-500 text-xs">
             <tr>
-              <th className="text-left px-4 py-3 font-medium">테넌트</th>
-              <th className="text-left px-4 py-3 font-medium">플랜</th>
-              <th className="text-left px-4 py-3 font-medium">상태</th>
-              <th className="text-right px-4 py-3 font-medium">월 요금</th>
-              <th className="text-left px-4 py-3 font-medium">다음 결제</th>
+              <th className="text-left px-4 py-3 font-medium">{t("superadmin.billing.tenant")}</th>
+              <th className="text-left px-4 py-3 font-medium">{t("superadmin.billing.plan")}</th>
+              <th className="text-left px-4 py-3 font-medium">{t("superadmin.billing.status")}</th>
+              <th className="text-right px-4 py-3 font-medium">{t("superadmin.billing.monthlyFee")}</th>
+              <th className="text-left px-4 py-3 font-medium">{t("superadmin.billing.nextPayment")}</th>
               <th className="px-4 py-3"></th>
             </tr>
           </thead>
@@ -118,7 +113,12 @@ export default function BillingOverviewPage() {
                   </span>
                 </td>
                 <td className="px-4 py-3">
-                  {PLAN_LABELS[b.planType] || b.planType}
+                  {({
+                    Free: t("superadmin.billing.planFree"),
+                    Basic: t("superadmin.billing.planBasic"),
+                    Pro: t("superadmin.billing.planPro"),
+                    Enterprise: t("superadmin.billing.planEnterprise"),
+                  } as Record<string, string>)[b.planType] || b.planType}
                 </td>
                 <td className="px-4 py-3">
                   <span
@@ -144,7 +144,7 @@ export default function BillingOverviewPage() {
                     href={`/superadmin/tenants/${b.tenantSlug}/billing`}
                     className="text-xs text-emerald-600 hover:underline"
                   >
-                    관리
+                    {t("superadmin.billing.manage")}
                   </Link>
                 </td>
               </tr>

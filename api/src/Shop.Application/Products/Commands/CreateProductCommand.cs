@@ -31,18 +31,26 @@ public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand,
     private readonly IShopDbContext _db;
     private readonly ICurrentUserService _currentUser;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IPlanEnforcer _planEnforcer;
 
-    public CreateProductCommandHandler(IShopDbContext db, ICurrentUserService currentUser, IUnitOfWork unitOfWork)
+    public CreateProductCommandHandler(IShopDbContext db, ICurrentUserService currentUser, IUnitOfWork unitOfWork, IPlanEnforcer planEnforcer)
     {
         _db = db;
         _currentUser = currentUser;
         _unitOfWork = unitOfWork;
+        _planEnforcer = planEnforcer;
     }
 
     public async Task<Result<int>> Handle(CreateProductCommand request, CancellationToken cancellationToken)
     {
         if (_currentUser.UserId is null)
             return Result<int>.Failure("로그인이 필요합니다.");
+
+        // Plan limit check
+        var user = await _db.Users.AsNoTracking().FirstAsync(u => u.Id == _currentUser.UserId.Value, cancellationToken);
+        var limitCheck = await _planEnforcer.CanCreateProduct(user.TenantId, cancellationToken);
+        if (!limitCheck.IsSuccess)
+            return Result<int>.Failure(limitCheck.Error!);
 
         // Validate category exists
         var categoryExists = await _db.Categories
@@ -113,6 +121,10 @@ public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand,
 
         await _db.Products.AddAsync(product, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        // Track usage
+        await _planEnforcer.IncrementProductCount(user.TenantId, 1, cancellationToken);
+
         return Result<int>.Success(product.Id);
     }
 }
