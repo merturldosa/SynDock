@@ -25,3 +25,8 @@ docker-data/
 
 # Uploads
 wwwroot/uploads/
+
+# Logs
+api/src/Shop.API/Logs/
+web/test-results/
+web/tsconfig.tsbuildinfo

@@ -31,5 +31,8 @@ public class CurrentUserService : ICurrentUserService
         ?? _httpContextAccessor.HttpContext?.User
             ?.FindFirst(JwtRegisteredClaimNames.UniqueName)?.Value;
 
+    public string? Role => _httpContextAccessor.HttpContext?.User
+        ?.FindFirst(ClaimTypes.Role)?.Value;
+
     public bool IsAuthenticated => _httpContextAccessor.HttpContext?.User?.Identity?.IsAuthenticated ?? false;
 }

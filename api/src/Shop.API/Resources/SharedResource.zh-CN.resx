@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+
+  <!-- Auth -->
+  <data name="InvalidCredentials"><value>邮箱或密码无效。</value></data>
+  <data name="UsernameInUse"><value>用户名已被使用。</value></data>
+  <data name="EmailInUse"><value>邮箱已被使用。</value></data>
+  <data name="InvalidOrExpiredToken"><value>无效或已过期的令牌。</value></data>
+  <data name="LoginRequired"><value>需要登录。</value></data>
+  <data name="NoPermission"><value>没有权限。</value></data>
+  <data name="UserNotFound"><value>用户未找到。</value></data>
+  <data name="InvalidRole"><value>无效的角色。</value></data>
+  <data name="AccountInactive"><value>账户已停用。</value></data>
+
+  <!-- 2FA -->
+  <data name="TwoFactorAlreadyEnabled"><value>双重认证已启用。</value></data>
+  <data name="TwoFactorNotSetup"><value>请先开始双重认证设置。</value></data>
+  <data name="TwoFactorInvalidCode"><value>认证码无效。</value></data>
+  <data name="TwoFactorNotEnabled"><value>双重认证未启用。</value></data>
+
+  <!-- Validation -->
+  <data name="UsernameRequired"><value>用户名为必填项。</value></data>
+  <data name="UsernameMinLength"><value>用户名至少需要3个字符。</value></data>
+  <data name="EmailRequired"><value>邮箱为必填项。</value></data>
+  <data name="EmailInvalidFormat"><value>邮箱格式无效。</value></data>
+  <data name="PasswordRequired"><value>密码为必填项。</value></data>
+  <data name="PasswordMinLength"><value>密码至少需要6个字符。</value></data>
+  <data name="NameRequired"><value>名称为必填项。</value></data>
+
+  <!-- Tenant -->
+  <data name="TenantNotFound"><value>租户未找到。</value></data>
+  <data name="TenantInactive"><value>租户已停用。</value></data>
+  <data name="SlugInUse"><value>别名已被使用。</value></data>
+
+  <!-- Product -->
+  <data name="ProductNotFound"><value>商品未找到。</value></data>
+  <data name="VariantNotFound"><value>商品规格未找到。</value></data>
+  <data name="CategoryNotFound"><value>分类未找到。</value></data>
+  <data name="ParentCategoryNotFound"><value>父分类未找到。</value></data>
+  <data name="SlugAlreadyUsed"><value>别名已被使用。</value></data>
+  <data name="StockMustBePositive"><value>库存数量必须大于等于0。</value></data>
+  <data name="InsufficientStock"><value>库存不足。</value></data>
+
+  <!-- Cart -->
+  <data name="CartItemNotFound"><value>购物车商品未找到。</value></data>
+  <data name="CartEmpty"><value>购物车为空。</value></data>
+
+  <!-- Order -->
+  <data name="OrderNotFound"><value>订单未找到。</value></data>
+  <data name="AddressNotFound"><value>收货地址未找到。</value></data>
+  <data name="OnlyPendingCanPay"><value>仅待付款订单可以支付。</value></data>
+  <data name="PaymentAmountMismatch"><value>支付金额不匹配。</value></data>
+  <data name="AlreadyRefunded"><value>订单已退款。</value></data>
+  <data name="CannotRefundCancelled"><value>已取消的订单无法退款。</value></data>
+  <data name="PaymentFailed"><value>支付确认失败。</value></data>
+
+  <!-- Review / QnA -->
+  <data name="ReviewNotFound"><value>评价未找到。</value></data>
+  <data name="QnaNotFound"><value>问答未找到。</value></data>
+  <data name="AlreadyReviewed"><value>您已经发表过评价。</value></data>
+
+  <!-- Social -->
+  <data name="PostNotFound"><value>帖子未找到。</value></data>
+  <data name="CannotFollowSelf"><value>不能关注自己。</value></data>
+  <data name="AlreadyFollowing"><value>已经在关注中。</value></data>
+
+  <!-- Coupon / Point -->
+  <data name="CouponNotFound"><value>优惠券未找到。</value></data>
+  <data name="CouponAlreadyUsed"><value>优惠券已使用。</value></data>
+  <data name="CouponExpired"><value>优惠券已过期。</value></data>
+  <data name="InsufficientPoints"><value>积分不足。</value></data>
+
+  <!-- Collection -->
+  <data name="CollectionNotFound"><value>合集未找到。</value></data>
+
+  <!-- Billing -->
+  <data name="BillingNotFound"><value>账单信息未找到。</value></data>
+  <data name="InvoiceNotFound"><value>发票未找到。</value></data>
+  <data name="InvoiceAlreadyPaid"><value>发票已支付。</value></data>
+  <data name="NoPaidPlan"><value>未设置付费计划。</value></data>
+
+  <!-- Commission / Settlement -->
+  <data name="CommissionAlreadyCalculated"><value>该订单的佣金已计算。</value></data>
+  <data name="NoPendingCommissions"><value>没有待结算的佣金。</value></data>
+  <data name="SettlementNotFound"><value>结算批次未找到。</value></data>
+  <data name="SettlementAlreadyProcessed"><value>结算已处理。</value></data>
+
+  <!-- Campaign -->
+  <data name="CampaignNotFound"><value>活动未找到。</value></data>
+
+  <!-- Common -->
+  <data name="ValidationFailed"><value>验证失败。</value></data>
+  <data name="ServerError"><value>服务器发生错误。</value></data>
+  <data name="NotFound"><value>未找到。</value></data>
+  <data name="AlreadyExists"><value>已存在。</value></data>
+</root>

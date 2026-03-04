@@ -158,7 +158,7 @@ export function ProductDetailSectionEditor({ productId }: Props) {
               <div className="flex items-center gap-3 flex-1 min-w-0">
                 {section.imageUrl && (
                   <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
-                    <Image src={section.imageUrl} alt={section.imageAltText || ""} width={64} height={64} className="object-cover w-full h-full" unoptimized />
+                    <Image src={section.imageUrl} alt={section.imageAltText || ""} width={64} height={64} className="object-cover w-full h-full" />
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
@@ -246,7 +246,7 @@ export function ProductDetailSectionEditor({ productId }: Props) {
             {form.imageUrl && (
               <div className="mt-2 flex items-center gap-3">
                 <div className="w-20 h-20 rounded-lg overflow-hidden bg-gray-100">
-                  <Image src={form.imageUrl} alt="" width={80} height={80} className="object-cover w-full h-full" unoptimized />
+                  <Image src={form.imageUrl} alt="" width={80} height={80} className="object-cover w-full h-full" />
                 </div>
                 <input
                   type="text"

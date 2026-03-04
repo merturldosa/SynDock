@@ -77,7 +77,7 @@ export default function MyReviewsPage() {
                 <Link href={`/products/${review.productId}`} className="shrink-0">
                   <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-gray-100">
                     {review.productImageUrl ? (
-                      <Image src={review.productImageUrl} alt="" fill className="object-cover" sizes="64px" unoptimized />
+                      <Image src={review.productImageUrl} alt="" fill className="object-cover" sizes="64px" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-gray-300">
                         <Star size={24} />

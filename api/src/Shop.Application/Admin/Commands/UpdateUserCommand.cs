@@ -44,13 +44,25 @@ public class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand, Resul
         if (user.Role == "PlatformAdmin" && currentUserEntity?.Role != "PlatformAdmin")
             return Result<bool>.Failure("PlatformAdmin 변경은 PlatformAdmin만 가능합니다.");
 
-        var validRoles = new[] { "Member", "Admin", "PlatformAdmin" };
+        var validRoles = new[] { "Member", "TenantAdmin", "Admin", "PlatformAdmin" };
         if (!validRoles.Contains(request.Role))
             return Result<bool>.Failure("유효하지 않은 역할입니다.");
 
         // Only PlatformAdmin can assign PlatformAdmin role
         if (request.Role == "PlatformAdmin" && currentUserEntity?.Role != "PlatformAdmin")
             return Result<bool>.Failure("PlatformAdmin 역할 부여는 PlatformAdmin만 가능합니다.");
+
+        // Only PlatformAdmin/Admin can assign TenantAdmin role
+        if (request.Role == "TenantAdmin" && currentUserEntity?.Role is not ("PlatformAdmin" or "Admin"))
+            return Result<bool>.Failure("TenantAdmin 역할 부여는 Admin 이상만 가능합니다.");
+
+        // Only Admin/PlatformAdmin can assign Admin role
+        if (request.Role == "Admin" && currentUserEntity?.Role is not ("PlatformAdmin" or "Admin"))
+            return Result<bool>.Failure("Admin 역할 부여는 Admin 이상만 가능합니다.");
+
+        // TenantAdmin can only assign Member role (cannot escalate to TenantAdmin/Admin/PlatformAdmin)
+        if (currentUserEntity?.Role == "TenantAdmin" && request.Role != "Member")
+            return Result<bool>.Failure("TenantAdmin은 Member 역할만 부여할 수 있습니다.");
 
         user.Role = request.Role;
         user.IsActive = request.IsActive;

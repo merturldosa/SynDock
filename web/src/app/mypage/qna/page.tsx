@@ -77,7 +77,7 @@ export default function MyQnAPage() {
                 <Link href={`/products/${qna.productId}`} className="shrink-0">
                   <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-gray-100">
                     {qna.productImageUrl ? (
-                      <Image src={qna.productImageUrl} alt="" fill className="object-cover" sizes="64px" unoptimized />
+                      <Image src={qna.productImageUrl} alt="" fill className="object-cover" sizes="64px" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-gray-300">
                         <MessageCircleQuestion size={24} />

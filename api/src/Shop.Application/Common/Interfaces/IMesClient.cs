@@ -34,6 +34,27 @@ public record MesSyncStatus(
     int SyncedProductCount,
     string? ErrorMessage);
 
+// ── Shop-MES Integration DTOs ────────────────────────────
+
+public record MesReservationItem(string ProductCode, decimal Quantity);
+
+public record MesReservationRequest(string ShopOrderNo, string RequestId, List<MesReservationItem> Items);
+
+public record MesReservationItemResult(string ProductCode, bool Success, string? Message);
+
+public record MesReservationResult(string ShopOrderNo, string? RequestId, bool AllSuccess, List<MesReservationItemResult> Items);
+
+public record MesOrderStatusResult(
+    string ShopOrderNo,
+    long? MesOrderId,
+    string? MesOrderNo,
+    string? Status,
+    DateTime? OrderDate,
+    decimal? TotalAmount,
+    DateTime? LastUpdated);
+
+public record MesProductInfo(long ProductId, string ProductCode, string? ProductName, string? ProductType, string? Unit, bool IsActive);
+
 public record MesStockDiscrepancy(
     int ProductId,
     string ProductName,
@@ -57,6 +78,12 @@ public interface IMesClient
     Task<List<MesInventoryItem>> GetInventoryAsync(CancellationToken ct = default);
     Task<MesSalesOrderResult> CreateSalesOrderAsync(MesSalesOrderRequest request, CancellationToken ct = default);
     Task<MesSyncStatus> GetSyncStatusAsync(CancellationToken ct = default);
+
+    // Shop-MES Integration Bridge (v2 endpoints)
+    Task<MesReservationResult> ReserveInventoryAsync(MesReservationRequest request, CancellationToken ct = default);
+    Task<MesReservationResult> ReleaseInventoryAsync(MesReservationRequest request, CancellationToken ct = default);
+    Task<MesOrderStatusResult?> GetOrderStatusAsync(string shopOrderNo, CancellationToken ct = default);
+    Task<List<MesProductInfo>> GetMesProductsAsync(CancellationToken ct = default);
 }
 
 public interface IMesProductMapper

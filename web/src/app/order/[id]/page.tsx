@@ -243,7 +243,7 @@ export default function OrderDetailPage() {
               <Link href={`/products/${item.productId}`} className="shrink-0">
                 <div className="relative w-20 h-20 rounded-lg overflow-hidden bg-gray-100">
                   {item.primaryImageUrl ? (
-                    <Image src={item.primaryImageUrl} alt={item.productName} fill className="object-cover" sizes="80px" unoptimized />
+                    <Image src={item.primaryImageUrl} alt={item.productName} fill className="object-cover" sizes="80px" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-3xl opacity-30">📦</div>
                   )}

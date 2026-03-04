@@ -83,7 +83,7 @@ export default function WishlistPage() {
               <Link href={`/products/${item.productId}`}>
                 <div className="relative aspect-square bg-gray-100">
                   {item.primaryImageUrl ? (
-                    <Image src={item.primaryImageUrl} alt={item.productName} fill className="object-cover" sizes="(max-width: 768px) 50vw, 25vw" unoptimized />
+                    <Image src={item.primaryImageUrl} alt={item.productName} fill className="object-cover" sizes="(max-width: 768px) 50vw, 25vw" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-4xl opacity-20">📦</div>
                   )}

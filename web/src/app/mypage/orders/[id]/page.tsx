@@ -4,9 +4,9 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Package, MapPin, ArrowLeft, Truck, Clock, Search } from "lucide-react";
+import { Package, MapPin, ArrowLeft, Truck, Clock, Search, Download } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { getOrderById, cancelOrder, getShippingTracking, type TrackingEvent } from "@/lib/orderApi";
+import { getOrderById, cancelOrder, getShippingTracking, downloadOrderReceipt, type TrackingEvent } from "@/lib/orderApi";
 import { useAuthStore } from "@/stores/authStore";
 import type { Order } from "@/types/order";
 import { ORDER_STATUS_LABELS, type OrderStatusType } from "@/types/order";
@@ -299,7 +299,7 @@ export default function MypageOrderDetailPage() {
               <Link href={`/products/${item.productId}`} className="shrink-0">
                 <div className="relative w-20 h-20 rounded-lg overflow-hidden bg-gray-100">
                   {item.primaryImageUrl ? (
-                    <Image src={item.primaryImageUrl} alt={item.productName} fill className="object-cover" sizes="80px" unoptimized />
+                    <Image src={item.primaryImageUrl} alt={item.productName} fill className="object-cover" sizes="80px" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-3xl opacity-30">📦</div>
                   )}
@@ -371,16 +371,25 @@ export default function MypageOrderDetailPage() {
         </div>
       </section>
 
-      {/* Cancel */}
-      {canCancel && (
+      {/* Actions */}
+      <div className="flex gap-3">
         <button
-          onClick={handleCancel}
-          disabled={cancelling}
-          className="w-full py-3 border border-red-300 text-red-500 rounded-xl font-medium hover:bg-red-50 transition-colors disabled:opacity-60"
+          onClick={() => downloadOrderReceipt(order.id, order.orderNumber)}
+          className="flex-1 py-3 flex items-center justify-center gap-2 border border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-colors"
         >
-          {cancelling ? t("mypage.orders.cancelling") : t("mypage.orders.cancelOrder")}
+          <Download size={16} />
+          {t("mypage.orders.downloadReceipt")}
         </button>
-      )}
+        {canCancel && (
+          <button
+            onClick={handleCancel}
+            disabled={cancelling}
+            className="flex-1 py-3 border border-red-300 text-red-500 rounded-xl font-medium hover:bg-red-50 transition-colors disabled:opacity-60"
+          >
+            {cancelling ? t("mypage.orders.cancelling") : t("mypage.orders.cancelOrder")}
+          </button>
+        )}
+      </div>
     </div>
   );
 }

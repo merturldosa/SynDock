@@ -108,7 +108,6 @@ export default function CollectionDetailPage() {
                       fill
                       className="object-contain"
                       sizes="(max-width: 768px) 50vw, 25vw"
-                      unoptimized
                     />
                   ) : (
                     <div className="flex items-center justify-center h-full text-4xl opacity-20">

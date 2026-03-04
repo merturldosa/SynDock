@@ -149,7 +149,6 @@ export default function PostDetailClient() {
                   fill
                   className="object-cover"
                   sizes="300px"
-                  unoptimized
                 />
               </div>
             ))}

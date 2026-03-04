@@ -86,3 +86,98 @@ export function generatePageMetadata(
     },
   };
 }
+
+// --- JSON-LD Structured Data ---
+
+export function generateProductJsonLd(product: {
+  name: string;
+  description?: string | null;
+  price: number;
+  salePrice?: number | null;
+  imageUrl?: string | null;
+  slug?: string;
+  categoryName?: string;
+  sku?: string;
+  rating?: number;
+  reviewCount?: number;
+}) {
+  const jsonLd: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.name,
+    description: product.description || product.name,
+    ...(product.imageUrl && { image: product.imageUrl }),
+    ...(product.sku && { sku: product.sku }),
+    offers: {
+      "@type": "Offer",
+      price: product.salePrice ?? product.price,
+      priceCurrency: "KRW",
+      availability: "https://schema.org/InStock",
+      url: product.slug
+        ? `${SITE_URL}/products/${product.slug}`
+        : undefined,
+    },
+  };
+
+  if (product.rating && product.reviewCount) {
+    jsonLd.aggregateRating = {
+      "@type": "AggregateRating",
+      ratingValue: product.rating,
+      reviewCount: product.reviewCount,
+    };
+  }
+
+  if (product.categoryName) {
+    jsonLd.category = product.categoryName;
+  }
+
+  return jsonLd;
+}
+
+export function generateOrganizationJsonLd(config?: {
+  name?: string;
+  url?: string;
+  logo?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  socialLinks?: Record<string, string | undefined>;
+}) {
+  const name = config?.name || TENANT_NAME;
+  const url = config?.url || SITE_URL;
+
+  const sameAs = config?.socialLinks
+    ? Object.values(config.socialLinks).filter(Boolean)
+    : [];
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name,
+    url,
+    ...(config?.logo && { logo: config.logo }),
+    ...(config?.contactEmail && {
+      contactPoint: {
+        "@type": "ContactPoint",
+        email: config.contactEmail,
+        ...(config?.contactPhone && { telephone: config.contactPhone }),
+        contactType: "customer service",
+      },
+    }),
+    ...(sameAs.length > 0 && { sameAs }),
+  };
+}
+
+export function generateBreadcrumbJsonLd(
+  items: { name: string; url: string }[]
+) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: items.map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: item.name,
+      item: item.url,
+    })),
+  };
+}

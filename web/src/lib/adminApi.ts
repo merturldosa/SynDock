@@ -450,6 +450,77 @@ export async function sendCampaign(id: number): Promise<{ sentCount: number }> {
   return data;
 }
 
+// ── A/B Test Campaigns ──
+export interface CampaignVariantDto {
+  id: number;
+  variantName: string;
+  subjectLine: string;
+  trafficPercent: number;
+  sentCount: number;
+  openCount: number;
+  clickCount: number;
+  conversionCount: number;
+  revenue: number;
+  openRate: number;
+  clickRate: number;
+  conversionRate: number;
+  isWinner: boolean;
+}
+
+export interface CampaignAnalyticsDto {
+  id: number;
+  title: string;
+  target: string;
+  status: string;
+  isAbTest: boolean;
+  scheduledAt: string | null;
+  sentAt: string | null;
+  sentCount: number;
+  openCount: number;
+  clickCount: number;
+  conversionCount: number;
+  revenue: number;
+  openRate: number;
+  clickRate: number;
+  conversionRate: number;
+  variants: CampaignVariantDto[] | null;
+}
+
+export interface CampaignSummaryDto {
+  totalCampaigns: number;
+  sentCampaigns: number;
+  totalSent: number;
+  totalOpened: number;
+  totalClicked: number;
+  totalConverted: number;
+  totalRevenue: number;
+  avgOpenRate: number;
+  avgClickRate: number;
+  avgConversionRate: number;
+}
+
+export async function createAbTestCampaign(
+  title: string, target: string, scheduledAt: string | undefined,
+  subjectLineA: string, contentA: string,
+  subjectLineB: string, contentB: string,
+  trafficPercentA = 50
+): Promise<{ campaignId: number }> {
+  const { data } = await api.post("/admin/campaigns/ab-test", {
+    title, target, scheduledAt, subjectLineA, contentA, subjectLineB, contentB, trafficPercentA
+  });
+  return data;
+}
+
+export async function getCampaignAnalytics(id: number): Promise<CampaignAnalyticsDto> {
+  const { data } = await api.get(`/admin/campaigns/${id}/analytics`);
+  return data;
+}
+
+export async function getCampaignSummary(): Promise<CampaignSummaryDto> {
+  const { data } = await api.get("/admin/campaigns/summary");
+  return data;
+}
+
 // ── Tenant Settings ──
 export interface TenantSettingsTheme {
   primary: string | null;
@@ -532,4 +603,213 @@ export async function exportOrders(params: {
   });
   const today = new Date().toISOString().slice(0, 10);
   downloadBlob(data, `orders-export-${today}.csv`);
+}
+
+// ── Platform Settlements ──
+export interface SettlementDto {
+  id: number;
+  tenantId: number;
+  periodStart: string;
+  periodEnd: string;
+  orderCount: number;
+  totalOrderAmount: number;
+  totalCommission: number;
+  totalSettlementAmount: number;
+  status: string;
+  bankName: string | null;
+  bankAccount: string | null;
+  transactionId: string | null;
+  settledAt: string | null;
+  settledBy: string | null;
+  createdAt: string;
+}
+
+export interface CommissionSummaryItem {
+  tenantId: number;
+  tenantName: string;
+  totalOrders: number;
+  totalOrderAmount: number;
+  totalCommission: number;
+  totalSettlementAmount: number;
+  pendingSettlement: number;
+}
+
+export async function getCommissionSummary(): Promise<CommissionSummaryItem[]> {
+  const { data } = await api.get("/platform/commissions/summary");
+  return data;
+}
+
+export async function getSettlements(slug: string, status?: string): Promise<SettlementDto[]> {
+  const { data } = await api.get(`/platform/${slug}/settlements`, { params: { status } });
+  return data;
+}
+
+export async function createSettlement(slug: string, periodStart: string, periodEnd: string): Promise<{ settlementId: number }> {
+  const { data } = await api.post(`/platform/${slug}/settlements`, { periodStart, periodEnd });
+  return data;
+}
+
+export async function processSettlement(id: number, transactionId: string, settledBy: string): Promise<void> {
+  await api.put(`/platform/settlements/${id}/process`, { transactionId, settledBy });
+}
+
+// ── TenantAdmin Settlements ──
+
+export async function getMySettlements(status?: string): Promise<SettlementDto[]> {
+  const { data } = await api.get("/admin/settlements", { params: { status } });
+  return data;
+}
+
+export interface CommissionDto {
+  id: number;
+  tenantId: number;
+  orderId: number;
+  orderAmount: number;
+  commissionRate: number;
+  commissionAmount: number;
+  settlementAmount: number;
+  status: string;
+  settlementId: number | null;
+  createdAt: string;
+}
+
+export async function getMyCommissions(status?: string): Promise<CommissionDto[]> {
+  const { data } = await api.get("/admin/commissions", { params: { status } });
+  return data;
+}
+
+export interface CommissionSettingDto {
+  id: number;
+  tenantId: number;
+  productId: number | null;
+  categoryId: number | null;
+  commissionRate: number;
+  settlementCycle: string;
+  settlementDayOfWeek: number;
+  minSettlementAmount: number;
+  bankName: string | null;
+  bankAccount: string | null;
+  bankHolder: string | null;
+}
+
+export async function getMyCommissionSettings(): Promise<CommissionSettingDto[]> {
+  const { data } = await api.get("/admin/commissions/settings");
+  return data;
+}
+
+// ── Auto Reorder (MES L3) ──
+
+export interface AutoReorderStatsDto {
+  totalRules: number;
+  enabledRules: number;
+  productsBelowThreshold: number;
+  totalPurchaseOrders: number;
+  pendingOrders: number;
+  forwardedOrders: number;
+  lastAutoRun: string | null;
+}
+
+export interface AutoReorderRuleDto {
+  id: number;
+  productId: number;
+  productName: string;
+  reorderThreshold: number;
+  reorderQuantity: number;
+  maxStockLevel: number;
+  isEnabled: boolean;
+  autoForwardToMes: boolean;
+  minIntervalHours: number;
+  lastTriggeredAt: string | null;
+  currentStock: number;
+  createdAt: string;
+}
+
+export interface PurchaseOrderItemDto {
+  id: number;
+  productId: number;
+  productName: string;
+  mesProductCode: string | null;
+  currentStock: number;
+  reorderThreshold: number;
+  orderedQuantity: number;
+  receivedQuantity: number;
+  reason: string | null;
+}
+
+export interface PurchaseOrderDto {
+  id: number;
+  orderNumber: string;
+  status: string;
+  triggerType: string;
+  totalQuantity: number;
+  itemCount: number;
+  mesOrderId: string | null;
+  mesOrderNo: string | null;
+  forwardedAt: string | null;
+  confirmedAt: string | null;
+  notes: string | null;
+  createdByUser: string | null;
+  createdAt: string;
+  items: PurchaseOrderItemDto[];
+}
+
+export interface PurchaseOrderListDto {
+  items: PurchaseOrderDto[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+export async function getAutoReorderStats(): Promise<AutoReorderStatsDto> {
+  const { data } = await api.get("/admin/mes/auto-reorder/stats");
+  return data;
+}
+
+export async function getAutoReorderRules(enabledOnly?: boolean): Promise<AutoReorderRuleDto[]> {
+  const { data } = await api.get("/admin/mes/auto-reorder/rules", { params: { enabledOnly } });
+  return data;
+}
+
+export async function upsertAutoReorderRule(rule: {
+  productId: number;
+  reorderThreshold: number;
+  reorderQuantity?: number;
+  maxStockLevel?: number;
+  isEnabled?: boolean;
+  autoForwardToMes?: boolean;
+  minIntervalHours?: number;
+}): Promise<{ ruleId: number }> {
+  const { data } = await api.post("/admin/mes/auto-reorder/rules", rule);
+  return data;
+}
+
+export async function deleteAutoReorderRule(id: number): Promise<void> {
+  await api.delete(`/admin/mes/auto-reorder/rules/${id}`);
+}
+
+export async function toggleAutoReorderRule(id: number, isEnabled: boolean): Promise<void> {
+  await api.put(`/admin/mes/auto-reorder/rules/${id}/toggle`, { isEnabled });
+}
+
+export async function bulkCreateAutoReorderRules(params: {
+  reorderThreshold?: number;
+  minIntervalHours?: number;
+  autoForwardToMes?: boolean;
+}): Promise<{ createdCount: number }> {
+  const { data } = await api.post("/admin/mes/auto-reorder/rules/bulk", params);
+  return data;
+}
+
+export async function getPurchaseOrders(status?: string, page = 1, pageSize = 20): Promise<PurchaseOrderListDto> {
+  const { data } = await api.get("/admin/mes/purchase-orders", { params: { status, page, pageSize } });
+  return data;
+}
+
+export async function forwardPurchaseOrder(id: number): Promise<{ mesOrderId: string }> {
+  const { data } = await api.post(`/admin/mes/purchase-orders/${id}/forward`);
+  return data;
+}
+
+export async function cancelPurchaseOrder(id: number): Promise<void> {
+  await api.post(`/admin/mes/purchase-orders/${id}/cancel`);
 }

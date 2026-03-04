@@ -14,6 +14,7 @@ public class ClaudeAiForecastInsightService : IAiForecastInsightService
     private readonly ILogger<ClaudeAiForecastInsightService> _logger;
 
     private static readonly TimeSpan CacheDuration = TimeSpan.FromHours(1);
+    private static readonly TimeSpan BatchCacheDuration = TimeSpan.FromHours(2);
 
     public ClaudeAiForecastInsightService(
         IAIChatProvider chatProvider,
@@ -27,12 +28,28 @@ public class ClaudeAiForecastInsightService : IAiForecastInsightService
         _logger = logger;
     }
 
+    public Task<AiInsight?> GenerateInsightAsync(
+        string productName,
+        string categoryName,
+        List<DailyDemand> historicalDemand,
+        List<DailyDemand> forecast,
+        int currentStock,
+        CancellationToken ct = default)
+    {
+        return GenerateInsightAsync(productName, categoryName, historicalDemand, forecast, currentStock,
+            null, null, null, null, ct);
+    }
+
     public async Task<AiInsight?> GenerateInsightAsync(
         string productName,
         string categoryName,
         List<DailyDemand> historicalDemand,
         List<DailyDemand> forecast,
         int currentStock,
+        double? trendSlope,
+        string? trendDirection,
+        double? seasonalityStrength,
+        double? mape,
         CancellationToken ct = default)
     {
         try
@@ -46,6 +63,22 @@ public class ClaudeAiForecastInsightService : IAiForecastInsightService
             var demandSummary = BuildDemandSummary(historicalDemand);
             var forecastSummary = BuildDemandSummary(forecast);
 
+            var contextLines = new List<string>();
+            if (trendDirection is not null)
+                contextLines.Add($"추세: {trendDirection} (기울기: {trendSlope:F3})");
+            if (seasonalityStrength is not null)
+                contextLines.Add($"계절성 강도: {seasonalityStrength:F3} (0=없음, 1=강함)");
+            if (mape is not null)
+                contextLines.Add($"예측 정확도 MAPE: {mape:F1}%");
+
+            var contextSection = contextLines.Count > 0
+                ? $"\n통계 분석 결과:\n{string.Join("\n", contextLines)}\n"
+                : "";
+
+            var conservativeNote = mape > 30
+                ? "\n주의: 예측 정확도가 낮으므로 보수적으로 분석해주세요.\n"
+                : "";
+
             var prompt = $$"""
                 당신은 {{tenantDesc}} 수요 예측 분석 전문가입니다.
                 다음 데이터를 분석하여 JSON 형식으로 인사이트를 제공해주세요.
@@ -53,7 +86,7 @@ public class ClaudeAiForecastInsightService : IAiForecastInsightService
                 상품: {{productName}}
                 카테고리: {{categoryName}}
                 현재 재고: {{currentStock}}개
-
+                {{contextSection}}{{conservativeNote}}
                 최근 90일 판매 데이터 (주간 요약):
                 {{demandSummary}}
 
@@ -160,6 +193,74 @@ public class ClaudeAiForecastInsightService : IAiForecastInsightService
         }
     }
 
+    public async Task<BatchAiInsightResult> GenerateBatchInsightAsync(
+        List<PurchaseRecommendation> lowStockProducts,
+        CancellationToken ct = default)
+    {
+        try
+        {
+            var cacheKey = $"forecast:batch:{_tenantContext.TenantId}";
+            var cached = await _cache.GetStringAsync(cacheKey, ct);
+            if (cached is not null)
+            {
+                var cachedResult = JsonSerializer.Deserialize<BatchAiInsightResult>(cached);
+                if (cachedResult is not null) return cachedResult;
+            }
+
+            var tenantDesc = GetTenantDescription();
+            var productList = string.Join("\n", lowStockProducts.Select(p =>
+                $"- {p.ProductName} (ID:{p.ProductId}, 카테고리:{p.CategoryName}, 재고:{p.CurrentStock}, 일수요:{p.AverageDailyDemand:F1}, 소진:{p.EstimatedDaysUntilStockout}일, 긴급도:{p.Urgency})"));
+
+            var prompt = $$"""
+                당신은 {{tenantDesc}} 재고 분석 전문가입니다.
+                다음 저재고 상품들을 일괄 분석하여 JSON으로 응답하세요.
+
+                저재고 상품 목록:
+                {{productList}}
+
+                반드시 아래 JSON 형식으로만 응답하세요:
+                {
+                  "products": [
+                    {
+                      "productId": 상품ID,
+                      "productName": "상품명",
+                      "trendDirection": "Rising|Falling|Stable",
+                      "seasonalityStrength": 0.0~1.0,
+                      "keyInsight": "핵심 인사이트 1문장"
+                    }
+                  ],
+                  "overallSummary": "전체 재고 상황 요약 (2-3문장)",
+                  "averageConfidence": 0.0~1.0
+                }
+                """;
+
+            var response = await _chatProvider.ChatAsync(
+                [new ChatMessage("user", prompt)],
+                "당신은 소매업 재고/수요 분석 전문가입니다. JSON으로만 응답하세요.",
+                ct);
+
+            if (response.Error is not null)
+            {
+                _logger.LogWarning("Batch AI insight failed: {Error}", response.Error);
+                return new BatchAiInsightResult([], "AI 분석을 사용할 수 없습니다.", 0);
+            }
+
+            var result = ParseBatchInsightResponse(response.Content, lowStockProducts);
+            if (result is not null)
+            {
+                await _cache.SetStringAsync(cacheKey, JsonSerializer.Serialize(result),
+                    new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = BatchCacheDuration }, ct);
+            }
+
+            return result ?? new BatchAiInsightResult([], "AI 응답 파싱 실패", 0);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to generate batch AI insights");
+            return new BatchAiInsightResult([], "AI 분석 중 오류 발생", 0);
+        }
+    }
+
     private string GetTenantDescription()
     {
         var slug = _tenantContext.TenantSlug?.ToLowerInvariant() ?? "";
@@ -175,7 +276,6 @@ public class ClaudeAiForecastInsightService : IAiForecastInsightService
     {
         if (demand.Count == 0) return "데이터 없음";
 
-        // Group by week for concise summary
         var weeks = demand
             .GroupBy(d => d.Date.AddDays(-(int)d.Date.DayOfWeek))
             .Select(g => $"{g.Key:MM/dd}~: 총 {g.Sum(x => x.Quantity)}개 (일평균 {g.Average(x => (double)x.Quantity):F1})")
@@ -188,7 +288,6 @@ public class ClaudeAiForecastInsightService : IAiForecastInsightService
     {
         try
         {
-            // Extract JSON from potential markdown code blocks
             var json = content;
             var jsonStart = content.IndexOf('{');
             var jsonEnd = content.LastIndexOf('}');
@@ -216,6 +315,44 @@ public class ClaudeAiForecastInsightService : IAiForecastInsightService
                 Recommendations: recommendations,
                 EventImpact: eventImpact,
                 ConfidenceScore: Math.Clamp(confidence, 0, 1));
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static BatchAiInsightResult? ParseBatchInsightResponse(string content, List<PurchaseRecommendation> products)
+    {
+        try
+        {
+            var json = content;
+            var jsonStart = content.IndexOf('{');
+            var jsonEnd = content.LastIndexOf('}');
+            if (jsonStart >= 0 && jsonEnd > jsonStart)
+                json = content[jsonStart..(jsonEnd + 1)];
+
+            using var doc = JsonDocument.Parse(json);
+            var root = doc.RootElement;
+
+            var productSummaries = new List<ProductAiSummary>();
+            if (root.TryGetProperty("products", out var prods))
+            {
+                foreach (var p in prods.EnumerateArray())
+                {
+                    productSummaries.Add(new ProductAiSummary(
+                        ProductId: p.GetProperty("productId").GetInt32(),
+                        ProductName: p.GetProperty("productName").GetString() ?? "",
+                        TrendDirection: p.TryGetProperty("trendDirection", out var td) ? td.GetString() ?? "Stable" : "Stable",
+                        SeasonalityStrength: p.TryGetProperty("seasonalityStrength", out var ss) ? ss.GetDouble() : 0,
+                        KeyInsight: p.TryGetProperty("keyInsight", out var ki) ? ki.GetString() ?? "" : ""));
+                }
+            }
+
+            var overallSummary = root.TryGetProperty("overallSummary", out var os) ? os.GetString() ?? "" : "";
+            var avgConfidence = root.TryGetProperty("averageConfidence", out var ac) ? ac.GetDouble() : 0.5;
+
+            return new BatchAiInsightResult(productSummaries, overallSummary, Math.Clamp(avgConfidence, 0, 1));
         }
         catch
         {

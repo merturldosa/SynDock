@@ -11,7 +11,7 @@ namespace Shop.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
+[Authorize(Roles = "TenantAdmin,Admin,PlatformAdmin")]
 public class AdminController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -221,6 +221,106 @@ public class AdminController : ControllerBase
             return BadRequest(new { error = result.Error });
         return Ok(new { sentCount = result.Data });
     }
+
+    [HttpPost("campaigns/ab-test")]
+    public async Task<IActionResult> CreateAbTestCampaign([FromBody] CreateAbTestCampaignRequest request)
+    {
+        var result = await _mediator.Send(new Application.Admin.Commands.CreateAbTestCampaignCommand(
+            request.Title, request.Target, request.ScheduledAt,
+            request.SubjectLineA, request.ContentA,
+            request.SubjectLineB, request.ContentB,
+            request.TrafficPercentA));
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.Error });
+        return Ok(new { campaignId = result.Data });
+    }
+
+    [HttpGet("campaigns/{id:int}/analytics")]
+    public async Task<IActionResult> GetCampaignAnalytics(int id)
+    {
+        var result = await _mediator.Send(new Application.Admin.Queries.GetCampaignAnalyticsQuery(id));
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.Error });
+        return Ok(result.Data);
+    }
+
+    [HttpGet("campaigns/summary")]
+    public async Task<IActionResult> GetCampaignSummary()
+    {
+        var result = await _mediator.Send(new Application.Admin.Queries.GetCampaignSummaryQuery());
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.Error });
+        return Ok(result.Data);
+    }
+
+    [HttpPost("campaigns/{id:int}/track")]
+    [AllowAnonymous]
+    public async Task<IActionResult> TrackCampaignEvent(int id, [FromBody] TrackCampaignEventRequest request)
+    {
+        var result = await _mediator.Send(new Application.Admin.Commands.RecordCampaignEventCommand(
+            id, request.VariantId, request.UserId, request.EventType, request.LinkUrl));
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.Error });
+        return Ok(new { success = true });
+    }
+    // ── SNS Auto-Posting ──
+
+    [HttpPost("social/post/{productId:int}")]
+    public async Task<IActionResult> AutoPostToSocial(int productId)
+    {
+        var result = await _mediator.Send(new Application.Admin.Commands.AutoPostProductCommand(productId));
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.Error });
+        return Ok(result.Data);
+    }
+
+    [HttpGet("social/posts")]
+    public async Task<IActionResult> GetSocialPosts([FromQuery] int? productId = null, [FromQuery] string? platform = null)
+    {
+        var result = await _mediator.Send(new Application.Admin.Commands.GetSocialPostsQuery(productId, platform));
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.Error });
+        return Ok(result.Data);
+    }
+
+    [HttpGet("billing")]
+    public async Task<IActionResult> GetMyBilling()
+    {
+        var result = await _mediator.Send(new Application.Admin.Queries.GetMyTenantBillingQuery());
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.Error });
+        return Ok(result.Data);
+    }
+
+    // ── Settlements / Commissions (TenantAdmin) ──
+
+    [HttpGet("settlements")]
+    public async Task<IActionResult> GetMySettlements([FromQuery] string? status = null)
+    {
+        var result = await _mediator.Send(new Application.Admin.Queries.GetMySettlementsQuery(status));
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.Error });
+        return Ok(result.Data);
+    }
+
+    [HttpGet("commissions")]
+    public async Task<IActionResult> GetMyCommissions([FromQuery] string? status = null)
+    {
+        var result = await _mediator.Send(new Application.Admin.Queries.GetMyCommissionsQuery(status));
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.Error });
+        return Ok(result.Data);
+    }
+
+    [HttpGet("commissions/settings")]
+    public async Task<IActionResult> GetMyCommissionSettings()
+    {
+        var result = await _mediator.Send(new Application.Admin.Queries.GetMyCommissionSettingsQuery());
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.Error });
+        return Ok(result.Data);
+    }
+
     [HttpGet("settings")]
     public async Task<IActionResult> GetTenantSettings()
     {
@@ -252,6 +352,12 @@ public record BulkUpdateOrderStatusRequest(int[] OrderIds, string Status);
 public record BroadcastNotificationRequest(string Title, string Message, string Type);
 public record MarketingEmailRequest(string Title, string Content, string Target = "all");
 public record CreateCampaignRequest(string Title, string Content, string Target = "all", DateTime? ScheduledAt = null);
+public record CreateAbTestCampaignRequest(
+    string Title, string Target, DateTime? ScheduledAt,
+    string SubjectLineA, string ContentA,
+    string SubjectLineB, string ContentB,
+    int TrafficPercentA = 50);
+public record TrackCampaignEventRequest(int? VariantId, int UserId, string EventType, string? LinkUrl = null);
 public record UpdateTenantSettingsThemeRequest(string? Primary, string? PrimaryLight, string? Secondary, string? SecondaryLight, string? Background);
 public record UpdateUserRequest(string Role, bool IsActive);
 public record UpdateTenantSettingsRequest(

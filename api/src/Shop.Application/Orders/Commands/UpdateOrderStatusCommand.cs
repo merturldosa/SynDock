@@ -22,15 +22,17 @@ public class UpdateOrderStatusCommandHandler : IRequestHandler<UpdateOrderStatus
     private readonly ICurrentUserService _currentUser;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IEmailService _emailService;
+    private readonly IKakaoAlimtalkService _alimtalk;
     private readonly IAdminDashboardNotifier _adminNotifier;
     private readonly IMediator _mediator;
 
-    public UpdateOrderStatusCommandHandler(IShopDbContext db, ICurrentUserService currentUser, IUnitOfWork unitOfWork, IEmailService emailService, IAdminDashboardNotifier adminNotifier, IMediator mediator)
+    public UpdateOrderStatusCommandHandler(IShopDbContext db, ICurrentUserService currentUser, IUnitOfWork unitOfWork, IEmailService emailService, IKakaoAlimtalkService alimtalk, IAdminDashboardNotifier adminNotifier, IMediator mediator)
     {
         _db = db;
         _currentUser = currentUser;
         _unitOfWork = unitOfWork;
         _emailService = emailService;
+        _alimtalk = alimtalk;
         _adminNotifier = adminNotifier;
         _mediator = mediator;
     }
@@ -90,27 +92,47 @@ public class UpdateOrderStatusCommandHandler : IRequestHandler<UpdateOrderStatus
         };
         await _db.Notifications.AddAsync(notification, cancellationToken);
 
-        // Send email notification
+        // Send email + Kakao Alimtalk notifications
         var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == order.UserId, cancellationToken);
-        if (user is not null && !string.IsNullOrEmpty(user.Email))
+        if (user is not null)
         {
-            try
+            // Email
+            if (!string.IsNullOrEmpty(user.Email))
             {
-                if (request.Status == nameof(OrderStatus.Confirmed))
+                try
                 {
-                    var emailBody = $"<h2>주문이 확인되었습니다</h2><p>주문번호: <strong>{order.OrderNumber}</strong></p><p>결제 금액: {order.TotalAmount:N0}원</p><p>상품 준비 후 발송해 드리겠습니다.</p>";
-                    await _emailService.SendAsync(user.Email, "주문 확인", emailBody, cancellationToken);
+                    if (request.Status == nameof(OrderStatus.Confirmed))
+                    {
+                        var emailBody = $"<h2>주문이 확인되었습니다</h2><p>주문번호: <strong>{order.OrderNumber}</strong></p><p>결제 금액: {order.TotalAmount:N0}원</p><p>상품 준비 후 발송해 드리겠습니다.</p>";
+                        await _emailService.SendAsync(user.Email, "주문 확인", emailBody, cancellationToken);
+                    }
+                    else if (request.Status == nameof(OrderStatus.Shipped))
+                    {
+                        var trackingInfo = !string.IsNullOrEmpty(request.TrackingNumber)
+                            ? $"<p>택배사: {request.TrackingCarrier ?? "택배"}<br/>운송장번호: <strong>{request.TrackingNumber}</strong></p>"
+                            : "";
+                        var emailBody = $"<h2>상품이 발송되었습니다</h2><p>주문번호: <strong>{order.OrderNumber}</strong></p>{trackingInfo}<p>배송 완료까지 2~3일 소요됩니다.</p>";
+                        await _emailService.SendAsync(user.Email, "배송 시작", emailBody, cancellationToken);
+                    }
                 }
-                else if (request.Status == nameof(OrderStatus.Shipped))
-                {
-                    var trackingInfo = !string.IsNullOrEmpty(request.TrackingNumber)
-                        ? $"<p>택배사: {request.TrackingCarrier ?? "택배"}<br/>운송장번호: <strong>{request.TrackingNumber}</strong></p>"
-                        : "";
-                    var emailBody = $"<h2>상품이 발송되었습니다</h2><p>주문번호: <strong>{order.OrderNumber}</strong></p>{trackingInfo}<p>배송 완료까지 2~3일 소요됩니다.</p>";
-                    await _emailService.SendAsync(user.Email, "배송 시작", emailBody, cancellationToken);
-                }
+                catch { /* Email failure should not block order status update */ }
             }
-            catch { /* Email failure should not block order status update */ }
+
+            // Kakao Alimtalk
+            if (!string.IsNullOrEmpty(user.Phone))
+            {
+                try
+                {
+                    _ = request.Status switch
+                    {
+                        nameof(OrderStatus.Confirmed) => await _alimtalk.SendOrderConfirmedAsync(user.Phone, order.OrderNumber, order.TotalAmount, cancellationToken),
+                        nameof(OrderStatus.Shipped) => await _alimtalk.SendShippedAsync(user.Phone, order.OrderNumber, request.TrackingCarrier, request.TrackingNumber, cancellationToken),
+                        nameof(OrderStatus.Delivered) => await _alimtalk.SendDeliveredAsync(user.Phone, order.OrderNumber, cancellationToken),
+                        _ => false
+                    };
+                }
+                catch { /* Alimtalk failure should not block order status update */ }
+            }
         }
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);

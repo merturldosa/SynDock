@@ -5,9 +5,10 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
-import { ChevronLeft, Truck, Clock, Package, RotateCcw } from "lucide-react";
+import { ChevronLeft, Truck, Clock, Package, RotateCcw, Download } from "lucide-react";
 import api from "@/lib/api";
 import { updateOrderStatus, updateShippingInfo, refundOrder } from "@/lib/adminApi";
+import { downloadOrderReceipt } from "@/lib/orderApi";
 
 interface OrderHistory {
   id: number;
@@ -193,7 +194,15 @@ export default function AdminOrderDetailPage() {
             {order.orderNumber}
           </p>
         </div>
-        <select
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => downloadOrderReceipt(order.id, order.orderNumber)}
+            className="flex items-center gap-1 px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+          >
+            <Download size={14} />
+            PDF
+          </button>
+          <select
           value={order.status}
           onChange={(e) => handleStatusChange(e.target.value)}
           className="border rounded-lg px-3 py-2 text-sm"
@@ -204,6 +213,7 @@ export default function AdminOrderDetailPage() {
             </option>
           ))}
         </select>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -226,7 +236,6 @@ export default function AdminOrderDetailPage() {
                       width={56}
                       height={56}
                       className="object-cover w-full h-full"
-                      unoptimized
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-lg opacity-20">

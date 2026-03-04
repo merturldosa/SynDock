@@ -220,7 +220,7 @@ export default function AdminSettingsPage() {
             <input type="file" accept="image/*" onChange={(e) => handleImageUpload("logoUrl", e)} className="text-sm" />
             {form.logoUrl && (
               <div className="mt-2 w-32 h-16 bg-gray-50 rounded-lg overflow-hidden flex items-center justify-center">
-                <Image src={form.logoUrl} alt="Logo" width={128} height={64} className="object-contain" unoptimized />
+                <Image src={form.logoUrl} alt="Logo" width={128} height={64} className="object-contain" />
               </div>
             )}
           </div>
@@ -229,7 +229,7 @@ export default function AdminSettingsPage() {
             <input type="file" accept="image/*" onChange={(e) => handleImageUpload("faviconUrl", e)} className="text-sm" />
             {form.faviconUrl && (
               <div className="mt-2 w-10 h-10 bg-gray-50 rounded-lg overflow-hidden flex items-center justify-center">
-                <Image src={form.faviconUrl} alt="Favicon" width={40} height={40} className="object-contain" unoptimized />
+                <Image src={form.faviconUrl} alt="Favicon" width={40} height={40} className="object-contain" />
               </div>
             )}
           </div>

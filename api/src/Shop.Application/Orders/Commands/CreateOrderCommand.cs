@@ -25,14 +25,16 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Res
     private readonly IUnitOfWork _unitOfWork;
     private readonly IAdminDashboardNotifier _adminNotifier;
     private readonly IPlanEnforcer _planEnforcer;
+    private readonly IEmailService _emailService;
 
-    public CreateOrderCommandHandler(IShopDbContext db, ICurrentUserService currentUser, IUnitOfWork unitOfWork, IAdminDashboardNotifier adminNotifier, IPlanEnforcer planEnforcer)
+    public CreateOrderCommandHandler(IShopDbContext db, ICurrentUserService currentUser, IUnitOfWork unitOfWork, IAdminDashboardNotifier adminNotifier, IPlanEnforcer planEnforcer, IEmailService emailService)
     {
         _db = db;
         _currentUser = currentUser;
         _unitOfWork = unitOfWork;
         _adminNotifier = adminNotifier;
         _planEnforcer = planEnforcer;
+        _emailService = emailService;
     }
 
     public async Task<Result<CreateOrderResult>> Handle(CreateOrderCommand request, CancellationToken cancellationToken)
@@ -197,6 +199,36 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Res
         // Notify admin dashboard
         try { await _adminNotifier.NotifyNewOrder(order.TenantId, order.OrderNumber, order.TotalAmount, cancellationToken); }
         catch { /* notification failure should not block order creation */ }
+
+        // Send order confirmation email
+        try
+        {
+            if (!string.IsNullOrEmpty(user.Email))
+            {
+                var itemsHtml = string.Join("", orderItems.Select(oi =>
+                    $"<tr><td style=\"padding:8px;border-bottom:1px solid #eee\">{oi.ProductName}</td>" +
+                    $"<td style=\"padding:8px;border-bottom:1px solid #eee;text-align:center\">{oi.Quantity}</td>" +
+                    $"<td style=\"padding:8px;border-bottom:1px solid #eee;text-align:right\">{oi.TotalPrice:N0}원</td></tr>"));
+
+                var emailBody = $@"
+<div style=""font-family:sans-serif;max-width:600px;margin:0 auto"">
+  <h2 style=""color:#333"">주문이 접수되었습니다</h2>
+  <p>주문번호: <strong>{order.OrderNumber}</strong></p>
+  <table style=""width:100%;border-collapse:collapse;margin:16px 0"">
+    <tr style=""background:#f5f5f5"">
+      <th style=""padding:8px;text-align:left"">상품명</th>
+      <th style=""padding:8px;text-align:center"">수량</th>
+      <th style=""padding:8px;text-align:right"">금액</th>
+    </tr>
+    {itemsHtml}
+  </table>
+  <p style=""font-size:18px;font-weight:bold;text-align:right"">총 결제금액: {order.TotalAmount:N0}원</p>
+  <p style=""color:#666;font-size:14px"">결제가 완료되면 주문이 확인됩니다. 감사합니다.</p>
+</div>";
+                await _emailService.SendAsync(user.Email, $"주문 접수 확인 [{order.OrderNumber}]", emailBody, cancellationToken);
+            }
+        }
+        catch { /* Email failure should not block order creation */ }
 
         return Result<CreateOrderResult>.Success(new CreateOrderResult(order.Id, order.OrderNumber));
     }

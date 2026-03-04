@@ -24,6 +24,7 @@ services:
     container_name: syndock-shop-redis
     ports:
       - "6381:6379"
+    command: redis-server --appendonly yes
     volumes:
       - shop-redis-data:/data
     restart: unless-stopped
@@ -33,6 +34,40 @@ services:
       timeout: 5s
       retries: 5
 
+  shop-api:
+    build:
+      context: ../
+      dockerfile: api/Dockerfile
+    container_name: syndock-shop-api
+    ports:
+      - "5100:5100"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__ShopDb: "Host=shop-db;Port=5432;Database=syndock_shop;Username=shop_admin;Password=Shop@2026!"
+      ConnectionStrings__Redis: "shop-redis:6379"
+      Jwt__Secret: "SynDockShopPlatform2026SuperSecretKey!@#$%^&*()_+ForJWTAuth"
+      Jwt__Issuer: "SynDock.Shop"
+      Jwt__Audience: "SynDock.Shop.Client"
+      Cors__AllowedOrigins__0: "http://localhost:3200"
+      Cors__AllowedOrigins__1: "https://catholia.com"
+      Cors__AllowedOrigins__2: "https://mohyun.com"
+    depends_on:
+      shop-db:
+        condition: service_healthy
+      shop-redis:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:5100/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
 volumes:
   shop-db-data:
   shop-redis-data:
+
+networks:
+  default:
+    name: syndock-shop-network

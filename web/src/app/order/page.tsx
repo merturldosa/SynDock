@@ -6,10 +6,11 @@ import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
 import Script from "next/script";
-import { ShoppingCart, MapPin, Plus, Tag, Coins, Check } from "lucide-react";
+import { ShoppingCart, MapPin, Plus, Tag, Coins, Check, CreditCard, Banknote } from "lucide-react";
 import { useCartStore } from "@/stores/cartStore";
 import { useAuthStore } from "@/stores/authStore";
 import { createOrder, getAddresses, createAddress, getPaymentClientKey } from "@/lib/orderApi";
+import { CheckoutSteps } from "@/components/checkout/CheckoutSteps";
 import { getMyCoupons, validateCoupon } from "@/lib/couponApi";
 import { getPointBalance } from "@/lib/pointApi";
 import type { Address } from "@/types/order";
@@ -159,6 +160,7 @@ export default function OrderPage() {
       {paymentProvider === "TossPayments" && (
         <Script src="https://js.tosspayments.com/v1" strategy="afterInteractive" />
       )}
+      <CheckoutSteps currentStep="order" />
       <h1 className="text-2xl font-bold text-[var(--color-secondary)] mb-8">{t("order.title")}</h1>
 
       {/* Shipping Address */}
@@ -277,7 +279,7 @@ export default function OrderPage() {
             <div key={item.id} className="flex gap-3 py-3 border-b border-gray-50 last:border-0">
               <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-gray-100 shrink-0">
                 {item.primaryImageUrl ? (
-                  <Image src={item.primaryImageUrl} alt={item.productName} fill className="object-cover" sizes="64px" unoptimized />
+                  <Image src={item.primaryImageUrl} alt={item.productName} fill className="object-cover" sizes="64px" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-2xl opacity-30">📦</div>
                 )}
@@ -404,6 +406,42 @@ export default function OrderPage() {
         <p className="text-xs text-gray-400 mt-2">
           {t("order.pointsBalance")}: <span className="font-medium text-[var(--color-primary)]">{pointBalance.toLocaleString()}</span>P
         </p>
+      </section>
+
+      {/* Payment Method */}
+      <section className="bg-white rounded-xl shadow-sm p-6 mb-6">
+        <h2 className="font-bold text-[var(--color-secondary)] mb-3 flex items-center gap-2">
+          <CreditCard size={18} /> {t("order.paymentMethod")}
+        </h2>
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            onClick={() => setPaymentProvider(paymentClientKey ? "TossPayments" : "Mock")}
+            className={`p-4 rounded-lg border-2 text-left transition-all ${
+              paymentProvider !== "Mock" || !paymentClientKey
+                ? "border-[var(--color-primary)] bg-[var(--color-primary)]/5"
+                : "border-gray-200 hover:border-gray-300"
+            }`}
+          >
+            <CreditCard size={20} className="text-[var(--color-primary)] mb-1" />
+            <p className="text-sm font-medium text-[var(--color-secondary)]">{t("order.cardPayment")}</p>
+            <p className="text-xs text-gray-400">{t("order.cardPaymentDesc")}</p>
+          </button>
+          <button
+            onClick={() => setPaymentProvider("Mock")}
+            className={`p-4 rounded-lg border-2 text-left transition-all ${
+              paymentProvider === "Mock" && paymentClientKey
+                ? "border-[var(--color-primary)] bg-[var(--color-primary)]/5"
+                : !paymentClientKey
+                  ? "border-gray-200 bg-gray-50 text-gray-300 cursor-not-allowed"
+                  : "border-gray-200 hover:border-gray-300"
+            }`}
+            disabled={!paymentClientKey}
+          >
+            <Banknote size={20} className="text-gray-400 mb-1" />
+            <p className="text-sm font-medium text-[var(--color-secondary)]">{t("order.bankTransfer")}</p>
+            <p className="text-xs text-gray-400">{t("order.bankTransferDesc")}</p>
+          </button>
+        </div>
       </section>
 
       {/* Summary + Submit */}

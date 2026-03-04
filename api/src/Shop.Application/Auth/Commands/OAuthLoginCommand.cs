@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Shop.Application.Common.DTOs;
 using Shop.Application.Common.Interfaces;
 using Shop.Domain.Entities;
+using Shop.Domain.Enums;
 using Shop.Domain.Interfaces;
 using SynDock.Core.Common;
 using SynDock.Core.Interfaces;
@@ -85,7 +86,7 @@ public class OAuthLoginCommandHandler : IRequestHandler<OAuthLoginCommand, Resul
                 Email = profile.Email,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(Guid.NewGuid().ToString()),
                 Name = profile.Name,
-                Role = "Member",
+                Role = nameof(UserRole.Member),
                 IsActive = true,
                 LastLoginAt = DateTime.UtcNow,
                 CustomFieldsJson = JsonSerializer.Serialize(new

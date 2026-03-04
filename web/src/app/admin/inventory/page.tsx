@@ -194,7 +194,6 @@ export default function InventoryPage() {
                                 width={40}
                                 height={40}
                                 className="object-cover w-full h-full"
-                                unoptimized
                               />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center text-sm opacity-20">

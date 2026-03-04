@@ -26,14 +26,16 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, Result<Au
     private readonly ITenantContext _tenantContext;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IPlanEnforcer _planEnforcer;
+    private readonly IAutoCouponService _autoCoupon;
 
-    public RegisterCommandHandler(IShopDbContext db, ITokenService tokenService, ITenantContext tenantContext, IUnitOfWork unitOfWork, IPlanEnforcer planEnforcer)
+    public RegisterCommandHandler(IShopDbContext db, ITokenService tokenService, ITenantContext tenantContext, IUnitOfWork unitOfWork, IPlanEnforcer planEnforcer, IAutoCouponService autoCoupon)
     {
         _db = db;
         _tokenService = tokenService;
         _tenantContext = tenantContext;
         _unitOfWork = unitOfWork;
         _planEnforcer = planEnforcer;
+        _autoCoupon = autoCoupon;
     }
 
     public async Task<Result<AuthResponse>> Handle(RegisterCommand request, CancellationToken cancellationToken)
@@ -67,6 +69,14 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, Result<Au
 
         // Track usage
         await _planEnforcer.IncrementUserCount(_tenantContext.TenantId, 1, cancellationToken);
+
+        // Issue welcome coupon (fire-and-forget style, don't fail registration)
+        try
+        {
+            await _autoCoupon.IssueWelcomeCouponAsync(_tenantContext.TenantId, user.Id, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+        }
+        catch { /* Welcome coupon failure should not block registration */ }
 
         var refreshTokenValue = _tokenService.GenerateRefreshToken();
         var refreshToken = new RefreshToken

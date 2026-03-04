@@ -24,6 +24,13 @@ public class CategoriesController : ControllerBase
         return Ok(result);
     }
 
+    [HttpGet("slugs")]
+    public async Task<IActionResult> GetSlugs()
+    {
+        var result = await _mediator.Send(new GetCategorySlugsQuery());
+        return Ok(result);
+    }
+
     [HttpPost]
     [Authorize]
     public async Task<IActionResult> Create([FromBody] CreateCategoryRequest request)

@@ -3,7 +3,8 @@ namespace Shop.Application.Common.DTOs;
 public record ProductListDto(
     int Id, string Name, string? Slug, decimal Price, decimal? SalePrice,
     string PriceType, string? Specification, int CategoryId, string CategoryName,
-    string? PrimaryImageUrl, bool IsFeatured, bool IsNew, int ViewCount);
+    string? PrimaryImageUrl, bool IsFeatured, bool IsNew, int ViewCount,
+    int TotalStock = 0);
 
 public record ProductDetailDto(
     int Id, string Name, string? Slug, string? Description,

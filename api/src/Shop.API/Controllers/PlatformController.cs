@@ -1,16 +1,19 @@
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Shop.Application.Common.DTOs;
 using Shop.Application.Platform.Commands;
 using Shop.Application.Platform.Queries;
 using Shop.Domain.Entities;
+using Shop.Domain.Enums;
 using Shop.Infrastructure.Data;
 
 namespace Shop.API.Controllers;
 
 [ApiController]
 [Route("api/platform/tenants")]
+[Authorize(Roles = "PlatformAdmin")]
 public class PlatformController : ControllerBase
 {
     private readonly ShopDbContext _db;
@@ -67,8 +70,34 @@ public class PlatformController : ControllerBase
         _db.Tenants.Add(tenant);
         await _db.SaveChangesAsync();
 
+        // TenantAdmin 자동 발행: 관리자 이메일이 제공된 경우
+        int? tenantAdminId = null;
+        if (!string.IsNullOrWhiteSpace(request.AdminEmail))
+        {
+            var tempPassword = Guid.NewGuid().ToString("N")[..12];
+            var adminUser = new User
+            {
+                TenantId = tenant.Id,
+                Username = request.AdminEmail.Split('@')[0],
+                Email = request.AdminEmail,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(tempPassword),
+                Name = request.AdminName ?? request.Name + " 관리자",
+                Role = nameof(UserRole.TenantAdmin),
+                IsActive = true,
+                CreatedBy = "PlatformAdmin"
+            };
+
+            _db.Users.Add(adminUser);
+            await _db.SaveChangesAsync();
+            tenantAdminId = adminUser.Id;
+        }
+
         return Created($"/api/platform/tenants/{tenant.Slug}",
-            new TenantDto(tenant.Id, tenant.Slug, tenant.Name, tenant.CustomDomain, tenant.Subdomain, tenant.IsActive, tenant.ConfigJson));
+            new
+            {
+                tenant = new TenantDto(tenant.Id, tenant.Slug, tenant.Name, tenant.CustomDomain, tenant.Subdomain, tenant.IsActive, tenant.ConfigJson),
+                tenantAdminId
+            });
     }
 
     [HttpPut("{slug}")]
@@ -221,11 +250,120 @@ public class PlatformController : ControllerBase
             return BadRequest(new { error = result.Error });
         return Ok(result.Data);
     }
+
+    // ── Commissions / Settlements ──
+
+    [HttpGet("commissions/summary")]
+    public async Task<IActionResult> GetCommissionSummary()
+    {
+        var result = await _mediator.Send(new GetCommissionSummaryQuery());
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.Error });
+        return Ok(result.Data);
+    }
+
+    [HttpGet("{slug}/commissions/settings")]
+    public async Task<IActionResult> GetCommissionSettings(string slug)
+    {
+        var tenant = await _db.Tenants.AsNoTracking().FirstOrDefaultAsync(t => t.Slug == slug);
+        if (tenant == null)
+            return NotFound(new { error = "테넌트를 찾을 수 없습니다." });
+
+        var result = await _mediator.Send(new GetCommissionSettingsQuery(tenant.Id));
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.Error });
+        return Ok(result.Data);
+    }
+
+    [HttpPut("{slug}/commissions/settings")]
+    public async Task<IActionResult> UpsertCommissionSetting(string slug, [FromBody] UpsertCommissionSettingRequest request)
+    {
+        var tenant = await _db.Tenants.AsNoTracking().FirstOrDefaultAsync(t => t.Slug == slug);
+        if (tenant == null)
+            return NotFound(new { error = "테넌트를 찾을 수 없습니다." });
+
+        var result = await _mediator.Send(new UpsertCommissionSettingCommand(
+            tenant.Id, request.ProductId, request.CategoryId,
+            request.CommissionRate, request.SettlementCycle ?? "Weekly",
+            request.SettlementDayOfWeek ?? 1, request.MinSettlementAmount ?? 10000m,
+            request.BankName, request.BankAccount, request.BankHolder));
+
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.Error });
+        return Ok(new { settingId = result.Data });
+    }
+
+    [HttpGet("{slug}/commissions")]
+    public async Task<IActionResult> GetCommissions(string slug, [FromQuery] string? status = null)
+    {
+        var tenant = await _db.Tenants.AsNoTracking().FirstOrDefaultAsync(t => t.Slug == slug);
+        if (tenant == null)
+            return NotFound(new { error = "테넌트를 찾을 수 없습니다." });
+
+        var result = await _mediator.Send(new GetCommissionsQuery(tenant.Id, status));
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.Error });
+        return Ok(result.Data);
+    }
+
+    [HttpGet("{slug}/settlements")]
+    public async Task<IActionResult> GetSettlements(string slug, [FromQuery] string? status = null)
+    {
+        var tenant = await _db.Tenants.AsNoTracking().FirstOrDefaultAsync(t => t.Slug == slug);
+        if (tenant == null)
+            return NotFound(new { error = "테넌트를 찾을 수 없습니다." });
+
+        var result = await _mediator.Send(new GetSettlementsQuery(tenant.Id, status));
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.Error });
+        return Ok(result.Data);
+    }
+
+    [HttpPost("{slug}/settlements")]
+    public async Task<IActionResult> CreateSettlement(string slug, [FromBody] CreateSettlementRequest request)
+    {
+        var tenant = await _db.Tenants.AsNoTracking().FirstOrDefaultAsync(t => t.Slug == slug);
+        if (tenant == null)
+            return NotFound(new { error = "테넌트를 찾을 수 없습니다." });
+
+        var result = await _mediator.Send(new CreateSettlementCommand(tenant.Id, request.PeriodStart, request.PeriodEnd));
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.Error });
+        return Ok(new { settlementId = result.Data });
+    }
+
+    [HttpPut("settlements/{id:int}/process")]
+    public async Task<IActionResult> ProcessSettlement(int id, [FromBody] ProcessSettlementRequest request)
+    {
+        var result = await _mediator.Send(new ProcessSettlementCommand(id, request.TransactionId, request.SettledBy));
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.Error });
+        return Ok(new { success = true });
+    }
+
+    // ── Tenant Seed Data ──
+
+    [HttpPost("{slug}/seed")]
+    public async Task<IActionResult> SeedTenantData(string slug, [FromBody] SeedTenantDataCommand command)
+    {
+        var tenant = await _db.Tenants.AsNoTracking().FirstOrDefaultAsync(t => t.Slug == slug);
+        if (tenant is null)
+            return NotFound(new { error = "테넌트를 찾을 수 없습니다." });
+
+        var cmd = command with { TenantId = tenant.Id };
+        var result = await _mediator.Send(cmd);
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.Error });
+        return Ok(result.Data);
+    }
 }
 
-public record CreateTenantRequest(string Slug, string Name, string? CustomDomain, string? Subdomain, string? ConfigJson);
+public record CreateTenantRequest(string Slug, string Name, string? CustomDomain, string? Subdomain, string? ConfigJson, string? AdminEmail, string? AdminName);
 public record UpdateTenantRequest(string? Name, string? CustomDomain, string? Subdomain, bool? IsActive, string? ConfigJson);
 public record UpdateBillingRequest(string? PlanType, decimal? MonthlyPrice, string? BillingStatus);
 public record UpdateDomainRequest(string? CustomDomain, string? Subdomain);
 public record GenerateInvoiceRequest(string BillingPeriod);
 public record MarkInvoicePaidRequest(string? TransactionId, string? PaymentMethod);
+public record UpsertCommissionSettingRequest(int? ProductId, int? CategoryId, decimal CommissionRate, string? SettlementCycle, int? SettlementDayOfWeek, decimal? MinSettlementAmount, string? BankName, string? BankAccount, string? BankHolder);
+public record CreateSettlementRequest(DateTime PeriodStart, DateTime PeriodEnd);
+public record ProcessSettlementRequest(string? TransactionId, string? SettledBy);

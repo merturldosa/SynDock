@@ -141,7 +141,6 @@ export default function AdminProductsPage() {
                             width={48}
                             height={48}
                             className="object-cover w-full h-full"
-                            unoptimized
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-lg opacity-20">

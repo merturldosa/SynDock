@@ -1,0 +1,314 @@
+version: '3.8'
+
+services:
+  # ─── PostgreSQL ──────────────────────────────
+  shop-db:
+    image: postgres:16-alpine
+    container_name: syndock-shop-db
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - shop-db-data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+  # ─── Redis ───────────────────────────────────
+  shop-redis:
+    image: redis:7-alpine
+    container_name: syndock-shop-redis
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - shop-redis-data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
+  # ─── API (.NET 8) ────────────────────────────
+  shop-api:
+    build:
+      context: ../
+      dockerfile: api/Dockerfile
+    container_name: syndock-shop-api
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__ShopDb: "Host=shop-db;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
+      ConnectionStrings__Redis: "shop-redis:6379"
+      Jwt__Secret: ${JWT_SECRET}
+      Jwt__Issuer: ${JWT_ISSUER}
+      Jwt__Audience: ${JWT_AUDIENCE}
+      Cors__AllowedOrigins__0: ${CORS_ORIGIN_0}
+      Cors__AllowedOrigins__1: ${CORS_ORIGIN_1}
+      Sentry__Dsn: ${SENTRY_DSN:-}
+      Email__SmtpHost: ${EMAIL_HOST:-}
+      Email__SmtpPort: ${EMAIL_PORT:-587}
+      Email__Username: ${EMAIL_USERNAME:-}
+      Email__Password: ${EMAIL_PASSWORD:-}
+      Email__FromAddress: ${EMAIL_FROM:-noreply@shop.com}
+      Encryption__Key: ${ENCRYPTION_KEY}
+      Mes__Enabled: ${MES_ENABLED:-false}
+      Mes__BaseUrl: ${MES_BASE_URL:-http://localhost:8080}
+      App__BaseUrl: ${API_BASE_URL:-http://localhost:5100}
+    depends_on:
+      shop-db:
+        condition: service_healthy
+      shop-redis:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:5100/health/live || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
+
+  # ─── Frontend (Next.js — Shop Web) ──────────
+  shop-web:
+    build:
+      context: ../web
+      dockerfile: Dockerfile
+    container_name: syndock-shop-web
+    environment:
+      NEXT_PUBLIC_API_URL: ${API_BASE_URL:-http://localhost:5100}
+    depends_on:
+      shop-api:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3200/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+  # ─── Portal (Next.js — Platform Admin) ──────
+  shop-portal:
+    build:
+      context: ../../SynDock.Portal
+      dockerfile: Dockerfile
+    container_name: syndock-shop-portal
+    environment:
+      NEXT_PUBLIC_API_URL: ${API_BASE_URL:-http://localhost:5100}
+    depends_on:
+      shop-api:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3300/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
+  # ─── HomePage (Static — Nginx) ──────────────
+  shop-homepage:
+    build:
+      context: ../../SynDock.HomePage
+      dockerfile: Dockerfile
+    container_name: syndock-shop-homepage
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3400/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+
+  # ─── Nginx Reverse Proxy ─────────────────────
+  shop-nginx:
+    image: nginx:1.27-alpine
+    container_name: syndock-shop-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./nginx/certbot:/var/www/certbot:ro
+    depends_on:
+      shop-api:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost/health/live || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "3"
+
+  # ─── DB Backup (daily) ──────────────────────
+  shop-backup:
+    image: postgres:16-alpine
+    container_name: syndock-shop-backup
+    environment:
+      PGHOST: shop-db
+      PGDATABASE: ${POSTGRES_DB}
+      PGUSER: ${POSTGRES_USER}
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - shop-backups:/backups
+    entrypoint: /bin/sh
+    command: >
+      -c "while true; do
+        TIMESTAMP=$$(date +%Y%m%d_%H%M%S);
+        pg_dump -Fc > /backups/shop_$${TIMESTAMP}.dump;
+        echo \"Backup completed: shop_$${TIMESTAMP}.dump\";
+        find /backups -name '*.dump' -mtime +7 -delete;
+        echo 'Old backups cleaned (>7 days)';
+        sleep 86400;
+      done"
+    depends_on:
+      shop-db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ─── Prometheus ──────────────────────────────
+  shop-prometheus:
+    image: prom/prometheus:v2.51.0
+    container_name: syndock-shop-prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--storage.tsdb.retention.time=30d"
+      - "--web.enable-lifecycle"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/alert-rules.yml:/etc/prometheus/alert-rules.yml:ro
+      - shop-prometheus-data:/prometheus
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:9090/-/healthy || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+  # ─── Grafana ─────────────────────────────────
+  shop-grafana:
+    image: grafana/grafana:10.4.0
+    container_name: syndock-shop-grafana
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+      GF_SERVER_ROOT_URL: ${GRAFANA_ROOT_URL:-http://localhost:3001}
+      GF_SERVER_HTTP_PORT: "3001"
+    volumes:
+      - ./monitoring/grafana-datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml:ro
+      - ./monitoring/grafana-dashboards.yml:/etc/grafana/provisioning/dashboards/dashboards.yml:ro
+      - ./monitoring/dashboards:/var/lib/grafana/dashboards:ro
+      - shop-grafana-data:/var/lib/grafana
+    ports:
+      - "3001:3001"
+    depends_on:
+      shop-prometheus:
+        condition: service_healthy
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
+  # ─── PostgreSQL Exporter ─────────────────────
+  shop-postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:v0.15.0
+    container_name: syndock-shop-postgres-exporter
+    environment:
+      DATA_SOURCE_NAME: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@shop-db:5432/${POSTGRES_DB}?sslmode=disable"
+    depends_on:
+      shop-db:
+        condition: service_healthy
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+
+  # ─── Redis Exporter ──────────────────────────
+  shop-redis-exporter:
+    image: oliver006/redis_exporter:v1.58.0
+    container_name: syndock-shop-redis-exporter
+    environment:
+      REDIS_ADDR: "redis://shop-redis:6379"
+    depends_on:
+      shop-redis:
+        condition: service_healthy
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+
+  # ─── Node Exporter (Host Metrics) ────────────
+  shop-node-exporter:
+    image: prom/node-exporter:v1.7.0
+    container_name: syndock-shop-node-exporter
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - "--path.procfs=/host/proc"
+      - "--path.sysfs=/host/sys"
+      - "--path.rootfs=/rootfs"
+      - "--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)"
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+
+volumes:
+  shop-db-data:
+  shop-redis-data:
+  shop-backups:
+  shop-prometheus-data:
+  shop-grafana-data:
+
+networks:
+  default:
+    name: syndock-shop-network

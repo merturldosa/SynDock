@@ -4,8 +4,8 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
-import { Package, FolderTree, ShoppingCart, Users, TrendingUp, AlertTriangle, Warehouse } from "lucide-react";
-import { getDashboardStats, type DashboardStats } from "@/lib/adminApi";
+import { Package, FolderTree, ShoppingCart, Users, TrendingUp, AlertTriangle, Warehouse, BarChart3 } from "lucide-react";
+import { getDashboardStats, getSalesAnalytics, type DashboardStats, type DailySales } from "@/lib/adminApi";
 import { useAdminDashboardStore } from "@/stores/adminDashboardStore";
 
 function formatPrice(price: number): string {
@@ -15,6 +15,7 @@ function formatPrice(price: number): string {
 export default function AdminDashboard() {
   const t = useTranslations();
   const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [trend, setTrend] = useState<DailySales[]>([]);
   const [loading, setLoading] = useState(true);
   const [pulse, setPulse] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
@@ -37,6 +38,7 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     loadStats();
+    getSalesAnalytics(7).then((d) => setTrend(d.dailySales || [])).catch(() => {});
     setLoading(false);
 
     const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
@@ -61,9 +63,23 @@ export default function AdminDashboard() {
     setTimeout(() => setPulse(false), 2000);
 
     // Toast notification
-    const msg = lastEvent.type === "NewOrder"
-      ? t("admin.dashboard.newOrder", { orderNumber: lastEvent.orderNumber, amount: formatPrice(lastEvent.totalAmount || 0) })
-      : t("admin.dashboard.orderStatusChanged", { orderNumber: lastEvent.orderNumber, status: STATUS_LABELS[lastEvent.newStatus || ""] || lastEvent.newStatus || "" });
+    let msg: string;
+    switch (lastEvent.type) {
+      case "NewOrder":
+        msg = t("admin.dashboard.newOrder", { orderNumber: lastEvent.orderNumber, amount: formatPrice(lastEvent.totalAmount || 0) });
+        break;
+      case "OrderStatusChanged":
+        msg = t("admin.dashboard.orderStatusChanged", { orderNumber: lastEvent.orderNumber, status: STATUS_LABELS[lastEvent.newStatus || ""] || lastEvent.newStatus || "" });
+        break;
+      case "MesSyncCompleted":
+        msg = `MES 동기화 완료: ${lastEvent.syncedCount || 0}건 성공, ${lastEvent.failedCount || 0}건 실패`;
+        break;
+      case "AutoReorderTriggered":
+        msg = `자동 발주 생성: ${lastEvent.orderNumber} (${lastEvent.itemCount || 0}품목, ${lastEvent.totalQuantity || 0}개)`;
+        break;
+      default:
+        msg = "알림";
+    }
 
     setToast(msg);
     if (toastTimer.current) clearTimeout(toastTimer.current);
@@ -132,6 +148,37 @@ export default function AdminDashboard() {
           </p>
         </div>
       </div>
+
+      {/* 7-Day Revenue Trend */}
+      {trend.length > 1 && (
+        <Link href="/admin/analytics" className="bg-white rounded-xl shadow-sm p-5 mb-6 hover:shadow-md transition-shadow block">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <BarChart3 size={18} className="text-[var(--color-primary)]" />
+              <h2 className="font-semibold text-[var(--color-secondary)]">{t("admin.dashboard.weeklyTrend")}</h2>
+            </div>
+            <span className="text-xs text-[var(--color-primary)]">{t("admin.dashboard.viewDetails")} →</span>
+          </div>
+          <div className="flex items-end gap-1 h-16">
+            {trend.map((d, i) => {
+              const max = Math.max(...trend.map((t) => t.revenue), 1);
+              const h = (d.revenue / max) * 100;
+              return (
+                <div key={i} className="flex-1 flex flex-col items-center gap-0.5 group relative">
+                  <div
+                    className="w-full rounded-t bg-[var(--color-primary)] opacity-70 hover:opacity-100 transition-opacity"
+                    style={{ height: `${Math.max(h, 4)}%` }}
+                  />
+                  <span className="text-[10px] text-gray-400">{d.date.slice(8)}</span>
+                  <div className="absolute bottom-full mb-1 hidden group-hover:block bg-gray-800 text-white text-[10px] rounded px-1.5 py-0.5 whitespace-nowrap z-10">
+                    {formatPrice(d.revenue)}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </Link>
+      )}
 
       {/* Stat Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
@@ -230,7 +277,7 @@ export default function AdminDashboard() {
                   <span className="text-sm font-bold text-gray-400 w-5">{i + 1}</span>
                   <div className="w-10 h-10 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
                     {product.imageUrl ? (
-                      <Image src={product.imageUrl} alt={product.productName} width={40} height={40} className="object-cover w-full h-full" unoptimized />
+                      <Image src={product.imageUrl} alt={product.productName} width={40} height={40} className="object-cover w-full h-full" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-sm opacity-20">📦</div>
                     )}

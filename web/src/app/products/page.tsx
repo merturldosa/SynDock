@@ -268,7 +268,7 @@ function ProductList() {
               >
                 <div className="relative w-10 h-10 rounded bg-gray-100 shrink-0 overflow-hidden">
                   {s.primaryImageUrl ? (
-                    <Image src={s.primaryImageUrl} alt={s.name} fill className="object-cover" sizes="40px" unoptimized />
+                    <Image src={s.primaryImageUrl} alt={s.name} fill className="object-cover" sizes="40px" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-sm opacity-30">📦</div>
                   )}

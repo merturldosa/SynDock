@@ -63,3 +63,15 @@ export async function getShippingTracking(orderId: number): Promise<ShippingTrac
   const { data } = await api.get<ShippingTrackingResult>(`/order/${orderId}/tracking`);
   return data;
 }
+
+export async function downloadOrderReceipt(orderId: number, orderNumber: string): Promise<void> {
+  const { data } = await api.get(`/order/${orderId}/receipt`, { responseType: "blob" });
+  const url = window.URL.createObjectURL(new Blob([data], { type: "application/pdf" }));
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `receipt-${orderNumber}.pdf`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  window.URL.revokeObjectURL(url);
+}

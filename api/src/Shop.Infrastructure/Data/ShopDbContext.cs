@@ -9,11 +9,14 @@ namespace Shop.Infrastructure.Data;
 public class ShopDbContext : DbContext, IShopDbContext
 {
     private readonly ITenantContext _tenantContext;
+    private readonly IEncryptionService? _encryptionService;
 
-    public ShopDbContext(DbContextOptions<ShopDbContext> options, ITenantContext tenantContext)
+    public ShopDbContext(DbContextOptions<ShopDbContext> options, ITenantContext tenantContext,
+        IEncryptionService? encryptionService = null)
         : base(options)
     {
         _tenantContext = tenantContext;
+        _encryptionService = encryptionService;
     }
 
     public DbSet<Tenant> Tenants { get; set; }
@@ -56,10 +59,51 @@ public class ShopDbContext : DbContext, IShopDbContext
     public DbSet<TenantUsage> TenantUsages { get; set; }
     public DbSet<Invoice> Invoices { get; set; }
     public DbSet<EmailCampaign> EmailCampaigns { get; set; }
+    public DbSet<MesSyncHistory> MesSyncHistories { get; set; }
+    public DbSet<ForecastAccuracy> ForecastAccuracies { get; set; }
+    public DbSet<CommissionSetting> CommissionSettings { get; set; }
+    public DbSet<Commission> Commissions { get; set; }
+    public DbSet<Settlement> Settlements { get; set; }
+    public DbSet<PushSubscription> PushSubscriptions { get; set; }
+    public DbSet<CampaignVariant> CampaignVariants { get; set; }
+    public DbSet<CampaignMetric> CampaignMetrics { get; set; }
+    public DbSet<ProductionPlanSuggestion> ProductionPlanSuggestions { get; set; }
+    public DbSet<SocialPost> SocialPosts { get; set; }
+    public DbSet<AutoReorderRule> AutoReorderRules { get; set; }
+    public DbSet<PurchaseOrder> PurchaseOrders { get; set; }
+    public DbSet<PurchaseOrderItem> PurchaseOrderItems { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        // Apply AES-256 field encryption to sensitive PII fields
+        if (_encryptionService is not null)
+        {
+            var converter = new EncryptedStringConverter(_encryptionService);
+
+            modelBuilder.Entity<User>(entity =>
+            {
+                entity.Property(e => e.Phone)
+                    .HasConversion(converter)
+                    .HasMaxLength(512);
+            });
+
+            modelBuilder.Entity<Address>(entity =>
+            {
+                entity.Property(e => e.Phone)
+                    .HasConversion(converter)
+                    .HasMaxLength(512);
+
+                entity.Property(e => e.Address1)
+                    .HasConversion(converter)
+                    .HasMaxLength(512);
+
+                entity.Property(e => e.Address2)
+                    .HasConversion(converter)
+                    .HasMaxLength(512);
+            });
+        }
 
         // Apply global query filters to all ITenantEntity types
         foreach (var entityType in modelBuilder.Model.GetEntityTypes())
@@ -105,6 +149,17 @@ public class ShopDbContext : DbContext, IShopDbContext
         ConfigureTenantUsage(modelBuilder);
         ConfigureInvoice(modelBuilder);
         ConfigureEmailCampaign(modelBuilder);
+        ConfigureMesSyncHistory(modelBuilder);
+        ConfigureForecastAccuracy(modelBuilder);
+        ConfigureCommissionSetting(modelBuilder);
+        ConfigureCommission(modelBuilder);
+        ConfigureSettlement(modelBuilder);
+        ConfigureCampaignVariant(modelBuilder);
+        ConfigureCampaignMetric(modelBuilder);
+        ConfigureProductionPlanSuggestion(modelBuilder);
+        ConfigureSocialPost(modelBuilder);
+        ConfigureAutoReorderRule(modelBuilder);
+        ConfigurePurchaseOrder(modelBuilder);
     }
 
     private void ApplyTenantFilter<T>(ModelBuilder modelBuilder) where T : class, ITenantEntity
@@ -736,6 +791,134 @@ public class ShopDbContext : DbContext, IShopDbContext
             entity.HasIndex(e => e.TenantId);
             entity.HasIndex(e => e.Status);
             entity.HasIndex(e => e.ScheduledAt);
+        });
+    }
+
+    private static void ConfigureMesSyncHistory(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<MesSyncHistory>(entity =>
+        {
+            entity.HasIndex(e => e.StartedAt);
+            entity.HasIndex(e => e.Status);
+        });
+    }
+
+    private static void ConfigureForecastAccuracy(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<ForecastAccuracy>(entity =>
+        {
+            entity.HasIndex(e => new { e.TenantId, e.ProductId, e.TargetDate });
+            entity.HasIndex(e => e.ForecastDate);
+
+            entity.HasOne(e => e.Product)
+                .WithMany()
+                .HasForeignKey(e => e.ProductId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+    }
+
+    private static void ConfigureCommissionSetting(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<CommissionSetting>(entity =>
+        {
+            entity.HasIndex(e => new { e.TenantId, e.ProductId, e.CategoryId }).IsUnique();
+            entity.HasOne(e => e.Tenant).WithMany().HasForeignKey(e => e.TenantId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.Product).WithMany().HasForeignKey(e => e.ProductId).OnDelete(DeleteBehavior.SetNull);
+            entity.HasOne(e => e.Category).WithMany().HasForeignKey(e => e.CategoryId).OnDelete(DeleteBehavior.SetNull);
+        });
+    }
+
+    private static void ConfigureCommission(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Commission>(entity =>
+        {
+            entity.HasIndex(e => new { e.TenantId, e.Status });
+            entity.HasIndex(e => e.OrderId);
+            entity.HasOne(e => e.Tenant).WithMany().HasForeignKey(e => e.TenantId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.Order).WithMany().HasForeignKey(e => e.OrderId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.Settlement).WithMany(s => s.Commissions).HasForeignKey(e => e.SettlementId).OnDelete(DeleteBehavior.SetNull);
+        });
+    }
+
+    private static void ConfigureSettlement(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Settlement>(entity =>
+        {
+            entity.HasIndex(e => new { e.TenantId, e.Status });
+            entity.HasIndex(e => new { e.TenantId, e.PeriodStart, e.PeriodEnd });
+            entity.HasOne(e => e.Tenant).WithMany().HasForeignKey(e => e.TenantId).OnDelete(DeleteBehavior.Cascade);
+        });
+    }
+
+    private static void ConfigureCampaignVariant(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<CampaignVariant>(entity =>
+        {
+            entity.HasIndex(e => new { e.CampaignId, e.VariantName }).IsUnique();
+            entity.HasOne(e => e.Campaign).WithMany().HasForeignKey(e => e.CampaignId).OnDelete(DeleteBehavior.Cascade);
+        });
+    }
+
+    private static void ConfigureCampaignMetric(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<CampaignMetric>(entity =>
+        {
+            entity.HasIndex(e => new { e.CampaignId, e.EventType });
+            entity.HasIndex(e => new { e.VariantId, e.EventType });
+            entity.HasIndex(e => e.UserId);
+            entity.HasOne(e => e.Campaign).WithMany().HasForeignKey(e => e.CampaignId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.Variant).WithMany().HasForeignKey(e => e.VariantId).OnDelete(DeleteBehavior.SetNull);
+        });
+    }
+
+    private static void ConfigureProductionPlanSuggestion(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<ProductionPlanSuggestion>(entity =>
+        {
+            entity.HasIndex(e => new { e.TenantId, e.Status });
+            entity.HasIndex(e => new { e.ProductId, e.Status });
+            entity.HasIndex(e => e.Urgency);
+            entity.HasOne(e => e.Product).WithMany().HasForeignKey(e => e.ProductId).OnDelete(DeleteBehavior.Cascade);
+        });
+    }
+
+    private static void ConfigureSocialPost(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<SocialPost>(entity =>
+        {
+            entity.HasIndex(e => new { e.TenantId, e.Platform });
+            entity.HasIndex(e => e.ProductId);
+            entity.HasIndex(e => e.Status);
+            entity.HasOne(e => e.Product).WithMany().HasForeignKey(e => e.ProductId).OnDelete(DeleteBehavior.SetNull);
+        });
+    }
+
+    private static void ConfigureAutoReorderRule(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<AutoReorderRule>(entity =>
+        {
+            entity.HasIndex(e => new { e.TenantId, e.ProductId }).IsUnique();
+            entity.HasIndex(e => e.IsEnabled);
+            entity.HasOne(e => e.Product).WithMany().HasForeignKey(e => e.ProductId).OnDelete(DeleteBehavior.Cascade);
+        });
+    }
+
+    private static void ConfigurePurchaseOrder(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<PurchaseOrder>(entity =>
+        {
+            entity.HasIndex(e => new { e.TenantId, e.OrderNumber }).IsUnique();
+            entity.HasIndex(e => e.Status);
+            entity.HasIndex(e => e.TriggerType);
+            entity.HasIndex(e => e.CreatedAt);
+        });
+
+        modelBuilder.Entity<PurchaseOrderItem>(entity =>
+        {
+            entity.HasIndex(e => e.PurchaseOrderId);
+            entity.HasIndex(e => e.ProductId);
+            entity.HasOne(e => e.PurchaseOrder).WithMany(po => po.Items).HasForeignKey(e => e.PurchaseOrderId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.Product).WithMany().HasForeignKey(e => e.ProductId).OnDelete(DeleteBehavior.Restrict);
         });
     }
 }

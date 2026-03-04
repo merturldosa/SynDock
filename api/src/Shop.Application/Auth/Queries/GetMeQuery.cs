@@ -28,6 +28,6 @@ public class GetMeQueryHandler : IRequestHandler<GetMeQuery, Result<UserProfileD
 
         return Result<UserProfileDto>.Success(new UserProfileDto(
             user.Id, user.Username, user.Email, user.Name, user.Phone,
-            user.Role, user.CustomFieldsJson, user.LastLoginAt));
+            user.Role, user.CustomFieldsJson, user.LastLoginAt, user.EmailVerified));
     }
 }

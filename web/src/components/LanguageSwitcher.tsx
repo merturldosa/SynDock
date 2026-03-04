@@ -8,7 +8,11 @@ const LOCALES = [
   { code: "ko", flag: "\u{1F1F0}\u{1F1F7}", label: "ko" },
   { code: "en", flag: "\u{1F1FA}\u{1F1F8}", label: "en" },
   { code: "ja", flag: "\u{1F1EF}\u{1F1F5}", label: "ja" },
+  { code: "zh-CN", flag: "\u{1F1E8}\u{1F1F3}", label: "zh-CN" },
+  { code: "vi", flag: "\u{1F1FB}\u{1F1F3}", label: "vi" },
 ] as const;
+
+type LocaleCode = (typeof LOCALES)[number]["code"];
 
 function getCurrentLocale(): string {
   if (typeof document === "undefined") return "ko";
@@ -53,7 +57,7 @@ export function LanguageSwitcher() {
         title={t("select")}
       >
         <Globe size={14} />
-        <span>{currentLocale.flag} {t(currentLocale.code as "ko" | "en" | "ja")}</span>
+        <span>{currentLocale.flag} {t(currentLocale.code as LocaleCode)}</span>
       </button>
 
       {open && (
@@ -69,7 +73,7 @@ export function LanguageSwitcher() {
               }`}
             >
               <span>{locale.flag}</span>
-              <span>{t(locale.code as "ko" | "en" | "ja")}</span>
+              <span>{t(locale.code as LocaleCode)}</span>
             </button>
           ))}
         </div>

@@ -9,9 +9,9 @@ using SynDock.Core.Interfaces;
 
 namespace Shop.Application.Auth.Commands;
 
-public record LoginCommand(string Email, string Password) : IRequest<Result<AuthResponse>>;
+public record LoginCommand(string Email, string Password) : IRequest<Result<LoginResponse>>;
 
-public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<AuthResponse>>
+public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<LoginResponse>>
 {
     private readonly IShopDbContext _db;
     private readonly ITokenService _tokenService;
@@ -26,13 +26,23 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<AuthResp
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<Result<AuthResponse>> Handle(LoginCommand request, CancellationToken cancellationToken)
+    public async Task<Result<LoginResponse>> Handle(LoginCommand request, CancellationToken cancellationToken)
     {
         var user = await _db.Users
             .FirstOrDefaultAsync(u => u.Email == request.Email && u.IsActive, cancellationToken);
 
         if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
-            return Result<AuthResponse>.Failure("이메일 또는 비밀번호가 올바르지 않습니다.");
+            return Result<LoginResponse>.Failure("이메일 또는 비밀번호가 올바르지 않습니다.");
+
+        // If 2FA is enabled, return partial response with temporary token
+        if (user.TwoFactorEnabled)
+        {
+            var twoFactorToken = _tokenService.GenerateTwoFactorToken(user, _tenantContext.Tenant!);
+            return Result<LoginResponse>.Success(new LoginResponse(
+                RequiresTwoFactor: true,
+                TwoFactorToken: twoFactorToken,
+                Auth: null));
+        }
 
         user.LastLoginAt = DateTime.UtcNow;
 
@@ -50,10 +60,13 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<AuthResp
 
         var accessToken = _tokenService.GenerateAccessToken(user, _tenantContext.Tenant!);
 
-        return Result<AuthResponse>.Success(new AuthResponse(
-            accessToken,
-            refreshTokenValue,
-            new UserDto(user.Id, user.Username, user.Email, user.Name, user.Phone, user.Role, user.CustomFieldsJson)
-        ));
+        return Result<LoginResponse>.Success(new LoginResponse(
+            RequiresTwoFactor: false,
+            TwoFactorToken: null,
+            Auth: new AuthResponse(
+                accessToken,
+                refreshTokenValue,
+                new UserDto(user.Id, user.Username, user.Email, user.Name, user.Phone, user.Role, user.CustomFieldsJson)
+            )));
     }
 }

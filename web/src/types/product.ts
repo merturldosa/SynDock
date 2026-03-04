@@ -11,6 +11,7 @@ export interface ProductSummary {
   isFeatured: boolean;
   isNew: boolean;
   primaryImageUrl: string | null;
+  totalStock?: number;
 }
 
 export interface ProductDetailSection {
@@ -21,6 +22,15 @@ export interface ProductDetailSection {
   imageAltText: string | null;
   sectionType: string;
   sortOrder: number;
+  isActive: boolean;
+}
+
+export interface ProductVariant {
+  id: number;
+  name: string;
+  sku: string | null;
+  price: number | null;
+  stock: number;
   isActive: boolean;
 }
 
@@ -40,6 +50,7 @@ export interface ProductDetail {
   isNew: boolean;
   viewCount: number;
   images: ProductImage[];
+  variants?: ProductVariant[];
   detailSections?: ProductDetailSection[];
 }
 

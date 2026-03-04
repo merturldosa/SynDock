@@ -34,6 +34,7 @@ public class GetProductsQueryHandler : IRequestHandler<GetProductsQuery, PagedLi
             .AsNoTracking()
             .Include(p => p.Category)
             .Include(p => p.Images)
+            .Include(p => p.Variants)
             .Where(p => p.IsActive);
 
         // Category filter
@@ -91,7 +92,8 @@ public class GetProductsQueryHandler : IRequestHandler<GetProductsQuery, PagedLi
                 p.Id, p.Name, p.Slug, p.Price, p.SalePrice,
                 p.PriceType, p.Specification, p.CategoryId, p.Category.Name,
                 p.Images.Where(i => i.IsPrimary).Select(i => i.Url).FirstOrDefault(),
-                p.IsFeatured, p.IsNew, p.ViewCount))
+                p.IsFeatured, p.IsNew, p.ViewCount,
+                p.Variants.Where(v => v.IsActive).Sum(v => v.Stock)))
             .ToListAsync(cancellationToken);
 
         return new PagedList<ProductListDto>(items, totalCount, request.Page, request.PageSize);

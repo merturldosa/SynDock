@@ -8,6 +8,7 @@ import {
   Store,
   Plus,
   CreditCard,
+  Banknote,
   ChevronLeft,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -18,6 +19,7 @@ const NAV_ITEMS = [
   { href: "/superadmin/tenants", icon: Store, labelKey: "tenants" },
   { href: "/superadmin/tenants/new", icon: Plus, labelKey: "newTenant" },
   { href: "/superadmin/billing", icon: CreditCard, labelKey: "billing" },
+  { href: "/superadmin/settlements", icon: Banknote, labelKey: "settlements" },
 ];
 
 export default function SuperAdminLayout({

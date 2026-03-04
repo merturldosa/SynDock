@@ -414,7 +414,7 @@ function ProductTab() {
                     <div className="flex items-center gap-2">
                       <div className="relative w-8 h-8 rounded bg-gray-100 overflow-hidden shrink-0">
                         {p.imageUrl ? (
-                          <Image src={p.imageUrl} alt="" fill className="object-cover" sizes="32px" unoptimized />
+                          <Image src={p.imageUrl} alt="" fill className="object-cover" sizes="32px" />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-xs opacity-30">📦</div>
                         )}

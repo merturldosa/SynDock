@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+
+  <!-- Auth -->
+  <data name="InvalidCredentials"><value>Email hoặc mật khẩu không hợp lệ.</value></data>
+  <data name="UsernameInUse"><value>Tên người dùng đã được sử dụng.</value></data>
+  <data name="EmailInUse"><value>Email đã được sử dụng.</value></data>
+  <data name="InvalidOrExpiredToken"><value>Token không hợp lệ hoặc đã hết hạn.</value></data>
+  <data name="LoginRequired"><value>Yêu cầu đăng nhập.</value></data>
+  <data name="NoPermission"><value>Bạn không có quyền.</value></data>
+  <data name="UserNotFound"><value>Không tìm thấy người dùng.</value></data>
+  <data name="InvalidRole"><value>Vai trò không hợp lệ.</value></data>
+  <data name="AccountInactive"><value>Tài khoản đã bị vô hiệu hóa.</value></data>
+
+  <!-- 2FA -->
+  <data name="TwoFactorAlreadyEnabled"><value>Xác thực hai yếu tố đã được bật.</value></data>
+  <data name="TwoFactorNotSetup"><value>Vui lòng bắt đầu thiết lập xác thực hai yếu tố trước.</value></data>
+  <data name="TwoFactorInvalidCode"><value>Mã xác thực không hợp lệ.</value></data>
+  <data name="TwoFactorNotEnabled"><value>Xác thực hai yếu tố chưa được bật.</value></data>
+
+  <!-- Validation -->
+  <data name="UsernameRequired"><value>Tên người dùng là bắt buộc.</value></data>
+  <data name="UsernameMinLength"><value>Tên người dùng phải có ít nhất 3 ký tự.</value></data>
+  <data name="EmailRequired"><value>Email là bắt buộc.</value></data>
+  <data name="EmailInvalidFormat"><value>Định dạng email không hợp lệ.</value></data>
+  <data name="PasswordRequired"><value>Mật khẩu là bắt buộc.</value></data>
+  <data name="PasswordMinLength"><value>Mật khẩu phải có ít nhất 6 ký tự.</value></data>
+  <data name="NameRequired"><value>Tên là bắt buộc.</value></data>
+
+  <!-- Tenant -->
+  <data name="TenantNotFound"><value>Không tìm thấy tenant.</value></data>
+  <data name="TenantInactive"><value>Tenant đã bị vô hiệu hóa.</value></data>
+  <data name="SlugInUse"><value>Slug đã được sử dụng.</value></data>
+
+  <!-- Product -->
+  <data name="ProductNotFound"><value>Không tìm thấy sản phẩm.</value></data>
+  <data name="VariantNotFound"><value>Không tìm thấy phiên bản sản phẩm.</value></data>
+  <data name="CategoryNotFound"><value>Không tìm thấy danh mục.</value></data>
+  <data name="ParentCategoryNotFound"><value>Không tìm thấy danh mục cha.</value></data>
+  <data name="SlugAlreadyUsed"><value>Slug đã được sử dụng.</value></data>
+  <data name="StockMustBePositive"><value>Số lượng tồn kho phải lớn hơn hoặc bằng 0.</value></data>
+  <data name="InsufficientStock"><value>Không đủ hàng tồn kho.</value></data>
+
+  <!-- Cart -->
+  <data name="CartItemNotFound"><value>Không tìm thấy sản phẩm trong giỏ hàng.</value></data>
+  <data name="CartEmpty"><value>Giỏ hàng trống.</value></data>
+
+  <!-- Order -->
+  <data name="OrderNotFound"><value>Không tìm thấy đơn hàng.</value></data>
+  <data name="AddressNotFound"><value>Không tìm thấy địa chỉ giao hàng.</value></data>
+  <data name="OnlyPendingCanPay"><value>Chỉ đơn hàng đang chờ mới có thể thanh toán.</value></data>
+  <data name="PaymentAmountMismatch"><value>Số tiền thanh toán không khớp.</value></data>
+  <data name="AlreadyRefunded"><value>Đơn hàng đã được hoàn tiền.</value></data>
+  <data name="CannotRefundCancelled"><value>Đơn hàng đã hủy không thể hoàn tiền.</value></data>
+  <data name="PaymentFailed"><value>Xác nhận thanh toán thất bại.</value></data>
+
+  <!-- Review / QnA -->
+  <data name="ReviewNotFound"><value>Không tìm thấy đánh giá.</value></data>
+  <data name="QnaNotFound"><value>Không tìm thấy câu hỏi.</value></data>
+  <data name="AlreadyReviewed"><value>Bạn đã viết đánh giá rồi.</value></data>
+
+  <!-- Social -->
+  <data name="PostNotFound"><value>Không tìm thấy bài viết.</value></data>
+  <data name="CannotFollowSelf"><value>Bạn không thể theo dõi chính mình.</value></data>
+  <data name="AlreadyFollowing"><value>Đã theo dõi rồi.</value></data>
+
+  <!-- Coupon / Point -->
+  <data name="CouponNotFound"><value>Không tìm thấy mã giảm giá.</value></data>
+  <data name="CouponAlreadyUsed"><value>Mã giảm giá đã được sử dụng.</value></data>
+  <data name="CouponExpired"><value>Mã giảm giá đã hết hạn.</value></data>
+  <data name="InsufficientPoints"><value>Không đủ điểm.</value></data>
+
+  <!-- Collection -->
+  <data name="CollectionNotFound"><value>Không tìm thấy bộ sưu tập.</value></data>
+
+  <!-- Billing -->
+  <data name="BillingNotFound"><value>Không tìm thấy thông tin thanh toán.</value></data>
+  <data name="InvoiceNotFound"><value>Không tìm thấy hóa đơn.</value></data>
+  <data name="InvoiceAlreadyPaid"><value>Hóa đơn đã được thanh toán.</value></data>
+  <data name="NoPaidPlan"><value>Chưa thiết lập gói trả phí.</value></data>
+
+  <!-- Commission / Settlement -->
+  <data name="CommissionAlreadyCalculated"><value>Hoa hồng cho đơn hàng này đã được tính.</value></data>
+  <data name="NoPendingCommissions"><value>Không có hoa hồng chờ thanh toán.</value></data>
+  <data name="SettlementNotFound"><value>Không tìm thấy đợt thanh toán.</value></data>
+  <data name="SettlementAlreadyProcessed"><value>Đợt thanh toán đã được xử lý.</value></data>
+
+  <!-- Campaign -->
+  <data name="CampaignNotFound"><value>Không tìm thấy chiến dịch.</value></data>
+
+  <!-- Common -->
+  <data name="ValidationFailed"><value>Xác thực thất bại.</value></data>
+  <data name="ServerError"><value>Đã xảy ra lỗi máy chủ.</value></data>
+  <data name="NotFound"><value>Không tìm thấy.</value></data>
+  <data name="AlreadyExists"><value>Đã tồn tại.</value></data>
+</root>

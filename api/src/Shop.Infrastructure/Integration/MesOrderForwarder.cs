@@ -82,7 +82,20 @@ public class MesOrderForwarder : INotificationHandler<OrderConfirmedEvent>
             var result = await _mesClient.CreateSalesOrderAsync(request, cancellationToken);
 
             if (result.Success)
+            {
                 _logger.LogInformation("Order {OrderNumber} forwarded to MES: {MesOrderId}", notification.OrderNumber, result.MesOrderId);
+
+                // Save MES order ID back to Shop order for tracking
+                if (result.MesOrderId is not null)
+                {
+                    var tracked = await _db.Orders.FindAsync([notification.OrderId], cancellationToken);
+                    if (tracked is not null)
+                    {
+                        tracked.MesOrderId = result.MesOrderId;
+                        await _db.SaveChangesAsync(cancellationToken);
+                    }
+                }
+            }
             else
                 _logger.LogWarning("Failed to forward order {OrderNumber} to MES: {Error}", notification.OrderNumber, result.ErrorMessage);
         }

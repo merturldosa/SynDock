@@ -31,4 +31,15 @@ public class EmailCampaign : BaseEntity, ITenantEntity
     public int SentCount { get; set; }
 
     public int FailCount { get; set; }
+
+    public int OpenCount { get; set; }
+
+    public int ClickCount { get; set; }
+
+    public int ConversionCount { get; set; }
+
+    [Column(TypeName = "decimal(18,2)")]
+    public decimal Revenue { get; set; }
+
+    public bool IsAbTest { get; set; }
 }

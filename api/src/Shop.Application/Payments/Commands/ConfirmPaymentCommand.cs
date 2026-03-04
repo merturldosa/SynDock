@@ -1,6 +1,8 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Shop.Application.Common.Interfaces;
+using Shop.Application.Platform.Commands;
 using Shop.Domain.Entities;
 using Shop.Domain.Enums;
 using SynDock.Core.Common;
@@ -20,17 +22,23 @@ public class ConfirmPaymentCommandHandler : IRequestHandler<ConfirmPaymentComman
     private readonly ICurrentUserService _currentUser;
     private readonly IPaymentProvider _paymentProvider;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IMediator _mediator;
+    private readonly ILogger<ConfirmPaymentCommandHandler> _logger;
 
     public ConfirmPaymentCommandHandler(
         IShopDbContext db,
         ICurrentUserService currentUser,
         IPaymentProvider paymentProvider,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        IMediator mediator,
+        ILogger<ConfirmPaymentCommandHandler> logger)
     {
         _db = db;
         _currentUser = currentUser;
         _paymentProvider = paymentProvider;
         _unitOfWork = unitOfWork;
+        _mediator = mediator;
+        _logger = logger;
     }
 
     public async Task<Result<int>> Handle(ConfirmPaymentCommand request, CancellationToken cancellationToken)
@@ -119,6 +127,17 @@ public class ConfirmPaymentCommandHandler : IRequestHandler<ConfirmPaymentComman
         }, cancellationToken);
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        // 자동 수수료 계산 (결제 성공 시 바로 커미션 레코드 생성)
+        try
+        {
+            await _mediator.Send(new CalculateOrderCommissionCommand(order.Id), cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "자동 수수료 계산 실패 (OrderId: {OrderId}). 수동 처리 필요.", order.Id);
+        }
+
         return Result<int>.Success(order.Id);
     }
 }

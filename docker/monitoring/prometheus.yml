@@ -1,0 +1,47 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  - "alert-rules.yml"
+
+scrape_configs:
+  # ─── Shop API (.NET) ───────────────────────
+  - job_name: "shop-api"
+    metrics_path: /metrics
+    scrape_interval: 10s
+    static_configs:
+      - targets: ["shop-api:5100"]
+        labels:
+          service: "shop-api"
+          environment: "production"
+
+  # ─── PostgreSQL Exporter ───────────────────
+  - job_name: "postgres"
+    scrape_interval: 30s
+    static_configs:
+      - targets: ["shop-postgres-exporter:9187"]
+        labels:
+          service: "postgres"
+
+  # ─── Redis Exporter ────────────────────────
+  - job_name: "redis"
+    scrape_interval: 30s
+    static_configs:
+      - targets: ["shop-redis-exporter:9121"]
+        labels:
+          service: "redis"
+
+  # ─── Node Exporter (Host Metrics) ──────────
+  - job_name: "node"
+    scrape_interval: 30s
+    static_configs:
+      - targets: ["shop-node-exporter:9100"]
+        labels:
+          service: "host"
+
+  # ─── Prometheus Self ───────────────────────
+  - job_name: "prometheus"
+    scrape_interval: 30s
+    static_configs:
+      - targets: ["localhost:9090"]

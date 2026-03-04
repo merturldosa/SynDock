@@ -10,12 +10,15 @@ namespace Shop.API.Controllers;
 public class UploadController : ControllerBase
 {
     private readonly IFileStorageService _storage;
+    private readonly IImageProcessingService _imageProcessor;
     private static readonly HashSet<string> AllowedExtensions = [".jpg", ".jpeg", ".png", ".gif", ".webp"];
+    private static readonly HashSet<string> ProcessableExtensions = [".jpg", ".jpeg", ".png", ".webp"];
     private const long MaxFileSize = 10 * 1024 * 1024; // 10MB
 
-    public UploadController(IFileStorageService storage)
+    public UploadController(IFileStorageService storage, IImageProcessingService imageProcessor)
     {
         _storage = storage;
+        _imageProcessor = imageProcessor;
     }
 
     [HttpPost("image")]
@@ -31,9 +34,7 @@ public class UploadController : ControllerBase
         if (!AllowedExtensions.Contains(ext))
             return BadRequest(new { error = "허용되지 않는 파일 형식입니다. (jpg, png, gif, webp)" });
 
-        using var stream = file.OpenReadStream();
-        var url = await _storage.UploadAsync(stream, file.FileName, folder);
-
+        var url = await ProcessAndUploadAsync(file, ext, folder);
         return Ok(new { url });
     }
 
@@ -54,11 +55,25 @@ public class UploadController : ControllerBase
             var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
             if (!AllowedExtensions.Contains(ext)) continue;
 
-            using var stream = file.OpenReadStream();
-            var url = await _storage.UploadAsync(stream, file.FileName, folder);
+            var url = await ProcessAndUploadAsync(file, ext, folder);
             urls.Add(url);
         }
 
         return Ok(new { urls });
+    }
+
+    private async Task<string> ProcessAndUploadAsync(IFormFile file, string ext, string folder)
+    {
+        if (ProcessableExtensions.Contains(ext))
+        {
+            using var inputStream = file.OpenReadStream();
+            using var processedStream = await _imageProcessor.ResizeAndConvertAsync(inputStream);
+            var webpFileName = Path.ChangeExtension(file.FileName, ".webp");
+            return await _storage.UploadAsync(processedStream, webpFileName, folder);
+        }
+
+        // GIF: upload without processing (preserve animation)
+        using var stream = file.OpenReadStream();
+        return await _storage.UploadAsync(stream, file.FileName, folder);
     }
 }

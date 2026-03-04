@@ -108,7 +108,6 @@ export default function FeedPage() {
                         fill
                         className="object-cover"
                         sizes="600px"
-                        unoptimized
                       />
                     </div>
                   )}

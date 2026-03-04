@@ -45,5 +45,18 @@ public interface IShopDbContext
     DbSet<TenantUsage> TenantUsages { get; }
     DbSet<Invoice> Invoices { get; }
     DbSet<EmailCampaign> EmailCampaigns { get; }
+    DbSet<MesSyncHistory> MesSyncHistories { get; }
+    DbSet<ForecastAccuracy> ForecastAccuracies { get; }
+    DbSet<CommissionSetting> CommissionSettings { get; }
+    DbSet<Commission> Commissions { get; }
+    DbSet<Settlement> Settlements { get; }
+    DbSet<PushSubscription> PushSubscriptions { get; }
+    DbSet<CampaignVariant> CampaignVariants { get; }
+    DbSet<CampaignMetric> CampaignMetrics { get; }
+    DbSet<ProductionPlanSuggestion> ProductionPlanSuggestions { get; }
+    DbSet<SocialPost> SocialPosts { get; }
+    DbSet<AutoReorderRule> AutoReorderRules { get; }
+    DbSet<PurchaseOrder> PurchaseOrders { get; }
+    DbSet<PurchaseOrderItem> PurchaseOrderItems { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

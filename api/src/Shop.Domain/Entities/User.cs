@@ -36,7 +36,27 @@ public class User : BaseEntity, ITenantEntity
 
     public bool IsActive { get; set; } = true;
 
+    public bool EmailVerified { get; set; } = false;
+
+    [MaxLength(100)]
+    public string? EmailVerificationToken { get; set; }
+
+    [MaxLength(100)]
+    public string? PasswordResetToken { get; set; }
+
+    public DateTime? PasswordResetTokenExpiry { get; set; }
+
+    public DateTime? Birthday { get; set; }
+
     public DateTime? LastLoginAt { get; set; }
+
+    public bool TwoFactorEnabled { get; set; } = false;
+
+    [MaxLength(100)]
+    public string? TwoFactorSecret { get; set; }
+
+    [Column(TypeName = "jsonb")]
+    public string? TwoFactorBackupCodes { get; set; }
 
     [Column(TypeName = "jsonb")]
     public string? CustomFieldsJson { get; set; }

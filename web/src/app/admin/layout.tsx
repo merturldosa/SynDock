@@ -18,6 +18,9 @@ import {
   TrendingUp,
   Settings,
   ChevronLeft,
+  Landmark,
+  Factory,
+  RefreshCcw,
 } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 
@@ -30,7 +33,10 @@ const NAV_ITEMS = [
   { href: "/admin/coupons", icon: Ticket, labelKey: "admin.nav.coupons" },
   { href: "/admin/users", icon: Users, labelKey: "admin.nav.users" },
   { href: "/admin/analytics", icon: BarChart3, labelKey: "admin.nav.analytics" },
+  { href: "/admin/settlements", icon: Landmark, labelKey: "admin.nav.settlements" },
   { href: "/admin/forecast", icon: TrendingUp, labelKey: "admin.nav.forecast" },
+  { href: "/admin/production-plan", icon: Factory, labelKey: "admin.nav.productionPlan" },
+  { href: "/admin/auto-reorder", icon: RefreshCcw, labelKey: "admin.nav.autoReorder" },
   { href: "/admin/email", icon: Mail, labelKey: "admin.nav.email" },
   { href: "/admin/notifications", icon: Bell, labelKey: "admin.nav.notifications" },
   { href: "/admin/settings", icon: Settings, labelKey: "admin.nav.settings" },

@@ -86,4 +86,65 @@ public class TokenService : ITokenService
             return null;
         }
     }
+
+    public string GenerateTwoFactorToken(User user, Tenant tenant)
+    {
+        var key = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(_configuration["Jwt:Secret"]!));
+        var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+        var claims = new[]
+        {
+            new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+            new Claim("tenant_id", tenant.Id.ToString()),
+            new Claim("purpose", "2fa"),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+        };
+
+        var token = new JwtSecurityToken(
+            issuer: _configuration["Jwt:Issuer"],
+            audience: _configuration["Jwt:Audience"],
+            claims: claims,
+            expires: DateTime.UtcNow.AddMinutes(5), // Short-lived: 5 minutes
+            signingCredentials: credentials
+        );
+
+        return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+
+    public int? ValidateTwoFactorToken(string token)
+    {
+        try
+        {
+            var key = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(_configuration["Jwt:Secret"]!));
+
+            var handler = new JwtSecurityTokenHandler();
+            var result = handler.ValidateToken(token, new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = key,
+                ValidateIssuer = true,
+                ValidIssuer = _configuration["Jwt:Issuer"],
+                ValidateAudience = true,
+                ValidAudience = _configuration["Jwt:Audience"],
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.Zero
+            }, out _);
+
+            // Verify this is specifically a 2FA token
+            var purpose = result.FindFirst("purpose")?.Value;
+            if (purpose != "2fa")
+                return null;
+
+            var userId = result.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                ?? result.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+
+            return userId != null ? int.Parse(userId) : null;
+        }
+        catch
+        {
+            return null;
+        }
+    }
 }

@@ -88,7 +88,7 @@ export default function OrdersPage() {
                   <div className="bg-white rounded-xl shadow-sm p-5 hover:shadow-md transition-shadow flex items-center gap-4">
                     <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-gray-100 shrink-0">
                       {order.firstProductImageUrl ? (
-                        <Image src={order.firstProductImageUrl} alt="" fill className="object-cover" sizes="64px" unoptimized />
+                        <Image src={order.firstProductImageUrl} alt="" fill className="object-cover" sizes="64px" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-2xl opacity-30">📦</div>
                       )}

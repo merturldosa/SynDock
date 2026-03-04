@@ -1,6 +1,8 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Shop.Application.Common.Interfaces;
 using Shop.Application.Orders.Commands;
 using Shop.Application.Orders.Queries;
 
@@ -12,10 +14,14 @@ namespace Shop.API.Controllers;
 public class OrderController : ControllerBase
 {
     private readonly IMediator _mediator;
+    private readonly IPdfService _pdfService;
+    private readonly IShopDbContext _db;
 
-    public OrderController(IMediator mediator)
+    public OrderController(IMediator mediator, IPdfService pdfService, IShopDbContext db)
     {
         _mediator = mediator;
+        _pdfService = pdfService;
+        _db = db;
     }
 
     [HttpPost]
@@ -84,6 +90,20 @@ public class OrderController : ControllerBase
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(result.Data);
+    }
+
+    [HttpGet("{id:int}/receipt")]
+    public async Task<IActionResult> DownloadReceipt(int id)
+    {
+        var order = await _mediator.Send(new GetOrderByIdQuery(id));
+        if (order is null)
+            return NotFound(new { error = "주문을 찾을 수 없습니다." });
+
+        var tenant = await _db.Tenants.AsNoTracking().FirstOrDefaultAsync();
+        var tenantName = tenant?.Name ?? "SynDock Shop";
+
+        var pdf = _pdfService.GenerateOrderReceipt(order, tenantName);
+        return File(pdf, "application/pdf", $"receipt-{order.OrderNumber}.pdf");
     }
 }
 

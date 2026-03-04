@@ -4,4 +4,6 @@ public interface IAdminDashboardNotifier
 {
     Task NotifyNewOrder(int tenantId, string orderNumber, decimal totalAmount, CancellationToken ct = default);
     Task NotifyOrderStatusChanged(int tenantId, string orderNumber, string newStatus, CancellationToken ct = default);
+    Task NotifyMesSyncCompleted(int tenantId, int syncedCount, int failedCount, CancellationToken ct = default);
+    Task NotifyAutoReorderTriggered(int tenantId, string orderNumber, int itemCount, int totalQuantity, CancellationToken ct = default);
 }

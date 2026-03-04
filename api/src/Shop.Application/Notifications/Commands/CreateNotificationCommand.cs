@@ -22,12 +22,14 @@ public class CreateNotificationCommandHandler : IRequestHandler<CreateNotificati
     private readonly IShopDbContext _db;
     private readonly IUnitOfWork _unitOfWork;
     private readonly INotificationSender _sender;
+    private readonly IWebPushService _webPush;
 
-    public CreateNotificationCommandHandler(IShopDbContext db, IUnitOfWork unitOfWork, INotificationSender sender)
+    public CreateNotificationCommandHandler(IShopDbContext db, IUnitOfWork unitOfWork, INotificationSender sender, IWebPushService webPush)
     {
         _db = db;
         _unitOfWork = unitOfWork;
         _sender = sender;
+        _webPush = webPush;
     }
 
     public async Task<Result<int>> Handle(CreateNotificationCommand request, CancellationToken cancellationToken)
@@ -65,6 +67,9 @@ public class CreateNotificationCommandHandler : IRequestHandler<CreateNotificati
         var unreadCount = await _db.Notifications
             .CountAsync(n => n.UserId == request.UserId && !n.IsRead, cancellationToken);
         await _sender.SendUnreadCount(request.UserId, unreadCount, cancellationToken);
+
+        // Web Push notification (fire-and-forget, non-blocking)
+        _ = _webPush.SendPushAsync(request.UserId, request.Title, request.Message ?? "", null, cancellationToken);
 
         return Result<int>.Success(notification.Id);
     }

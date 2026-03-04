@@ -1,10 +1,13 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronLeft, ShoppingCart, Phone, Heart, Sparkles, FolderPlus } from "lucide-react";
+import {
+  ChevronLeft, ChevronRight, ShoppingCart, Phone, Heart, Sparkles,
+  FolderPlus, Minus, Plus, Package, Check,
+} from "lucide-react";
 import { getProductById } from "@/lib/productApi";
 import { toggleWishlist, checkWishlist } from "@/lib/reviewApi";
 import { getProductRecommendations, type RecommendedProduct } from "@/lib/recommendationApi";
@@ -16,10 +19,15 @@ import { QnATab } from "@/components/product/QnATab";
 import { ShareButton } from "@/components/ShareButton";
 import { AddToCollectionModal } from "@/components/AddToCollectionModal";
 import { useTranslations } from "next-intl";
-import type { ProductDetail } from "@/types/product";
+import type { ProductDetail, ProductVariant } from "@/types/product";
 
 function formatPrice(price: number): string {
   return price.toLocaleString("ko-KR") + "\uC6D0";
+}
+
+function calcDiscountPercent(price: number, salePrice: number): number {
+  if (price <= 0 || salePrice >= price) return 0;
+  return Math.round(((price - salePrice) / price) * 100);
 }
 
 export default function ProductDetailClient() {
@@ -36,15 +44,24 @@ export default function ProductDetailClient() {
   const [isWished, setIsWished] = useState(false);
   const [recommendations, setRecommendations] = useState<RecommendedProduct[]>([]);
   const [showCollectionModal, setShowCollectionModal] = useState(false);
+  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
+  const [quantity, setQuantity] = useState(1);
+  const [addingToCart, setAddingToCart] = useState(false);
+  const [buyingNow, setBuyingNow] = useState(false);
 
   useEffect(() => {
     const id = Number(params.id);
     if (!id) return;
 
     setLoading(true);
+    setSelectedVariant(null);
+    setQuantity(1);
     getProductById(id)
       .then((p) => {
         setProduct(p);
+        if (p.variants && p.variants.length > 0) {
+          setSelectedVariant(p.variants[0]);
+        }
         if (isAuthenticated) {
           checkWishlist([p.id]).then((res) => setIsWished(res.wishedProductIds.includes(p.id))).catch(() => {});
         }
@@ -53,6 +70,21 @@ export default function ProductDetailClient() {
       .catch(() => setProduct(null))
       .finally(() => setLoading(false));
   }, [params.id, isAuthenticated]);
+
+  // Computed price based on selected variant
+  const displayPrice = useMemo(() => {
+    if (!product) return { price: 0, salePrice: null as number | null };
+    if (selectedVariant?.price) {
+      return { price: selectedVariant.price, salePrice: null };
+    }
+    return { price: product.price, salePrice: product.salePrice };
+  }, [product, selectedVariant]);
+
+  const finalPrice = displayPrice.salePrice ?? displayPrice.price;
+  const discountPercent = displayPrice.salePrice
+    ? calcDiscountPercent(displayPrice.price, displayPrice.salePrice)
+    : 0;
+  const totalPrice = finalPrice * quantity;
 
   if (loading) {
     return (
@@ -76,8 +108,9 @@ export default function ProductDetailClient() {
   const isInquiry = product.priceType === "Inquiry";
   const primaryImage = product.images[selectedImage] || product.images[0];
   const contactPhone = config?.contactPhone || "";
-
-  const [addingToCart, setAddingToCart] = useState(false);
+  const hasVariants = product.variants && product.variants.length > 0;
+  const stockCount = selectedVariant ? selectedVariant.stock : null;
+  const isOutOfStock = selectedVariant ? selectedVariant.stock <= 0 : false;
 
   const handleToggleWishlist = async () => {
     if (!isAuthenticated) {
@@ -98,15 +131,37 @@ export default function ProductDetailClient() {
       return;
     }
     setAddingToCart(true);
-    const success = await addToCart(product.id);
+    const success = await addToCart(product.id, selectedVariant?.id ?? null, quantity);
     setAddingToCart(false);
     if (success) {
       alert(t("products.addedToCart", { name: product.name }));
     }
   };
 
+  const handleBuyNow = async () => {
+    if (!isAuthenticated) {
+      sessionStorage.setItem("returnTo", `/products/${product.id}`);
+      router.push("/login");
+      return;
+    }
+    setBuyingNow(true);
+    const success = await addToCart(product.id, selectedVariant?.id ?? null, quantity);
+    setBuyingNow(false);
+    if (success) {
+      router.push("/order");
+    }
+  };
+
+  const handlePrevImage = () => {
+    setSelectedImage((prev) => (prev > 0 ? prev - 1 : product.images.length - 1));
+  };
+
+  const handleNextImage = () => {
+    setSelectedImage((prev) => (prev < product.images.length - 1 ? prev + 1 : 0));
+  };
+
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
+    <div className="max-w-7xl mx-auto px-4 py-8 pb-28 md:pb-8">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-gray-500 mb-6">
         <Link href="/" className="hover:text-[var(--color-primary)]">{t("common.home")}</Link>
@@ -132,7 +187,7 @@ export default function ProductDetailClient() {
       <div className="grid md:grid-cols-2 gap-8 lg:gap-12">
         {/* Image section */}
         <div>
-          <div className="relative aspect-square bg-gray-50 rounded-2xl overflow-hidden mb-4">
+          <div className="relative aspect-square bg-gray-50 rounded-2xl overflow-hidden mb-4 group">
             {primaryImage ? (
               <Image
                 src={primaryImage.url}
@@ -140,24 +195,52 @@ export default function ProductDetailClient() {
                 fill
                 className="object-contain"
                 sizes="(max-width: 768px) 100vw, 50vw"
-                unoptimized
               />
             ) : (
               <div className="flex items-center justify-center h-full text-8xl opacity-20">
                 📦
               </div>
             )}
+
+            {/* Image navigation arrows */}
+            {product.images.length > 1 && (
+              <>
+                <button
+                  onClick={handlePrevImage}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 rounded-full flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white"
+                >
+                  <ChevronLeft size={20} />
+                </button>
+                <button
+                  onClick={handleNextImage}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 rounded-full flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white"
+                >
+                  <ChevronRight size={20} />
+                </button>
+                {/* Image counter */}
+                <div className="absolute bottom-3 right-3 bg-black/50 text-white text-xs px-2 py-1 rounded-full">
+                  {selectedImage + 1} / {product.images.length}
+                </div>
+              </>
+            )}
+
+            {/* Discount badge */}
+            {discountPercent > 0 && (
+              <div className="absolute top-3 left-3 bg-red-500 text-white text-sm font-bold px-3 py-1 rounded-full">
+                {discountPercent}% OFF
+              </div>
+            )}
           </div>
 
           {/* Thumbnail gallery */}
           {product.images.length > 1 && (
-            <div className="flex gap-2 overflow-x-auto">
+            <div className="flex gap-2 overflow-x-auto pb-1">
               {product.images.map((img, i) => (
                 <button
                   key={img.id}
                   onClick={() => setSelectedImage(i)}
-                  className={`relative w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden border-2 ${
-                    i === selectedImage ? "border-[var(--color-primary)]" : "border-transparent"
+                  className={`relative w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden border-2 transition-all ${
+                    i === selectedImage ? "border-[var(--color-primary)] ring-1 ring-[var(--color-primary)]" : "border-transparent hover:border-gray-300"
                   }`}
                 >
                   <Image
@@ -166,7 +249,6 @@ export default function ProductDetailClient() {
                     fill
                     className="object-cover"
                     sizes="80px"
-                    unoptimized
                   />
                 </button>
               ))}
@@ -193,18 +275,109 @@ export default function ProductDetailClient() {
                 </p>
               </div>
             ) : (
-              <div className="flex items-baseline gap-3">
-                <span className="text-3xl font-bold text-[var(--color-secondary)]">
-                  {formatPrice(product.salePrice || product.price)}
-                </span>
-                {product.salePrice && (
-                  <span className="text-lg text-gray-400 line-through">
-                    {formatPrice(product.price)}
+              <div>
+                <div className="flex items-baseline gap-3">
+                  {discountPercent > 0 && (
+                    <span className="text-xl font-bold text-red-500">{discountPercent}%</span>
+                  )}
+                  <span className="text-3xl font-bold text-[var(--color-secondary)]">
+                    {formatPrice(finalPrice)}
                   </span>
+                  {displayPrice.salePrice && (
+                    <span className="text-lg text-gray-400 line-through">
+                      {formatPrice(displayPrice.price)}
+                    </span>
+                  )}
+                </div>
+                {/* Stock indicator */}
+                {stockCount !== null && (
+                  <div className="mt-2 flex items-center gap-1.5">
+                    {stockCount > 10 ? (
+                      <span className="flex items-center gap-1 text-sm text-green-600">
+                        <Check size={14} /> {t("products.inStock")}
+                      </span>
+                    ) : stockCount > 0 ? (
+                      <span className="flex items-center gap-1 text-sm text-orange-500">
+                        <Package size={14} /> {t("products.lowStock", { count: stockCount })}
+                      </span>
+                    ) : (
+                      <span className="text-sm text-red-500 font-medium">{t("products.outOfStock")}</span>
+                    )}
+                  </div>
                 )}
               </div>
             )}
           </div>
+
+          {/* Variant selector */}
+          {hasVariants && !isInquiry && (
+            <div className="mb-6">
+              <h3 className="text-sm font-semibold text-[var(--color-secondary)] mb-3">{t("products.selectOption")}</h3>
+              <div className="flex flex-wrap gap-2">
+                {product.variants!.map((variant) => (
+                  <button
+                    key={variant.id}
+                    onClick={() => { setSelectedVariant(variant); setQuantity(1); }}
+                    disabled={variant.stock <= 0}
+                    className={`px-4 py-2 rounded-lg border-2 text-sm font-medium transition-all ${
+                      selectedVariant?.id === variant.id
+                        ? "border-[var(--color-primary)] bg-[var(--color-primary)]/5 text-[var(--color-primary)]"
+                        : variant.stock <= 0
+                          ? "border-gray-200 bg-gray-50 text-gray-300 cursor-not-allowed line-through"
+                          : "border-gray-200 text-gray-700 hover:border-gray-400"
+                    }`}
+                  >
+                    {variant.name}
+                    {variant.price && variant.price !== product.price && (
+                      <span className="ml-1 text-xs opacity-70">({formatPrice(variant.price)})</span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Quantity selector */}
+          {!isInquiry && (
+            <div className="mb-6">
+              <h3 className="text-sm font-semibold text-[var(--color-secondary)] mb-3">{t("products.quantity")}</h3>
+              <div className="flex items-center gap-4">
+                <div className="flex items-center border-2 border-gray-200 rounded-lg">
+                  <button
+                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                    disabled={quantity <= 1}
+                    className="p-2.5 hover:bg-gray-50 transition-colors rounded-l-lg disabled:opacity-30"
+                  >
+                    <Minus size={16} />
+                  </button>
+                  <input
+                    type="number"
+                    min={1}
+                    max={stockCount && stockCount > 0 ? stockCount : 99}
+                    value={quantity}
+                    onChange={(e) => {
+                      const v = Math.max(1, Math.min(Number(e.target.value) || 1, stockCount && stockCount > 0 ? stockCount : 99));
+                      setQuantity(v);
+                    }}
+                    className="w-14 text-center text-sm font-medium border-x border-gray-200 py-2.5 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  />
+                  <button
+                    onClick={() => setQuantity(Math.min(quantity + 1, stockCount && stockCount > 0 ? stockCount : 99))}
+                    disabled={isOutOfStock}
+                    className="p-2.5 hover:bg-gray-50 transition-colors rounded-r-lg disabled:opacity-30"
+                  >
+                    <Plus size={16} />
+                  </button>
+                </div>
+                {/* Total price */}
+                {quantity > 1 && (
+                  <span className="text-sm text-gray-500">
+                    {t("products.totalPrice")}: <span className="font-bold text-[var(--color-secondary)]">{formatPrice(totalPrice)}</span>
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Description */}
           {product.description && (
@@ -214,8 +387,8 @@ export default function ProductDetailClient() {
             </div>
           )}
 
-          {/* Actions */}
-          <div className="flex gap-3 mb-3">
+          {/* Actions - Desktop */}
+          <div className="hidden md:flex gap-3 mb-3">
             <button
               onClick={handleToggleWishlist}
               className={`p-4 rounded-xl border-2 transition-colors ${isWished ? "border-red-400 text-red-500" : "border-gray-200 text-gray-400 hover:border-red-300 hover:text-red-400"}`}
@@ -249,15 +422,39 @@ export default function ProductDetailClient() {
               <>
                 <button
                   onClick={handleAddToCart}
-                  disabled={addingToCart}
+                  disabled={addingToCart || isOutOfStock}
                   className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-[var(--color-secondary)] text-white rounded-xl font-bold text-lg hover:opacity-90 transition-opacity disabled:opacity-60"
                 >
-                  <ShoppingCart size={22} /> {addingToCart ? t("products.addingToCart") : t("products.addToCart")}
+                  <ShoppingCart size={22} />
+                  {isOutOfStock ? t("products.outOfStock") : addingToCart ? t("products.addingToCart") : t("products.addToCart")}
                 </button>
-                <button className="flex-1 px-6 py-4 bg-[var(--color-primary)] text-white rounded-xl font-bold text-lg hover:opacity-90 transition-opacity">
-                  {t("products.buyNow")}
+                <button
+                  onClick={handleBuyNow}
+                  disabled={buyingNow || isOutOfStock}
+                  className="flex-1 px-6 py-4 bg-[var(--color-primary)] text-white rounded-xl font-bold text-lg hover:opacity-90 transition-opacity disabled:opacity-60"
+                >
+                  {buyingNow ? t("products.addingToCart") : t("products.buyNow")}
                 </button>
               </>
+            )}
+          </div>
+
+          {/* Mobile action icons (wishlist, share, collection) */}
+          <div className="flex md:hidden gap-3 mb-3">
+            <button
+              onClick={handleToggleWishlist}
+              className={`p-3 rounded-xl border-2 transition-colors ${isWished ? "border-red-400 text-red-500" : "border-gray-200 text-gray-400 hover:border-red-300 hover:text-red-400"}`}
+            >
+              <Heart size={20} className={isWished ? "fill-red-500" : ""} />
+            </button>
+            <ShareButton title={product.name} text={product.description || undefined} />
+            {isAuthenticated && (
+              <button
+                onClick={() => setShowCollectionModal(true)}
+                className="p-3 rounded-xl border-2 border-gray-200 text-gray-400 hover:border-purple-300 hover:text-purple-500 transition-colors"
+              >
+                <FolderPlus size={20} />
+              </button>
             )}
           </div>
 
@@ -308,7 +505,6 @@ export default function ProductDetailClient() {
                             width={800}
                             height={400}
                             className="rounded-xl w-full object-cover"
-                            unoptimized
                           />
                         </div>
                       )}
@@ -329,6 +525,7 @@ export default function ProductDetailClient() {
           {activeTab === "qna" && <QnATab productId={product.id} />}
         </div>
       </div>
+
       {/* AI Recommendations */}
       {recommendations.length > 0 && (
         <div className="mt-16">
@@ -351,7 +548,6 @@ export default function ProductDetailClient() {
                       fill
                       className="object-contain group-hover:scale-105 transition-transform"
                       sizes="(max-width: 768px) 50vw, 16vw"
-                      unoptimized
                     />
                   ) : (
                     <div className="flex items-center justify-center h-full text-4xl opacity-20">
@@ -372,6 +568,27 @@ export default function ProductDetailClient() {
               </Link>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* Sticky Mobile Bottom Bar */}
+      {!isInquiry && (
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-3 flex gap-2 md:hidden z-50 safe-bottom">
+          <button
+            onClick={handleAddToCart}
+            disabled={addingToCart || isOutOfStock}
+            className="flex-1 flex items-center justify-center gap-2 py-3.5 bg-[var(--color-secondary)] text-white rounded-xl font-bold hover:opacity-90 transition-opacity disabled:opacity-60"
+          >
+            <ShoppingCart size={18} />
+            {isOutOfStock ? t("products.outOfStock") : addingToCart ? "..." : t("products.addToCart")}
+          </button>
+          <button
+            onClick={handleBuyNow}
+            disabled={buyingNow || isOutOfStock}
+            className="flex-1 py-3.5 bg-[var(--color-primary)] text-white rounded-xl font-bold hover:opacity-90 transition-opacity disabled:opacity-60"
+          >
+            {buyingNow ? "..." : `${t("products.buyNow")} ${formatPrice(totalPrice)}`}
+          </button>
         </div>
       )}
 

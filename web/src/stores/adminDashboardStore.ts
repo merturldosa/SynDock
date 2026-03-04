@@ -6,10 +6,14 @@ import {
 } from "@microsoft/signalr";
 
 interface AdminDashboardEvent {
-  type: "NewOrder" | "OrderStatusChanged";
+  type: "NewOrder" | "OrderStatusChanged" | "MesSyncCompleted" | "AutoReorderTriggered";
   orderNumber: string;
   totalAmount?: number;
   newStatus?: string;
+  syncedCount?: number;
+  failedCount?: number;
+  itemCount?: number;
+  totalQuantity?: number;
   timestamp: string;
 }
 
@@ -54,6 +58,30 @@ export const useAdminDashboardStore = create<AdminDashboardState>((set, get) => 
           type: "OrderStatusChanged",
           orderNumber: data.orderNumber,
           newStatus: data.newStatus,
+          timestamp: data.timestamp,
+        },
+      });
+    });
+
+    conn.on("MesSyncCompleted", (data: { syncedCount: number; failedCount: number; timestamp: string }) => {
+      set({
+        lastEvent: {
+          type: "MesSyncCompleted",
+          orderNumber: "",
+          syncedCount: data.syncedCount,
+          failedCount: data.failedCount,
+          timestamp: data.timestamp,
+        },
+      });
+    });
+
+    conn.on("AutoReorderTriggered", (data: { orderNumber: string; itemCount: number; totalQuantity: number; timestamp: string }) => {
+      set({
+        lastEvent: {
+          type: "AutoReorderTriggered",
+          orderNumber: data.orderNumber,
+          itemCount: data.itemCount,
+          totalQuantity: data.totalQuantity,
           timestamp: data.timestamp,
         },
       });

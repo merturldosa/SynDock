@@ -23,4 +23,16 @@ public class SignalRAdminDashboardNotifier : IAdminDashboardNotifier
         await _hubContext.Clients.Group($"admins-{tenantId}")
             .SendAsync("OrderStatusChanged", new { orderNumber, newStatus, timestamp = DateTime.UtcNow }, ct);
     }
+
+    public async Task NotifyMesSyncCompleted(int tenantId, int syncedCount, int failedCount, CancellationToken ct = default)
+    {
+        await _hubContext.Clients.Group($"admins-{tenantId}")
+            .SendAsync("MesSyncCompleted", new { syncedCount, failedCount, timestamp = DateTime.UtcNow }, ct);
+    }
+
+    public async Task NotifyAutoReorderTriggered(int tenantId, string orderNumber, int itemCount, int totalQuantity, CancellationToken ct = default)
+    {
+        await _hubContext.Clients.Group($"admins-{tenantId}")
+            .SendAsync("AutoReorderTriggered", new { orderNumber, itemCount, totalQuantity, timestamp = DateTime.UtcNow }, ct);
+    }
 }

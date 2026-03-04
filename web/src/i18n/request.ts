@@ -1,7 +1,7 @@
 import { getRequestConfig } from "next-intl/server";
 import { cookies, headers } from "next/headers";
 
-const SUPPORTED_LOCALES = ["ko", "en", "ja"] as const;
+const SUPPORTED_LOCALES = ["ko", "en", "ja", "zh-CN", "vi"] as const;
 type Locale = (typeof SUPPORTED_LOCALES)[number];
 
 function isSupported(locale: string): locale is Locale {
@@ -11,7 +11,12 @@ function isSupported(locale: string): locale is Locale {
 function parseAcceptLanguage(header: string): Locale | null {
   const parts = header.split(",");
   for (const part of parts) {
-    const lang = part.split(";")[0].trim().split("-")[0].toLowerCase();
+    const raw = part.split(";")[0].trim();
+    // Check full locale first (e.g. zh-CN)
+    if (isSupported(raw)) return raw;
+    const lang = raw.split("-")[0].toLowerCase();
+    // Map zh variants to zh-CN
+    if (lang === "zh") return "zh-CN";
     if (isSupported(lang)) return lang;
   }
   return null;

@@ -7,6 +7,7 @@ import { NotificationToast } from "@/components/NotificationToast";
 import { PWARegistrar } from "@/components/PWARegistrar";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
+import { generateOrganizationJsonLd } from "@/lib/seo";
 
 const TENANT_NAME = process.env.NEXT_PUBLIC_TENANT_NAME || "SynDock Shop";
 const TENANT_DESC = process.env.NEXT_PUBLIC_TENANT_DESC || "멀티테넌트 쇼핑몰 플랫폼";
@@ -43,6 +44,17 @@ export default async function RootLayout({
         <link rel="apple-touch-icon" href="/icons/icon-192.svg" />
       </head>
       <body className="min-h-screen flex flex-col">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(
+              generateOrganizationJsonLd({
+                name: TENANT_NAME,
+                url: process.env.NEXT_PUBLIC_SITE_URL || "https://shop.syndock.com",
+              })
+            ),
+          }}
+        />
         <NextIntlClientProvider messages={messages}>
           <Providers>
             <Header />

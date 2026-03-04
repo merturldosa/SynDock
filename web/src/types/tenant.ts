@@ -49,6 +49,26 @@ export interface TenantConfig {
     backgroundColor?: string;
     isActive: boolean;
   };
+  shipping?: {
+    freeShippingThreshold?: number;
+    defaultShippingFee?: number;
+    shippingPolicy?: string;
+    returnPolicy?: string;
+    estimatedDeliveryDays?: number;
+  };
+  seo?: {
+    metaTitle?: string;
+    metaDescription?: string;
+    metaKeywords?: string;
+    ogImageUrl?: string;
+  };
+  socialLinks?: {
+    instagram?: string;
+    facebook?: string;
+    youtube?: string;
+    blog?: string;
+    kakaoChannel?: string;
+  };
 }
 
 export interface TenantInfo {

@@ -22,6 +22,10 @@ export interface ForecastResult {
   currentStock: number;
   estimatedDaysUntilStockout: number;
   aiInsight?: AiInsight | null;
+  trendSlope?: number | null;
+  trendDirection?: string | null;
+  seasonalityStrength?: number | null;
+  forecastMethod?: string | null;
 }
 
 export interface CategoryForecastResult {
@@ -62,6 +66,68 @@ export interface MesStockDiscrepancy {
   mesStock: number;
   difference: number;
 }
+
+// Sprint 5: New types
+
+export interface MesSyncHistory {
+  id: number;
+  startedAt: string;
+  completedAt: string | null;
+  status: string;
+  successCount: number;
+  failedCount: number;
+  skippedCount: number;
+  elapsedMs: number;
+  errorDetailsJson: string | null;
+  conflictDetailsJson: string | null;
+}
+
+export interface MesSyncHistoryPage {
+  items: MesSyncHistory[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+export interface ForecastAccuracyResult {
+  productId: number;
+  productName: string;
+  mape: number;
+  mae: number;
+  forecastCount: number;
+  dataPoints: AccuracyDataPoint[];
+}
+
+export interface AccuracyDataPoint {
+  targetDate: string;
+  predicted: number;
+  actual: number;
+  percentageError: number;
+}
+
+export interface AutoPurchaseOrderResult {
+  success: boolean;
+  mesOrderId: string | null;
+  productCount: number;
+  totalQuantity: number;
+  errorMessage: string | null;
+}
+
+export interface BatchAiInsightResult {
+  products: ProductAiSummary[];
+  overallSummary: string;
+  averageConfidence: number;
+}
+
+export interface ProductAiSummary {
+  productId: number;
+  productName: string;
+  trendDirection: string;
+  seasonalityStrength: number;
+  keyInsight: string;
+}
+
+// --- Existing API functions ---
 
 export async function getProductForecast(
   productId: number,
@@ -187,5 +253,69 @@ export async function generateProductImage(
     prompt,
     size,
   });
+  return data;
+}
+
+// --- Sprint 5: New API functions ---
+
+export async function getMesSyncHistory(
+  page = 1,
+  pageSize = 20
+): Promise<MesSyncHistoryPage> {
+  const { data } = await api.get<MesSyncHistoryPage>(
+    "/admin/mes/sync-history",
+    { params: { page, pageSize } }
+  );
+  return data;
+}
+
+export async function getProductAccuracy(
+  productId: number
+): Promise<ForecastAccuracyResult> {
+  const { data } = await api.get<ForecastAccuracyResult>(
+    `/admin/forecast/accuracy/${productId}`
+  );
+  return data;
+}
+
+export async function getAllAccuracies(): Promise<ForecastAccuracyResult[]> {
+  const { data } = await api.get<ForecastAccuracyResult[]>(
+    "/admin/forecast/accuracy"
+  );
+  return data;
+}
+
+export async function updateAccuracy(): Promise<{ message: string }> {
+  const { data } = await api.post<{ message: string }>(
+    "/admin/forecast/accuracy/update"
+  );
+  return data;
+}
+
+export async function createAutoPurchaseOrder(
+  productIds: number[]
+): Promise<AutoPurchaseOrderResult> {
+  const { data } = await api.post<AutoPurchaseOrderResult>(
+    "/admin/forecast/auto-purchase-order",
+    { productIds }
+  );
+  return data;
+}
+
+export async function getBatchAiInsights(): Promise<BatchAiInsightResult> {
+  const { data } = await api.get<BatchAiInsightResult>(
+    "/admin/forecast/batch-ai-insights"
+  );
+  return data;
+}
+
+export async function getHoltWintersForecast(
+  productId: number,
+  days = 30
+): Promise<ForecastResult> {
+  const { data } = await api.get<ForecastResult>(
+    `/admin/forecast/products/${productId}/holt-winters`,
+    { params: { days } }
+  );
   return data;
 }

@@ -36,7 +36,6 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
               fill
               className="object-cover group-hover:scale-105 transition-transform duration-300"
               sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
-              unoptimized
             />
           ) : (
             <span className="text-6xl opacity-30 group-hover:scale-110 transition-transform duration-300">
@@ -60,8 +59,15 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
             </span>
           )}
 
+          {/* Out of stock overlay */}
+          {product.totalStock !== undefined && product.totalStock <= 0 && (
+            <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+              <span className="bg-white/90 text-gray-700 font-bold text-sm px-4 py-2 rounded-full">{t("outOfStock")}</span>
+            </div>
+          )}
+
           {/* Quick add button */}
-          {!isInquiry && (
+          {!isInquiry && (product.totalStock === undefined || product.totalStock > 0) && (
             <button
               onClick={(e) => {
                 e.preventDefault();
@@ -101,6 +107,12 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
               </>
             )}
           </div>
+          {product.totalStock !== undefined && product.totalStock <= 0 && (
+            <p className="text-xs text-red-500 font-medium mt-1">{t("outOfStock")}</p>
+          )}
+          {product.totalStock !== undefined && product.totalStock > 0 && product.totalStock <= 5 && (
+            <p className="text-xs text-orange-500 mt-1">{t("lowStock", { count: product.totalStock })}</p>
+          )}
         </div>
       </div>
     </Link>

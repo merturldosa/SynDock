@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+
+  <!-- Auth -->
+  <data name="InvalidCredentials"><value>メールアドレスまたはパスワードが無効です。</value></data>
+  <data name="UsernameInUse"><value>このユーザー名は既に使用されています。</value></data>
+  <data name="EmailInUse"><value>このメールアドレスは既に使用されています。</value></data>
+  <data name="InvalidOrExpiredToken"><value>無効または期限切れのトークンです。</value></data>
+  <data name="LoginRequired"><value>ログインが必要です。</value></data>
+  <data name="NoPermission"><value>権限がありません。</value></data>
+  <data name="UserNotFound"><value>ユーザーが見つかりません。</value></data>
+  <data name="InvalidRole"><value>無効な役割です。</value></data>
+  <data name="AccountInactive"><value>アカウントが無効です。</value></data>
+
+  <!-- 2FA -->
+  <data name="TwoFactorAlreadyEnabled"><value>二段階認証は既に有効です。</value></data>
+  <data name="TwoFactorNotSetup"><value>まず二段階認証の設定を開始してください。</value></data>
+  <data name="TwoFactorInvalidCode"><value>認証コードが無効です。</value></data>
+  <data name="TwoFactorNotEnabled"><value>二段階認証が有効になっていません。</value></data>
+
+  <!-- Validation -->
+  <data name="UsernameRequired"><value>ユーザー名は必須です。</value></data>
+  <data name="UsernameMinLength"><value>ユーザー名は3文字以上必要です。</value></data>
+  <data name="EmailRequired"><value>メールアドレスは必須です。</value></data>
+  <data name="EmailInvalidFormat"><value>メールアドレスの形式が無効です。</value></data>
+  <data name="PasswordRequired"><value>パスワードは必須です。</value></data>
+  <data name="PasswordMinLength"><value>パスワードは6文字以上必要です。</value></data>
+  <data name="NameRequired"><value>名前は必須です。</value></data>
+
+  <!-- Tenant -->
+  <data name="TenantNotFound"><value>テナントが見つかりません。</value></data>
+  <data name="TenantInactive"><value>テナントが無効です。</value></data>
+  <data name="SlugInUse"><value>このスラッグは既に使用されています。</value></data>
+
+  <!-- Product -->
+  <data name="ProductNotFound"><value>商品が見つかりません。</value></data>
+  <data name="VariantNotFound"><value>商品バリエーションが見つかりません。</value></data>
+  <data name="CategoryNotFound"><value>カテゴリが見つかりません。</value></data>
+  <data name="ParentCategoryNotFound"><value>親カテゴリが見つかりません。</value></data>
+  <data name="SlugAlreadyUsed"><value>このスラッグは既に使用されています。</value></data>
+  <data name="StockMustBePositive"><value>在庫数は0以上である必要があります。</value></data>
+  <data name="InsufficientStock"><value>在庫が不足しています。</value></data>
+
+  <!-- Cart -->
+  <data name="CartItemNotFound"><value>カートアイテムが見つかりません。</value></data>
+  <data name="CartEmpty"><value>カートが空です。</value></data>
+
+  <!-- Order -->
+  <data name="OrderNotFound"><value>注文が見つかりません。</value></data>
+  <data name="AddressNotFound"><value>配送先住所が見つかりません。</value></data>
+  <data name="OnlyPendingCanPay"><value>保留中の注文のみ決済できます。</value></data>
+  <data name="PaymentAmountMismatch"><value>決済金額が一致しません。</value></data>
+  <data name="AlreadyRefunded"><value>既に返金済みです。</value></data>
+  <data name="CannotRefundCancelled"><value>キャンセルされた注文は返金できません。</value></data>
+  <data name="PaymentFailed"><value>決済の確認に失敗しました。</value></data>
+
+  <!-- Review / QnA -->
+  <data name="ReviewNotFound"><value>レビューが見つかりません。</value></data>
+  <data name="QnaNotFound"><value>Q&amp;Aが見つかりません。</value></data>
+  <data name="AlreadyReviewed"><value>既にレビューを投稿済みです。</value></data>
+
+  <!-- Social -->
+  <data name="PostNotFound"><value>投稿が見つかりません。</value></data>
+  <data name="CannotFollowSelf"><value>自分自身をフォローすることはできません。</value></data>
+  <data name="AlreadyFollowing"><value>既にフォロー中です。</value></data>
+
+  <!-- Coupon / Point -->
+  <data name="CouponNotFound"><value>クーポンが見つかりません。</value></data>
+  <data name="CouponAlreadyUsed"><value>クーポンは既に使用済みです。</value></data>
+  <data name="CouponExpired"><value>クーポンの有効期限が切れています。</value></data>
+  <data name="InsufficientPoints"><value>ポイントが不足しています。</value></data>
+
+  <!-- Collection -->
+  <data name="CollectionNotFound"><value>コレクションが見つかりません。</value></data>
+
+  <!-- Billing -->
+  <data name="BillingNotFound"><value>請求情報が見つかりません。</value></data>
+  <data name="InvoiceNotFound"><value>請求書が見つかりません。</value></data>
+  <data name="InvoiceAlreadyPaid"><value>請求書は既に支払い済みです。</value></data>
+  <data name="NoPaidPlan"><value>有料プランが設定されていません。</value></data>
+
+  <!-- Commission / Settlement -->
+  <data name="CommissionAlreadyCalculated"><value>この注文の手数料は既に計算済みです。</value></data>
+  <data name="NoPendingCommissions"><value>精算待ちの手数料はありません。</value></data>
+  <data name="SettlementNotFound"><value>精算バッチが見つかりません。</value></data>
+  <data name="SettlementAlreadyProcessed"><value>精算は既に処理済みです。</value></data>
+
+  <!-- Campaign -->
+  <data name="CampaignNotFound"><value>キャンペーンが見つかりません。</value></data>
+
+  <!-- Common -->
+  <data name="ValidationFailed"><value>入力内容に誤りがあります。</value></data>
+  <data name="ServerError"><value>サーバーエラーが発生しました。</value></data>
+  <data name="NotFound"><value>見つかりません。</value></data>
+  <data name="AlreadyExists"><value>既に存在します。</value></data>
+</root>

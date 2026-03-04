@@ -48,6 +48,13 @@ public class ProductsController : ControllerBase
         });
     }
 
+    [HttpGet("slugs")]
+    public async Task<IActionResult> GetSlugs()
+    {
+        var result = await _mediator.Send(new GetProductSlugsQuery());
+        return Ok(result);
+    }
+
     [HttpGet("suggestions")]
     public async Task<IActionResult> GetSuggestions([FromQuery] string term)
     {
@@ -151,6 +158,32 @@ public class ProductsController : ControllerBase
             return BadRequest(new { error = result.RevisedPrompt ?? "이미지 생성에 실패했습니다." });
 
         return Ok(new { url = result.Url, revisedPrompt = result.RevisedPrompt });
+    }
+
+    [HttpGet("export")]
+    [Authorize]
+    public async Task<IActionResult> Export()
+    {
+        var result = await _mediator.Send(new ExportProductsCommand());
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.Error });
+        return File(result.Data!, "text/csv", $"products_{DateTime.UtcNow:yyyyMMdd}.csv");
+    }
+
+    [HttpPost("import")]
+    [Authorize]
+    public async Task<IActionResult> Import(IFormFile file)
+    {
+        if (file == null || file.Length == 0)
+            return BadRequest(new { error = "CSV file is required" });
+
+        using var reader = new StreamReader(file.OpenReadStream());
+        var csvContent = await reader.ReadToEndAsync();
+
+        var result = await _mediator.Send(new ImportProductsCommand(csvContent));
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.Error });
+        return Ok(result.Data);
     }
 }
 

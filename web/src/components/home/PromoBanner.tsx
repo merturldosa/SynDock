@@ -40,7 +40,6 @@ function BannerContent({ banner }: { banner: NonNullable<ReturnType<typeof useTe
             alt={banner.title || ""}
             fill
             className="object-cover"
-            unoptimized
           />
         </div>
       )}

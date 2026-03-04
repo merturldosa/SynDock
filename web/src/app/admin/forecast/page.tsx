@@ -8,6 +8,7 @@ import {
   Layers,
   Sparkles,
   Server,
+  BarChart2,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { getLowStockForecasts, type ForecastResult } from "@/lib/forecastApi";
@@ -16,8 +17,9 @@ import PurchaseRecommendations from "./_components/PurchaseRecommendations";
 import CategoryForecastGrid from "./_components/CategoryForecastGrid";
 import AiInsightPanel from "./_components/AiInsightPanel";
 import MesStatusPanel from "./_components/MesStatusPanel";
+import ForecastAccuracyPanel from "./_components/ForecastAccuracyPanel";
 
-type Tab = "overview" | "categories" | "aiInsights" | "mesIntegration";
+type Tab = "overview" | "categories" | "aiInsights" | "mesIntegration" | "accuracy";
 
 export default function ForecastPage() {
   const t = useTranslations();
@@ -53,6 +55,11 @@ export default function ForecastPage() {
       key: "aiInsights",
       icon: Sparkles,
       label: t("admin.forecast.tabs.aiInsights"),
+    },
+    {
+      key: "accuracy",
+      icon: BarChart2,
+      label: t("admin.forecast.tabs.accuracy"),
     },
     {
       key: "mesIntegration",
@@ -184,6 +191,8 @@ export default function ForecastPage() {
       {activeTab === "categories" && <CategoryForecastGrid />}
 
       {activeTab === "aiInsights" && <AiInsightPanel />}
+
+      {activeTab === "accuracy" && <ForecastAccuracyPanel />}
 
       {activeTab === "mesIntegration" && <MesStatusPanel />}
     </div>

@@ -150,7 +150,7 @@ export function ReviewTab({ productId }: ReviewTabProps) {
                 onClick={() => setExpandedImage(r.imageUrl)}
                 className="w-16 h-16 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0 hover:opacity-80 transition-opacity"
               >
-                <Image src={r.imageUrl!} alt="" width={64} height={64} className="object-cover w-full h-full" unoptimized />
+                <Image src={r.imageUrl!} alt="" width={64} height={64} className="object-cover w-full h-full" />
               </button>
             ))}
           </div>
@@ -206,7 +206,7 @@ export function ReviewTab({ productId }: ReviewTabProps) {
             {newImageUrl && (
               <div className="mt-2 flex items-start gap-2">
                 <div className="w-20 h-20 rounded-lg overflow-hidden bg-gray-100">
-                  <Image src={newImageUrl} alt="" width={80} height={80} className="object-cover w-full h-full" unoptimized />
+                  <Image src={newImageUrl} alt="" width={80} height={80} className="object-cover w-full h-full" />
                 </div>
                 <button onClick={() => setNewImageUrl("")} className="text-gray-400 hover:text-red-500">
                   <X size={14} />
@@ -254,7 +254,7 @@ export function ReviewTab({ productId }: ReviewTabProps) {
                   onClick={() => setExpandedImage(review.imageUrl)}
                   className="mt-2 w-24 h-24 rounded-lg overflow-hidden bg-gray-100 hover:opacity-80 transition-opacity"
                 >
-                  <Image src={review.imageUrl} alt="" width={96} height={96} className="object-cover w-full h-full" unoptimized />
+                  <Image src={review.imageUrl} alt="" width={96} height={96} className="object-cover w-full h-full" />
                 </button>
               )}
             </div>
@@ -269,7 +269,7 @@ export function ReviewTab({ productId }: ReviewTabProps) {
           onClick={() => setExpandedImage(null)}
         >
           <div className="relative max-w-2xl max-h-[80vh]">
-            <Image src={expandedImage} alt="" width={800} height={800} className="object-contain max-h-[80vh] rounded-xl" unoptimized />
+            <Image src={expandedImage} alt="" width={800} height={800} className="object-contain max-h-[80vh] rounded-xl" />
             <button
               onClick={() => setExpandedImage(null)}
               className="absolute top-2 right-2 w-8 h-8 bg-white/80 rounded-full flex items-center justify-center text-gray-700 hover:bg-white"

@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+
+  <!-- Auth -->
+  <data name="InvalidCredentials"><value>Invalid email or password.</value></data>
+  <data name="UsernameInUse"><value>Username is already in use.</value></data>
+  <data name="EmailInUse"><value>Email is already in use.</value></data>
+  <data name="InvalidOrExpiredToken"><value>Invalid or expired token.</value></data>
+  <data name="LoginRequired"><value>Login is required.</value></data>
+  <data name="NoPermission"><value>You do not have permission.</value></data>
+  <data name="UserNotFound"><value>User not found.</value></data>
+  <data name="InvalidRole"><value>Invalid role.</value></data>
+  <data name="AccountInactive"><value>Account is inactive.</value></data>
+
+  <!-- 2FA -->
+  <data name="TwoFactorAlreadyEnabled"><value>Two-factor authentication is already enabled.</value></data>
+  <data name="TwoFactorNotSetup"><value>Please start two-factor authentication setup first.</value></data>
+  <data name="TwoFactorInvalidCode"><value>Invalid authentication code.</value></data>
+  <data name="TwoFactorNotEnabled"><value>Two-factor authentication is not enabled.</value></data>
+
+  <!-- Validation -->
+  <data name="UsernameRequired"><value>Username is required.</value></data>
+  <data name="UsernameMinLength"><value>Username must be at least 3 characters.</value></data>
+  <data name="EmailRequired"><value>Email is required.</value></data>
+  <data name="EmailInvalidFormat"><value>Invalid email format.</value></data>
+  <data name="PasswordRequired"><value>Password is required.</value></data>
+  <data name="PasswordMinLength"><value>Password must be at least 6 characters.</value></data>
+  <data name="NameRequired"><value>Name is required.</value></data>
+
+  <!-- Tenant -->
+  <data name="TenantNotFound"><value>Tenant not found.</value></data>
+  <data name="TenantInactive"><value>Tenant is inactive.</value></data>
+  <data name="SlugInUse"><value>Slug is already in use.</value></data>
+
+  <!-- Product -->
+  <data name="ProductNotFound"><value>Product not found.</value></data>
+  <data name="VariantNotFound"><value>Product variant not found.</value></data>
+  <data name="CategoryNotFound"><value>Category not found.</value></data>
+  <data name="ParentCategoryNotFound"><value>Parent category not found.</value></data>
+  <data name="SlugAlreadyUsed"><value>Slug is already in use.</value></data>
+  <data name="StockMustBePositive"><value>Stock quantity must be 0 or greater.</value></data>
+  <data name="InsufficientStock"><value>Insufficient stock.</value></data>
+
+  <!-- Cart -->
+  <data name="CartItemNotFound"><value>Cart item not found.</value></data>
+  <data name="CartEmpty"><value>Cart is empty.</value></data>
+
+  <!-- Order -->
+  <data name="OrderNotFound"><value>Order not found.</value></data>
+  <data name="AddressNotFound"><value>Shipping address not found.</value></data>
+  <data name="OnlyPendingCanPay"><value>Only pending orders can be paid.</value></data>
+  <data name="PaymentAmountMismatch"><value>Payment amount does not match.</value></data>
+  <data name="AlreadyRefunded"><value>Order has already been refunded.</value></data>
+  <data name="CannotRefundCancelled"><value>Cancelled orders cannot be refunded.</value></data>
+  <data name="PaymentFailed"><value>Payment confirmation failed.</value></data>
+
+  <!-- Review / QnA -->
+  <data name="ReviewNotFound"><value>Review not found.</value></data>
+  <data name="QnaNotFound"><value>Q&amp;A not found.</value></data>
+  <data name="AlreadyReviewed"><value>You have already written a review.</value></data>
+
+  <!-- Social -->
+  <data name="PostNotFound"><value>Post not found.</value></data>
+  <data name="CannotFollowSelf"><value>You cannot follow yourself.</value></data>
+  <data name="AlreadyFollowing"><value>Already following.</value></data>
+
+  <!-- Coupon / Point -->
+  <data name="CouponNotFound"><value>Coupon not found.</value></data>
+  <data name="CouponAlreadyUsed"><value>Coupon has already been used.</value></data>
+  <data name="CouponExpired"><value>Coupon has expired.</value></data>
+  <data name="InsufficientPoints"><value>Insufficient points.</value></data>
+
+  <!-- Collection -->
+  <data name="CollectionNotFound"><value>Collection not found.</value></data>
+
+  <!-- Billing -->
+  <data name="BillingNotFound"><value>Billing information not found.</value></data>
+  <data name="InvoiceNotFound"><value>Invoice not found.</value></data>
+  <data name="InvoiceAlreadyPaid"><value>Invoice has already been paid.</value></data>
+  <data name="NoPaidPlan"><value>No paid plan has been set.</value></data>
+
+  <!-- Commission / Settlement -->
+  <data name="CommissionAlreadyCalculated"><value>Commission has already been calculated for this order.</value></data>
+  <data name="NoPendingCommissions"><value>No pending commissions to settle.</value></data>
+  <data name="SettlementNotFound"><value>Settlement batch not found.</value></data>
+  <data name="SettlementAlreadyProcessed"><value>Settlement has already been processed.</value></data>
+
+  <!-- Campaign -->
+  <data name="CampaignNotFound"><value>Campaign not found.</value></data>
+
+  <!-- Common -->
+  <data name="ValidationFailed"><value>Validation failed.</value></data>
+  <data name="ServerError"><value>A server error occurred.</value></data>
+  <data name="NotFound"><value>Not found.</value></data>
+  <data name="AlreadyExists"><value>Already exists.</value></data>
+</root>

@@ -38,6 +38,14 @@ public class Order : BaseEntity, ITenantEntity
     [MaxLength(500)]
     public string? Note { get; set; }
 
+    /// <summary>MES 연동 주문 ID (MES SalesOrder PK)</summary>
+    [MaxLength(50)]
+    public string? MesOrderId { get; set; }
+
+    /// <summary>MES 연동 주문번호</summary>
+    [MaxLength(50)]
+    public string? MesOrderNo { get; set; }
+
     public int? ShippingAddressId { get; set; }
 
     // Navigation

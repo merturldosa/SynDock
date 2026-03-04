@@ -4,10 +4,11 @@ import { useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { ShoppingCart, Trash2, Minus, Plus, ArrowRight } from "lucide-react";
+import { ShoppingCart, Trash2, Minus, Plus, ArrowRight, Truck } from "lucide-react";
 import { useCartStore } from "@/stores/cartStore";
 import { useAuthStore } from "@/stores/authStore";
 import { useTranslations } from "next-intl";
+import { CheckoutSteps } from "@/components/checkout/CheckoutSteps";
 
 function formatPrice(price: number): string {
   return price.toLocaleString("ko-KR") + "\uC6D0";
@@ -70,8 +71,17 @@ export default function CartPage() {
     router.push("/order");
   };
 
+  const discountTotal = cart.items.reduce((sum, item) => {
+    if (item.salePrice) {
+      return sum + (item.price - item.salePrice) * item.quantity;
+    }
+    return sum;
+  }, 0);
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
+      <CheckoutSteps currentStep="cart" />
+
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-2xl font-bold text-[var(--color-secondary)]">
           {t("cart.title")} <span className="text-[var(--color-primary)]">({cart.totalQuantity})</span>
@@ -102,7 +112,6 @@ export default function CartPage() {
                       fill
                       className="object-cover"
                       sizes="96px"
-                      unoptimized
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-3xl opacity-30">📦</div>
@@ -171,8 +180,14 @@ export default function CartPage() {
             <div className="space-y-3 text-sm">
               <div className="flex justify-between">
                 <span className="text-gray-500">{t("cart.subtotal")}</span>
-                <span className="font-medium">{formatPrice(cart.totalAmount)}</span>
+                <span className="font-medium">{formatPrice(cart.totalAmount + discountTotal)}</span>
               </div>
+              {discountTotal > 0 && (
+                <div className="flex justify-between text-red-500">
+                  <span>{t("products.discount", { percent: "" }).replace("%", "")}</span>
+                  <span>-{formatPrice(discountTotal)}</span>
+                </div>
+              )}
               <div className="flex justify-between">
                 <span className="text-gray-500">{t("cart.shippingFee")}</span>
                 <span className="font-medium text-[var(--color-primary)]">{t("common.free")}</span>
@@ -182,6 +197,15 @@ export default function CartPage() {
                 <span className="font-bold text-lg text-[var(--color-primary)]">
                   {formatPrice(cart.totalAmount)}
                 </span>
+              </div>
+            </div>
+
+            {/* Estimated delivery */}
+            <div className="mt-4 p-3 bg-gray-50 rounded-lg flex items-start gap-2">
+              <Truck size={16} className="text-gray-400 mt-0.5 shrink-0" />
+              <div className="text-xs text-gray-500">
+                <p className="font-medium text-gray-700">{t("checkout.estimatedDelivery")}</p>
+                <p>{t("checkout.estimatedDays", { min: 3, max: 7 })}</p>
               </div>
             </div>
 
