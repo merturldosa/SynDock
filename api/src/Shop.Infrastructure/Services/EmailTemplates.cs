@@ -59,6 +59,16 @@ public static class EmailTemplates
         return WrapLayout(title, body);
     }
 
+    public static string WelcomeEmail(string name, string storeName)
+    {
+        var content = $@"
+<h2 style=""color:#333;font-size:18px;"">Welcome to {storeName}!</h2>
+<p style=""color:#666;line-height:1.6;"">Hello <strong>{name}</strong>, thank you for joining us.</p>
+<p style=""color:#666;line-height:1.6;"">Start exploring our products and enjoy your shopping experience.</p>
+<p style=""color:#666;line-height:1.6;"">If you have any questions, feel free to contact us anytime.</p>";
+        return WrapLayout("Welcome", content);
+    }
+
     public static string SettlementCompleted(
         string tenantName,
         DateTime periodStart,

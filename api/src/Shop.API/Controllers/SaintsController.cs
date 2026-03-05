@@ -41,6 +41,13 @@ public class SaintsController : ControllerBase
         return Ok(result);
     }
 
+    [HttpGet("{id:int}/products")]
+    public async Task<IActionResult> GetProductsBySaint(int id, CancellationToken ct)
+    {
+        var result = await _mediator.Send(new GetProductsBySaintQuery(id), ct);
+        return Ok(result);
+    }
+
     [Authorize]
     [HttpPost("seed")]
     public async Task<IActionResult> SeedSaints(CancellationToken ct)

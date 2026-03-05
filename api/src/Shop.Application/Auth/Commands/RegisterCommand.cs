@@ -28,9 +28,10 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, Result<Au
     private readonly IUnitOfWork _unitOfWork;
     private readonly IPlanEnforcer _planEnforcer;
     private readonly IAutoCouponService _autoCoupon;
+    private readonly IEmailService _emailService;
     private readonly ILogger<RegisterCommandHandler> _logger;
 
-    public RegisterCommandHandler(IShopDbContext db, ITokenService tokenService, ITenantContext tenantContext, IUnitOfWork unitOfWork, IPlanEnforcer planEnforcer, IAutoCouponService autoCoupon, ILogger<RegisterCommandHandler> logger)
+    public RegisterCommandHandler(IShopDbContext db, ITokenService tokenService, ITenantContext tenantContext, IUnitOfWork unitOfWork, IPlanEnforcer planEnforcer, IAutoCouponService autoCoupon, IEmailService emailService, ILogger<RegisterCommandHandler> logger)
     {
         _db = db;
         _tokenService = tokenService;
@@ -38,6 +39,7 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, Result<Au
         _unitOfWork = unitOfWork;
         _planEnforcer = planEnforcer;
         _autoCoupon = autoCoupon;
+        _emailService = emailService;
         _logger = logger;
     }
 
@@ -80,6 +82,15 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, Result<Au
             await _unitOfWork.SaveChangesAsync(cancellationToken);
         }
         catch (Exception ex) { _logger.LogWarning(ex, "Welcome coupon issuance failed for user {UserId}", user.Id); }
+
+        // Send welcome email (fire-and-forget style)
+        try
+        {
+            var tenantName = _tenantContext.Tenant?.Name ?? "Shop";
+            var body = $"<h2>Welcome to {tenantName}!</h2><p>Hello {user.Name}, thank you for joining us. Start exploring our products!</p>";
+            await _emailService.SendAsync(user.Email, $"Welcome to {tenantName}!", body, CancellationToken.None);
+        }
+        catch (Exception ex) { _logger.LogWarning(ex, "Welcome email failed for user {UserId}", user.Id); }
 
         var refreshTokenValue = _tokenService.GenerateRefreshToken();
         var refreshToken = new RefreshToken

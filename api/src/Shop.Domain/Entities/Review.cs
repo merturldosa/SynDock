@@ -24,6 +24,11 @@ public class Review : BaseEntity, ITenantEntity
 
     public bool IsVisible { get; set; } = true;
 
+    [MaxLength(2000)]
+    public string? AdminReply { get; set; }
+
+    public DateTime? AdminRepliedAt { get; set; }
+
     // Navigation
     [ForeignKey("ProductId")]
     public Product Product { get; set; } = null!;

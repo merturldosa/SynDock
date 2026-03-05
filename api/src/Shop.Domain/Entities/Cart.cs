@@ -11,6 +11,10 @@ public class Cart : BaseEntity, ITenantEntity
 
     public int UserId { get; set; }
 
+    public DateTime? LastActivityAt { get; set; }
+
+    public DateTime? AbandonmentEmailSentAt { get; set; }
+
     // Navigation
     [ForeignKey("UserId")]
     public User User { get; set; } = null!;

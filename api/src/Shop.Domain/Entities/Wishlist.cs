@@ -13,6 +13,10 @@ public class Wishlist : BaseEntity, ITenantEntity
 
     public int ProductId { get; set; }
 
+    public Guid? ShareToken { get; set; }
+
+    public bool IsPublic { get; set; } = false;
+
     // Navigation
     [ForeignKey("UserId")]
     public User User { get; set; } = null!;

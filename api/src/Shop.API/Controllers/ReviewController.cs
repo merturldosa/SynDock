@@ -60,6 +60,18 @@ public class ReviewController : ControllerBase
             return BadRequest(new { error = result.Error });
         return Ok(new { success = true });
     }
+
+    [HttpPut("{id:int}/reply")]
+    [Authorize(Roles = "TenantAdmin,Admin,PlatformAdmin")]
+    public async Task<IActionResult> ReplyToReview(int id, [FromBody] ReplyToReviewRequest request, CancellationToken ct)
+    {
+        var result = await _mediator.Send(new ReplyToReviewCommand(id, request.Reply), ct);
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.Error });
+        return Ok(new { success = true });
+    }
 }
 
 public record CreateReviewRequest(int ProductId, int Rating, string? Content, string? ImageUrl = null);
+
+public record ReplyToReviewRequest(string Reply);

@@ -58,5 +58,7 @@ public interface IShopDbContext
     DbSet<AutoReorderRule> AutoReorderRules { get; }
     DbSet<PurchaseOrder> PurchaseOrders { get; }
     DbSet<PurchaseOrderItem> PurchaseOrderItems { get; }
+    DbSet<SaintProduct> SaintProducts { get; }
+    DbSet<Banner> Banners { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

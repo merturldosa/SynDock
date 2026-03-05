@@ -40,6 +40,23 @@ public class WishlistController : ControllerBase
         var result = await _mediator.Send(new CheckWishlistQuery(request.ProductIds), ct);
         return Ok(new { wishedProductIds = result });
     }
+
+    [HttpPost("share")]
+    public async Task<IActionResult> Share(CancellationToken ct)
+    {
+        var result = await _mediator.Send(new ShareWishlistCommand(), ct);
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.Error });
+        return Ok(new { shareToken = result.Data });
+    }
+
+    [HttpGet("shared/{token:guid}")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetShared(Guid token, CancellationToken ct)
+    {
+        var result = await _mediator.Send(new GetSharedWishlistQuery(token), ct);
+        return Ok(result);
+    }
 }
 
 public record ToggleWishlistRequest(int ProductId);

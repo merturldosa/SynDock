@@ -126,6 +126,8 @@ public static class DependencyInjection
         services.AddHostedService<CampaignScheduler>();
         services.AddHostedService<AutoReorderJob>();
         services.AddHostedService<BirthdayCouponJob>();
+        services.AddHostedService<CartAbandonmentJob>();
+        services.AddHostedService<RepurchaseReminderJob>();
 
         // Auto Coupon
         services.AddScoped<IAutoCouponService, AutoCouponService>();

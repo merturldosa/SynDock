@@ -102,6 +102,20 @@ public class CouponsController : ControllerBase
             return BadRequest(new { error = result.Error });
         return Ok(result.Data);
     }
+    // Admin: Bulk generate coupons with unique codes
+    [HttpPost("bulk-generate")]
+    [Authorize(Roles = "TenantAdmin,Admin,PlatformAdmin")]
+    public async Task<IActionResult> BulkGenerate([FromBody] BulkGenerateCouponsRequest request, CancellationToken ct)
+    {
+        var result = await _mediator.Send(new BulkGenerateCouponsCommand(
+            request.Prefix, request.Count, request.Name, request.Description,
+            request.DiscountType, request.DiscountValue,
+            request.MinOrderAmount, request.MaxDiscountAmount,
+            request.StartDate, request.EndDate, request.MaxUsageCount), ct);
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.Error });
+        return Ok(new { codes = result.Data, count = result.Data!.Count });
+    }
 }
 
 public record CreateCouponRequest(
@@ -119,3 +133,9 @@ public record UpdateCouponRequest(
 public record IssueCouponRequest(List<int>? UserIds);
 
 public record ValidateCouponRequest(string Code, decimal OrderAmount);
+
+public record BulkGenerateCouponsRequest(
+    string Prefix, int Count, string Name, string? Description,
+    string DiscountType, decimal DiscountValue,
+    decimal MinOrderAmount, decimal? MaxDiscountAmount,
+    DateTime StartDate, DateTime EndDate, int MaxUsageCount);

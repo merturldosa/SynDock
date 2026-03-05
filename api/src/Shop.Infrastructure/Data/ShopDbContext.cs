@@ -72,6 +72,8 @@ public class ShopDbContext : DbContext, IShopDbContext
     public DbSet<AutoReorderRule> AutoReorderRules { get; set; }
     public DbSet<PurchaseOrder> PurchaseOrders { get; set; }
     public DbSet<PurchaseOrderItem> PurchaseOrderItems { get; set; }
+    public DbSet<SaintProduct> SaintProducts => Set<SaintProduct>();
+    public DbSet<Banner> Banners => Set<Banner>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
