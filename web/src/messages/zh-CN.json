@@ -1615,7 +1615,8 @@
       "markPaidConfirm": "确认标记此发票为已付款？",
       "markPaidFailed": "处理失败。",
       "goBack": "返回",
-      "free": "免费"
+      "free": "免费",
+      "month": "月"
     },
     "domain": {
       "title": "域名管理",

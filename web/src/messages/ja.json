@@ -1616,7 +1616,8 @@
       "markPaidConfirm": "このインボイスを決済完了にしますか？",
       "markPaidFailed": "処理に失敗しました。",
       "goBack": "戻る",
-      "free": "無料"
+      "free": "無料",
+      "month": "月"
     },
     "domain": {
       "title": "ドメイン管理",

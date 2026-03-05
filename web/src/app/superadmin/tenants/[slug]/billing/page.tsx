@@ -4,22 +4,18 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ChevronLeft, FileText, CheckCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { formatPrice } from "@/lib/format";
 import {
   getTenantBilling,
   updateTenantBilling,
   getTenantInvoices,
   generateInvoice,
   markInvoicePaid,
+  getPlatformPlans,
   type TenantBilling,
   type InvoiceDto,
+  type PlanInfoDto,
 } from "@/lib/platformApi";
-
-const PLANS = [
-  { type: "Free", price: 0, labelKey: "planFree" },
-  { type: "Basic", price: 29000, labelKey: "planBasic" },
-  { type: "Pro", price: 79000, labelKey: "planPro" },
-  { type: "Enterprise", price: 199000, labelKey: "planEnterprise" },
-];
 
 const STATUSES = ["Active", "Trial", "Suspended", "Cancelled"];
 
@@ -38,6 +34,7 @@ export default function TenantBillingPage() {
 
   const [billing, setBilling] = useState<TenantBilling | null>(null);
   const [invoices, setInvoices] = useState<InvoiceDto[]>([]);
+  const [plans, setPlans] = useState<PlanInfoDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState("Free");
@@ -52,18 +49,19 @@ export default function TenantBillingPage() {
         setSelectedStatus(b.billingStatus);
       }),
       getTenantInvoices(slug).then(setInvoices),
+      getPlatformPlans().then(setPlans),
     ])
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [slug]);
 
   const handleSave = async () => {
-    const plan = PLANS.find((p) => p.type === selectedPlan);
+    const plan = plans.find((p) => p.planType === selectedPlan);
     setSaving(true);
     try {
       await updateTenantBilling(slug, {
         planType: selectedPlan,
-        monthlyPrice: plan?.price ?? 0,
+        monthlyPrice: plan?.monthlyPrice ?? 0,
         billingStatus: selectedStatus,
       });
       alert(t("superadmin.billing.updateSuccess"));
@@ -183,9 +181,9 @@ export default function TenantBillingPage() {
                 onChange={(e) => setSelectedPlan(e.target.value)}
                 className="w-full px-3 py-2.5 border rounded-lg text-sm"
               >
-                {PLANS.map((p) => (
-                  <option key={p.type} value={p.type}>
-                    {t(`superadmin.billing.${p.labelKey}`)} {p.price > 0 ? `(${p.price.toLocaleString()}원/월)` : ""}
+                {plans.map((p) => (
+                  <option key={p.planType} value={p.planType}>
+                    {p.planType} {p.monthlyPrice > 0 ? `(${formatPrice(p.monthlyPrice)}/${t("superadmin.billing.month")})` : ""}
                   </option>
                 ))}
               </select>

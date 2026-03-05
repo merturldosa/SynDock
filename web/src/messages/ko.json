@@ -1615,7 +1615,8 @@
       "markPaidConfirm": "이 인보이스를 결제 완료로 처리하시겠습니까?",
       "markPaidFailed": "처리에 실패했습니다.",
       "goBack": "돌아가기",
-      "free": "무료"
+      "free": "무료",
+      "month": "월"
     },
     "domain": {
       "title": "도메인 관리",

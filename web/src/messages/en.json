@@ -1615,7 +1615,8 @@
       "markPaidConfirm": "Mark this invoice as paid?",
       "markPaidFailed": "Processing failed.",
       "goBack": "Go Back",
-      "free": "Free"
+      "free": "Free",
+      "month": "mo"
     },
     "domain": {
       "title": "Domain Management",

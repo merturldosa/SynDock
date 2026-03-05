@@ -60,6 +60,21 @@ export interface TenantBilling {
   nextBillingAt: string | null;
 }
 
+// ── Plans ──
+export interface PlanInfoDto {
+  planType: string;
+  monthlyPrice: number;
+  maxProducts: number;
+  maxUsers: number;
+  maxMonthlyOrders: number;
+  maxStorageGb: number;
+}
+
+export async function getPlatformPlans(): Promise<PlanInfoDto[]> {
+  const { data } = await api.get("/platform/plans");
+  return data;
+}
+
 export async function getAllBilling(): Promise<TenantBilling[]> {
   const { data } = await api.get("/platform/tenants/billing");
   return data;

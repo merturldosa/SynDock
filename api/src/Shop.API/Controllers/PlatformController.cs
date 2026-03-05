@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Shop.Application.Common;
 using Shop.Application.Common.DTOs;
 using Shop.Application.Platform.Commands;
 using Shop.Application.Platform.Queries;
@@ -23,6 +24,21 @@ public class PlatformController : ControllerBase
     {
         _db = db;
         _mediator = mediator;
+    }
+
+    [HttpGet("~/api/platform/plans")]
+    public IActionResult GetPlans()
+    {
+        var plans = PlanLimits.GetAllPlans().Select(p => new
+        {
+            p.PlanType,
+            p.MonthlyPrice,
+            p.Limits.MaxProducts,
+            p.Limits.MaxUsers,
+            p.Limits.MaxMonthlyOrders,
+            MaxStorageGb = p.Limits.MaxStorageBytes / (1024.0 * 1024 * 1024),
+        });
+        return Ok(plans);
     }
 
     [HttpGet]

@@ -143,7 +143,7 @@ export default function OrderPage() {
           failUrl: `${window.location.origin}/order/fail`,
         });
       } else {
-        // Mock provider — go directly to complete
+        // No payment gateway configured or zero-amount order — skip payment step
         router.push(`/order/complete?id=${orderId}`);
       }
     } catch {

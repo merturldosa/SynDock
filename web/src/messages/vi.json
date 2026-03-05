@@ -1615,7 +1615,8 @@
       "markPaidConfirm": "Đánh dấu hóa đơn này đã thanh toán?",
       "markPaidFailed": "Xử lý thất bại.",
       "goBack": "Quay lại",
-      "free": "Miễn phí"
+      "free": "Miễn phí",
+      "month": "tháng"
     },
     "domain": {
       "title": "Quản lý tên miền",
