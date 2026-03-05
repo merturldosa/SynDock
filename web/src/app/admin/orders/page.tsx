@@ -20,11 +20,9 @@ const STATUS_COLORS: Record<string, string> = {
   Refunded: "bg-gray-100 text-gray-700",
 };
 
-const STATUS_OPTIONS = ["Pending", "Confirmed", "Processing", "Shipped", "Delivered"];
+import { formatPrice } from "@/lib/format";
 
-function formatPrice(price: number): string {
-  return price.toLocaleString("ko-KR") + "원";
-}
+const STATUS_OPTIONS = ["Pending", "Confirmed", "Processing", "Shipped", "Delivered"];
 
 export default function AdminOrdersPage() {
   const t = useTranslations();

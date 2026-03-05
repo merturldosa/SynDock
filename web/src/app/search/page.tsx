@@ -7,6 +7,7 @@ import Link from "next/link";
 import { Search } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { getSearchSuggestions, type SearchSuggestion } from "@/lib/productApi";
+import { formatPrice } from "@/lib/format";
 
 export default function SearchPage() {
   const t = useTranslations();
@@ -55,9 +56,6 @@ export default function SearchPage() {
       router.push(`/products?search=${encodeURIComponent(query.trim())}`);
     }
   };
-
-  const formatPrice = (price: number) =>
-    price.toLocaleString("ko-KR") + "원";
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-20">

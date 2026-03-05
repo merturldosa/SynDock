@@ -13,6 +13,7 @@ import {
   WifiOff,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { formatDate } from "@/lib/format";
 import {
   getMesSyncStatus,
   getMesInventoryComparison,
@@ -155,7 +156,7 @@ export default function MesInventoryComparison() {
               {status?.lastSyncAt && (
                 <p className="text-xs text-gray-500">
                   {t("admin.inventory.mes.lastSync")}:{" "}
-                  {new Date(status.lastSyncAt).toLocaleString("ko-KR")}
+                  {formatDate(status.lastSyncAt)}
                 </p>
               )}
             </div>

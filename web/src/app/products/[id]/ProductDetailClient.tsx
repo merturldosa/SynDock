@@ -19,11 +19,8 @@ import { QnATab } from "@/components/product/QnATab";
 import { ShareButton } from "@/components/ShareButton";
 import { AddToCollectionModal } from "@/components/AddToCollectionModal";
 import { useTranslations } from "next-intl";
+import { formatPrice } from "@/lib/format";
 import type { ProductDetail, ProductVariant } from "@/types/product";
-
-function formatPrice(price: number): string {
-  return price.toLocaleString("ko-KR") + "\uC6D0";
-}
 
 function calcDiscountPercent(price: number, salePrice: number): number {
   if (price <= 0 || salePrice >= price) return 0;

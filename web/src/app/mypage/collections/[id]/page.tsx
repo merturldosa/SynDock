@@ -11,10 +11,7 @@ import {
   removeFromCollection,
   type CollectionDetail,
 } from "@/lib/collectionApi";
-
-function formatPrice(price: number): string {
-  return price.toLocaleString("ko-KR") + "원";
-}
+import { formatPrice } from "@/lib/format";
 
 export default function CollectionDetailPage() {
   const t = useTranslations();

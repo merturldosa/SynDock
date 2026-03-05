@@ -95,7 +95,7 @@
     "contactInquiry": "联系我们",
     "recommended": "推荐",
     "addToCollection": "添加到收藏夹",
-    "searchNoResults": "未找到\u201c{term}\u201d的相关结果。",
+    "searchNoResults": "未找到“{term}”的相关结果。",
     "popularInCategory": "{name} 热门商品",
     "priceRange": "价格范围",
     "minPrice": "最低价",
@@ -179,7 +179,14 @@
       "nameRequired": "请输入姓名。"
     },
     "minChars": "至少4个字符",
-    "minChars8": "至少8个字符"
+    "minChars8": "至少8个字符",
+    "oauth": {
+      "noAuthCode": "未找到授权码。",
+      "loginFailed": "社交登录失败。",
+      "processing": "正在处理登录...",
+      "loginFailedTitle": "登录失败",
+      "backToLogin": "返回登录页面"
+    }
   },
   "error": {
     "generic": "发生错误。",
@@ -704,7 +711,12 @@
       "nOrders": "{count} 笔订单",
       "nSold": "已售 {count} 件",
       "viewAll": "查看全部",
-      "manage": "管理"
+      "manage": "管理",
+      "weeklyTrend": "7天销售趋势",
+      "viewDetails": "查看详情",
+      "mesSyncCompleted": "MES 同步完成：{synced} 件成功，{failed} 件失败",
+      "autoReorderTriggered": "自动订购已创建：{orderNumber}（{items} 种商品，{quantity} 件）",
+      "notification": "通知"
     },
     "products": {
       "title": "商品管理",
@@ -801,7 +813,7 @@
       "sortOrder": "排序",
       "save": "保存",
       "saveFailed": "保存失败。",
-      "deleteConfirm": "确定删除\u201c{name}\u201d分类？",
+      "deleteConfirm": "确定删除“{name}”分类？",
       "deleteFailed": "删除失败，可能存在子分类或关联商品。",
       "noCategories": "暂无分类。",
       "addFailed": "添加分类失败。",
@@ -848,11 +860,11 @@
       "bulkChange": "批量更新",
       "bulkProcessing": "处理中...",
       "bulkFailed": "批量更新失败。",
-      "bulkConfirm": "将 {count} 个选中订单更改为\u201c{status}\u201d？",
+      "bulkConfirm": "将 {count} 个选中订单更改为“{status}”？",
       "bulkResult": "成功：{success}，失败：{fail}",
       "deselectAll": "取消全选",
       "totalCount": "共 {count} 条",
-      "searchNoResult": "未找到\u201c{query}\u201d的相关结果。",
+      "searchNoResult": "未找到“{query}”的相关结果。",
       "orderDate": "下单日期",
       "statusChange": "状态变更",
       "andMore": "及其他 {count} 项",
@@ -908,9 +920,9 @@
       "saveFailed": "保存失败。",
       "noCoupons": "暂无优惠券。",
       "totalCount": "共 {count} 张优惠券",
-      "deleteConfirm": "确定删除\u201c{name}\u201d优惠券？",
+      "deleteConfirm": "确定删除“{name}”优惠券？",
       "deleteFailed": "删除失败。",
-      "issueConfirm": "向全部会员发放\u201c{name}\u201d优惠券？",
+      "issueConfirm": "向全部会员发放“{name}”优惠券？",
       "issuedCount": "已向 {count} 名会员发放。",
       "issueFailed": "发放失败。",
       "discount": "折扣",
@@ -1234,7 +1246,10 @@
       "allOrders": "全部",
       "orderedQty": "订购数量",
       "reason": "原因",
-      "noOrders": "没有采购订单。"
+      "noOrders": "没有采购订单。",
+      "bulkCreatedMessage": "已创建 {count} 条规则。",
+      "confirmDeleteRule": "确定要删除此规则吗？",
+      "confirmCancelOrder": "确定要取消此订单吗？"
     },
     "settings": {
       "title": "设置",
@@ -1470,7 +1485,8 @@
       "dashboard": "仪表盘",
       "tenants": "商城管理",
       "newTenant": "新建商城",
-      "billing": "账单管理"
+      "billing": "账单管理",
+      "settlements": "结算管理"
     },
     "backToShop": "返回商城",
     "title": "平台管理",
@@ -1638,6 +1654,41 @@
       "backToDetail": "返回商城详情",
       "backToList": "返回列表",
       "copy": "复制"
+    },
+    "settlements": {
+      "title": "结算管理",
+      "subtitle": "管理各租户的手续费和结算。",
+      "summaryTitle": "手续费摘要",
+      "totalOrders": "总订单数",
+      "totalOrderAmount": "总订单金额",
+      "totalCommission": "总手续费",
+      "totalSettlement": "总结算额",
+      "pendingSettlement": "待结算金额",
+      "createSettlement": "创建结算",
+      "periodStart": "结算起始日",
+      "periodEnd": "结算截止日",
+      "creating": "创建中...",
+      "created": "结算已创建。",
+      "createFailed": "结算创建失败。",
+      "selectTenant": "选择租户",
+      "noSummary": "暂无手续费摘要数据。",
+      "orderCount": "订单数",
+      "orderAmount": "订单金额",
+      "commission": "手续费",
+      "settlement": "结算金额",
+      "pending": "待结算",
+      "settlementDetail": "结算明细",
+      "noSettlements": "暂无结算记录。",
+      "period": "期间",
+      "orderTotal": "订单合计",
+      "status": "状态",
+      "settledAt": "结算日",
+      "process": "处理",
+      "processed": "结算已处理。",
+      "processFailed": "结算处理失败。",
+      "processConfirm": "确定要处理此结算吗？",
+      "transactionId": "交易 ID",
+      "settledBy": "处理人"
     },
     "usage": {
       "title": "用量监控",

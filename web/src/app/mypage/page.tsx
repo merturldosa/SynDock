@@ -11,6 +11,7 @@ import { getOrders } from "@/lib/orderApi";
 import { getPointBalance } from "@/lib/pointApi";
 import { getMyCoupons } from "@/lib/couponApi";
 import { getUnreadCount } from "@/lib/notificationApi";
+import { formatNumber } from "@/lib/format";
 import type { BaptismalNameInfo } from "@/types/saint";
 
 export default function MyPage() {
@@ -80,21 +81,21 @@ export default function MyPage() {
         <div className="bg-white rounded-xl shadow-sm p-4 text-center">
           <Coins size={24} className="mx-auto text-[var(--color-primary)] mb-2" />
           <p className="text-2xl font-bold text-[var(--color-secondary)]">
-            {pointBalance !== null ? pointBalance.toLocaleString("ko-KR") : "-"}
+            {pointBalance !== null ? formatNumber(pointBalance) : "-"}
           </p>
           <p className="text-xs text-gray-500">{t("mypage.summary.points")}</p>
         </div>
         <div className="bg-white rounded-xl shadow-sm p-4 text-center">
           <Ticket size={24} className="mx-auto text-[var(--color-primary)] mb-2" />
           <p className="text-2xl font-bold text-[var(--color-secondary)]">
-            {couponCount !== null ? couponCount.toLocaleString("ko-KR") : "-"}
+            {couponCount !== null ? formatNumber(couponCount) : "-"}
           </p>
           <p className="text-xs text-gray-500">{t("mypage.summary.coupons")}</p>
         </div>
         <div className="bg-white rounded-xl shadow-sm p-4 text-center">
           <Bell size={24} className="mx-auto text-[var(--color-primary)] mb-2" />
           <p className="text-2xl font-bold text-[var(--color-secondary)]">
-            {unreadNotifications !== null ? unreadNotifications.toLocaleString("ko-KR") : "-"}
+            {unreadNotifications !== null ? formatNumber(unreadNotifications) : "-"}
           </p>
           <p className="text-xs text-gray-500">{t("mypage.nav.notifications")}</p>
         </div>

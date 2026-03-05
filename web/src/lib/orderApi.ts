@@ -35,6 +35,14 @@ export async function createAddress(request: Omit<Address, "id">): Promise<{ add
   return data;
 }
 
+export async function updateAddress(id: number, request: Omit<Address, "id">): Promise<void> {
+  await api.put(`/address/${id}`, request);
+}
+
+export async function deleteAddress(id: number): Promise<void> {
+  await api.delete(`/address/${id}`);
+}
+
 export async function confirmPayment(paymentKey: string, orderId: string, amount: number): Promise<{ orderId: number; success: boolean }> {
   const { data } = await api.post<{ orderId: number; success: boolean }>("/payment/confirm", { paymentKey, orderId, amount });
   return data;

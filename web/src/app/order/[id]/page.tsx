@@ -27,15 +27,7 @@ interface ExtendedOrder extends Order {
   trackingCarrier?: string | null;
 }
 
-function formatPrice(price: number): string {
-  return price.toLocaleString("ko-KR") + "원";
-}
-
-function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString("ko-KR", {
-    year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit",
-  });
-}
+import { formatPrice, formatDate } from "@/lib/format";
 
 const STATUS_COLORS: Record<string, string> = {
   Pending: "bg-yellow-100 text-yellow-700",

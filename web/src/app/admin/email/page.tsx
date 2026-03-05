@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Send, Eye, Plus, BarChart3, FlaskConical } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { formatDate } from "@/lib/format";
 import {
   sendMarketingEmail,
   getCampaigns,
@@ -320,7 +321,7 @@ export default function AdminEmailPage() {
                       <span>{t("admin.email.campaignTarget", { target: TARGETS.find((tgt) => tgt.value === c.target)?.label || c.target })}</span>
                       {c.sentAt && <span>{t("admin.email.campaignSent", { date: new Date(c.sentAt).toLocaleDateString("ko-KR") })}</span>}
                       {c.sentCount > 0 && <span>{t("admin.email.campaignStats", { success: c.sentCount, fail: c.failCount })}</span>}
-                      {c.scheduledAt && c.status === "Scheduled" && <span>{t("admin.email.campaignScheduledAt", { date: new Date(c.scheduledAt).toLocaleString("ko-KR") })}</span>}
+                      {c.scheduledAt && c.status === "Scheduled" && <span>{t("admin.email.campaignScheduledAt", { date: formatDate(c.scheduledAt) })}</span>}
                     </div>
                   </div>
                   <div className="flex items-center gap-2 ml-4">

@@ -179,7 +179,14 @@
       "nameRequired": "Vui lòng nhập họ tên."
     },
     "minChars": "4+ ký tự",
-    "minChars8": "8+ ký tự"
+    "minChars8": "8+ ký tự",
+    "oauth": {
+      "noAuthCode": "Không tìm thấy mã xác thực.",
+      "loginFailed": "Đăng nhập mạng xã hội thất bại.",
+      "processing": "Đang xử lý đăng nhập...",
+      "loginFailedTitle": "Đăng nhập thất bại",
+      "backToLogin": "Quay lại trang đăng nhập"
+    }
   },
   "error": {
     "generic": "Đã xảy ra lỗi.",
@@ -704,7 +711,12 @@
       "nOrders": "{count} đơn hàng",
       "nSold": "Đã bán {count}",
       "viewAll": "Xem tất cả",
-      "manage": "Quản lý"
+      "manage": "Quản lý",
+      "weeklyTrend": "Xu hướng doanh thu 7 ngày",
+      "viewDetails": "Xem chi tiết",
+      "mesSyncCompleted": "Đồng bộ MES hoàn tất: {synced} thành công, {failed} thất bại",
+      "autoReorderTriggered": "Đã tạo đơn đặt hàng tự động: {orderNumber} ({items} mặt hàng, {quantity} sản phẩm)",
+      "notification": "Thông báo"
     },
     "products": {
       "title": "Quản lý sản phẩm",
@@ -1234,7 +1246,10 @@
       "allOrders": "Tất cả",
       "orderedQty": "Số lượng đặt",
       "reason": "Lý do",
-      "noOrders": "Không có đơn đặt hàng."
+      "noOrders": "Không có đơn đặt hàng.",
+      "bulkCreatedMessage": "Đã tạo {count} quy tắc.",
+      "confirmDeleteRule": "Bạn có chắc chắn muốn xóa quy tắc này không?",
+      "confirmCancelOrder": "Bạn có chắc chắn muốn hủy đơn đặt hàng này không?"
     },
     "settings": {
       "title": "Cài đặt",
@@ -1470,7 +1485,8 @@
       "dashboard": "Bảng điều khiển",
       "tenants": "Quản lý cửa hàng",
       "newTenant": "Cửa hàng mới",
-      "billing": "Thanh toán"
+      "billing": "Thanh toán",
+      "settlements": "Quản lý thanh toán"
     },
     "backToShop": "Quay lại cửa hàng",
     "title": "Quản lý nền tảng",
@@ -1638,6 +1654,41 @@
       "backToDetail": "Quay lại chi tiết",
       "backToList": "Quay lại danh sách",
       "copy": "Sao chép"
+    },
+    "settlements": {
+      "title": "Quản lý thanh toán",
+      "subtitle": "Quản lý hoa hồng và thanh toán theo từng đối tác.",
+      "summaryTitle": "Tóm tắt hoa hồng",
+      "totalOrders": "Tổng đơn hàng",
+      "totalOrderAmount": "Tổng giá trị đơn hàng",
+      "totalCommission": "Tổng hoa hồng",
+      "totalSettlement": "Tổng thanh toán",
+      "pendingSettlement": "Chờ thanh toán",
+      "createSettlement": "Tạo thanh toán",
+      "periodStart": "Ngày bắt đầu",
+      "periodEnd": "Ngày kết thúc",
+      "creating": "Đang tạo...",
+      "created": "Đã tạo thanh toán.",
+      "createFailed": "Tạo thanh toán thất bại.",
+      "selectTenant": "Chọn đối tác",
+      "noSummary": "Không có dữ liệu tóm tắt hoa hồng.",
+      "orderCount": "Số đơn hàng",
+      "orderAmount": "Giá trị đơn hàng",
+      "commission": "Hoa hồng",
+      "settlement": "Số tiền thanh toán",
+      "pending": "Chờ xử lý",
+      "settlementDetail": "Chi tiết thanh toán",
+      "noSettlements": "Không có bản ghi thanh toán.",
+      "period": "Kỳ",
+      "orderTotal": "Tổng đơn hàng",
+      "status": "Trạng thái",
+      "settledAt": "Ngày thanh toán",
+      "process": "Xử lý",
+      "processed": "Đã xử lý thanh toán.",
+      "processFailed": "Xử lý thanh toán thất bại.",
+      "processConfirm": "Bạn có chắc chắn muốn xử lý thanh toán này không?",
+      "transactionId": "Mã giao dịch",
+      "settledBy": "Người xử lý"
     },
     "usage": {
       "title": "Giám sát sử dụng",

@@ -7,11 +7,8 @@ import { useTranslations } from "next-intl";
 import { Plus, Edit2, Trash2, Search } from "lucide-react";
 import { getProducts } from "@/lib/productApi";
 import { deleteProduct } from "@/lib/adminApi";
+import { formatPrice } from "@/lib/format";
 import type { ProductSummary, PagedResponse } from "@/types/product";
-
-function formatPrice(price: number): string {
-  return price.toLocaleString("ko-KR") + "원";
-}
 
 export default function AdminProductsPage() {
   const t = useTranslations();

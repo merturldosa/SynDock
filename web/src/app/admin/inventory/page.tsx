@@ -5,11 +5,8 @@ import Image from "next/image";
 import { Warehouse, AlertTriangle, Save, Server } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { getLowStock, updateStock, type LowStockItem } from "@/lib/adminApi";
+import { formatNumber } from "@/lib/format";
 import MesInventoryComparison from "./_components/MesInventoryComparison";
-
-function formatNumber(n: number): string {
-  return n.toLocaleString("ko-KR");
-}
 
 type Tab = "lowStock" | "mesComparison";
 

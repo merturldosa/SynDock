@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { getTenantUsage, type TenantUsage } from "@/lib/platformApi";
+import { formatNumber } from "@/lib/format";
 
 function formatBytes(bytes: number): string {
   if (bytes === 0) return "0 B";
@@ -18,7 +19,7 @@ function formatBytes(bytes: number): string {
 // We'll pass the unlimited label as a prop
 function formatLimit(value: number, unlimitedLabel: string = "Unlimited"): string {
   if (value >= Number.MAX_SAFE_INTEGER || value >= 2_147_483_647) return unlimitedLabel;
-  return value.toLocaleString("ko-KR");
+  return formatNumber(value);
 }
 
 function UsageBar({ current, max, label, formatValue, unlimitedLabel, usedLabel }: {
@@ -31,7 +32,7 @@ function UsageBar({ current, max, label, formatValue, unlimitedLabel, usedLabel 
 }) {
   const isUnlimited = max >= Number.MAX_SAFE_INTEGER || max >= 2_147_483_647;
   const percentage = isUnlimited ? 0 : Math.min((current / max) * 100, 100);
-  const fmt = formatValue || ((v: number) => v.toLocaleString("ko-KR"));
+  const fmt = formatValue || ((v: number) => formatNumber(v));
 
   let barColor = "bg-emerald-500";
   if (percentage >= 90) barColor = "bg-red-500";

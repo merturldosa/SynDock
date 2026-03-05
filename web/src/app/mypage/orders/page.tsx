@@ -9,16 +9,7 @@ import { getOrders } from "@/lib/orderApi";
 import { useAuthStore } from "@/stores/authStore";
 import type { OrderSummary } from "@/types/order";
 import { ORDER_STATUS_LABELS, type OrderStatusType } from "@/types/order";
-
-function formatPrice(price: number): string {
-  return price.toLocaleString("ko-KR") + "원";
-}
-
-function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString("ko-KR", {
-    year: "numeric", month: "short", day: "numeric",
-  });
-}
+import { formatPrice, formatDateShort as formatDate } from "@/lib/format";
 
 const STATUS_COLORS: Record<string, string> = {
   Pending: "bg-yellow-100 text-yellow-700",

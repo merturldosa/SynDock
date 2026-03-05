@@ -13,11 +13,8 @@ import { createOrder, getAddresses, createAddress, getPaymentClientKey } from "@
 import { CheckoutSteps } from "@/components/checkout/CheckoutSteps";
 import { getMyCoupons, validateCoupon } from "@/lib/couponApi";
 import { getPointBalance } from "@/lib/pointApi";
+import { formatPrice } from "@/lib/format";
 import type { Address } from "@/types/order";
-
-function formatPrice(price: number): string {
-  return price.toLocaleString("ko-KR") + "원";
-}
 
 export default function OrderPage() {
   const router = useRouter();

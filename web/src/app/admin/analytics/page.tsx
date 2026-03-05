@@ -8,10 +8,7 @@ import {
 import { BarChart3, TrendingUp, TrendingDown, ShoppingCart, DollarSign, Users, Package, Download, ArrowUpRight, ArrowDownRight } from "lucide-react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
-
-function formatPrice(n: number) {
-  return n.toLocaleString("ko-KR") + "원";
-}
+import { formatPrice } from "@/lib/format";
 
 function MiniBarChart({ data, maxValue, t }: { data: DailySales[]; maxValue: number; t: ReturnType<typeof useTranslations> }) {
   if (!data.length) return null;

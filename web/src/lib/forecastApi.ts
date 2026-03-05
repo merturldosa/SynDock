@@ -319,3 +319,74 @@ export async function getHoltWintersForecast(
   );
   return data;
 }
+
+// ── Production Plan Management (MES L2) ──
+
+export interface ProductionPlanSuggestionDto {
+  id: number;
+  productId: number;
+  productName: string;
+  suggestedQuantity: number;
+  currentStock: number;
+  averageDailyDemand: number;
+  reason: string;
+  status: string;
+  mesOrderId: string | null;
+  approvedBy: string | null;
+  approvedAt: string | null;
+  createdAt: string;
+}
+
+export async function generateProductionPlan(): Promise<{ count: number }> {
+  const { data } = await api.post<{ count: number }>("/admin/mes/production-plan/generate");
+  return data;
+}
+
+export async function getProductionPlanSuggestions(
+  status?: string
+): Promise<ProductionPlanSuggestionDto[]> {
+  const { data } = await api.get<ProductionPlanSuggestionDto[]>(
+    "/admin/mes/production-plan",
+    { params: { status } }
+  );
+  return data;
+}
+
+export async function approveProductionPlan(id: number): Promise<void> {
+  await api.put(`/admin/mes/production-plan/${id}/approve`);
+}
+
+export async function rejectProductionPlan(id: number): Promise<void> {
+  await api.put(`/admin/mes/production-plan/${id}/reject`);
+}
+
+export async function forwardProductionPlanToMes(
+  id: number
+): Promise<{ mesOrderId: string }> {
+  const { data } = await api.post<{ mesOrderId: string }>(
+    `/admin/mes/production-plan/${id}/forward-mes`
+  );
+  return data;
+}
+
+// ── MES Inventory Reserve/Release ──
+
+export async function reserveInventory(request: {
+  productId: number;
+  quantity: number;
+  reason?: string;
+}): Promise<{ reservationId: string }> {
+  const { data } = await api.post<{ reservationId: string }>(
+    "/admin/mes/inventory/reserve",
+    request
+  );
+  return data;
+}
+
+export async function releaseInventory(request: {
+  productId: number;
+  quantity: number;
+  reason?: string;
+}): Promise<void> {
+  await api.post("/admin/mes/inventory/release", request);
+}

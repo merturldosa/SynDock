@@ -32,3 +32,29 @@ export async function getPointHistory(
   });
   return data;
 }
+
+// ── Admin Point Management ──
+export async function earnPoints(request: {
+  userId: number;
+  amount: number;
+  description?: string;
+}): Promise<void> {
+  await api.post("/points/earn", request);
+}
+
+export async function usePoints(request: {
+  userId: number;
+  amount: number;
+  description?: string;
+}): Promise<void> {
+  await api.post("/points/use", request);
+}
+
+export async function refundPoints(request: {
+  userId: number;
+  amount: number;
+  description?: string;
+  orderId?: number;
+}): Promise<void> {
+  await api.post("/points/refund", request);
+}

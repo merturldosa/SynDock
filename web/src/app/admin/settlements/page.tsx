@@ -7,10 +7,7 @@ import {
   type SettlementDto, type CommissionDto, type CommissionSettingDto,
 } from "@/lib/adminApi";
 import { DollarSign, Clock, CheckCircle, FileText, Settings2, Receipt } from "lucide-react";
-
-function formatPrice(n: number) {
-  return n.toLocaleString("ko-KR") + "원";
-}
+import { formatPrice } from "@/lib/format";
 
 function StatusBadge({ status }: { status: string }) {
   const styles: Record<string, string> = {

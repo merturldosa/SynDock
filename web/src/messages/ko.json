@@ -179,7 +179,14 @@
       "nameRequired": "이름을 입력해주세요."
     },
     "minChars": "4자 이상",
-    "minChars8": "8자 이상"
+    "minChars8": "8자 이상",
+    "oauth": {
+      "noAuthCode": "인증 코드가 없습니다.",
+      "loginFailed": "소셜 로그인에 실패했습니다.",
+      "processing": "로그인 처리 중...",
+      "loginFailedTitle": "로그인 실패",
+      "backToLogin": "로그인 페이지로 돌아가기"
+    }
   },
   "error": {
     "generic": "오류가 발생했습니다.",
@@ -706,7 +713,10 @@
         "quarter": "3개월"
       },
       "viewAll": "전체 보기",
-      "manage": "관리"
+      "manage": "관리",
+      "mesSyncCompleted": "MES 동기화 완료: {synced}건 성공, {failed}건 실패",
+      "autoReorderTriggered": "자동 발주 생성: {orderNumber} ({items}품목, {quantity}개)",
+      "notification": "알림"
     },
     "products": {
       "title": "상품 관리",
@@ -1236,7 +1246,10 @@
       "allOrders": "전체",
       "orderedQty": "발주 수량",
       "reason": "사유",
-      "noOrders": "발주 이력이 없습니다."
+      "noOrders": "발주 이력이 없습니다.",
+      "bulkCreatedMessage": "{count}개 규칙이 생성되었습니다.",
+      "confirmDeleteRule": "이 규칙을 삭제하시겠습니까?",
+      "confirmCancelOrder": "이 발주를 취소하시겠습니까?"
     },
     "settings": {
       "title": "설정",
@@ -1641,6 +1654,41 @@
       "backToDetail": "테넌트 상세로 돌아가기",
       "backToList": "목록으로",
       "copy": "복사"
+    },
+    "settlements": {
+      "title": "정산 관리",
+      "subtitle": "테넌트별 수수료 및 정산을 관리합니다.",
+      "summaryTitle": "수수료 요약",
+      "totalOrders": "총 주문",
+      "totalOrderAmount": "총 주문 금액",
+      "totalCommission": "총 수수료",
+      "totalSettlement": "총 정산",
+      "pendingSettlement": "미정산 금액",
+      "createSettlement": "정산 생성",
+      "periodStart": "정산 시작일",
+      "periodEnd": "정산 종료일",
+      "creating": "생성 중...",
+      "created": "정산이 생성되었습니다.",
+      "createFailed": "정산 생성에 실패했습니다.",
+      "selectTenant": "테넌트 선택",
+      "noSummary": "수수료 요약 데이터가 없습니다.",
+      "orderCount": "주문 수",
+      "orderAmount": "주문 금액",
+      "commission": "수수료",
+      "settlement": "정산 금액",
+      "pending": "미정산",
+      "settlementDetail": "정산 내역",
+      "noSettlements": "정산 내역이 없습니다.",
+      "period": "기간",
+      "orderTotal": "주문 합계",
+      "status": "상태",
+      "settledAt": "정산일",
+      "process": "처리",
+      "processed": "정산이 처리되었습니다.",
+      "processFailed": "정산 처리에 실패했습니다.",
+      "processConfirm": "이 정산을 처리하시겠습니까?",
+      "transactionId": "거래 ID",
+      "settledBy": "처리자"
     },
     "usage": {
       "title": "사용량 모니터링",

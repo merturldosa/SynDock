@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Coins, ArrowUpCircle, ArrowDownCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { getPointBalance, getPointHistory, type PointHistoryDto, type PagedPointHistory } from "@/lib/pointApi";
+import { formatNumber } from "@/lib/format";
 
 const TYPE_CONFIG: Record<string, { labelKey: string; color: string; icon: typeof ArrowUpCircle }> = {
   Earned: { labelKey: "mypage.points.earned", color: "text-emerald-600", icon: ArrowUpCircle },
@@ -12,10 +13,6 @@ const TYPE_CONFIG: Record<string, { labelKey: string; color: string; icon: typeo
   Bonus: { labelKey: "mypage.points.bonus", color: "text-orange-500", icon: ArrowUpCircle },
   Expired: { labelKey: "mypage.points.expired", color: "text-gray-400", icon: ArrowDownCircle },
 };
-
-function formatPrice(price: number): string {
-  return price.toLocaleString("ko-KR");
-}
 
 export default function PointsPage() {
   const t = useTranslations();
@@ -59,7 +56,7 @@ export default function PointsPage() {
           <Coins size={32} className="text-[var(--color-primary)]" />
           <div>
             <p className="text-sm text-white/60">{t("mypage.points.balance")}</p>
-            <p className="text-3xl font-bold">{formatPrice(balance)}P</p>
+            <p className="text-3xl font-bold">{formatNumber(balance)}P</p>
           </div>
         </div>
       </div>
@@ -94,7 +91,7 @@ export default function PointsPage() {
                     </p>
                   </div>
                   <p className={`font-bold ${item.amount >= 0 ? "text-emerald-600" : "text-red-500"}`}>
-                    {item.amount >= 0 ? "+" : ""}{formatPrice(item.amount)}P
+                    {item.amount >= 0 ? "+" : ""}{formatNumber(item.amount)}P
                   </p>
                 </div>
               );

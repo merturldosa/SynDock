@@ -94,7 +94,7 @@ export default function AutoReorderPage() {
   const handleBulkCreate = async () => {
     try {
       const result = await bulkCreateAutoReorderRules(bulkForm);
-      alert(`${result.createdCount}개 규칙이 생성되었습니다.`);
+      alert(t("admin.autoReorder.bulkCreatedMessage", { count: result.createdCount }));
       setShowBulk(false);
       load();
     } catch { /* ignore */ }
@@ -108,7 +108,7 @@ export default function AutoReorderPage() {
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm("이 규칙을 삭제하시겠습니까?")) return;
+    if (!confirm(t("admin.autoReorder.confirmDeleteRule"))) return;
     try {
       await deleteAutoReorderRule(id);
       load();
@@ -123,7 +123,7 @@ export default function AutoReorderPage() {
   };
 
   const handleCancel = async (id: number) => {
-    if (!confirm("이 발주를 취소하시겠습니까?")) return;
+    if (!confirm(t("admin.autoReorder.confirmCancelOrder"))) return;
     try {
       await cancelPurchaseOrder(id);
       loadOrders();

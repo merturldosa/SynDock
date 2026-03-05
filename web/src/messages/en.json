@@ -179,7 +179,14 @@
       "nameRequired": "Name is required."
     },
     "minChars": "4+ chars",
-    "minChars8": "8+ chars"
+    "minChars8": "8+ chars",
+    "oauth": {
+      "noAuthCode": "No authorization code found.",
+      "loginFailed": "Social login failed.",
+      "processing": "Processing login...",
+      "loginFailedTitle": "Login Failed",
+      "backToLogin": "Back to Login"
+    }
   },
   "error": {
     "generic": "An error occurred.",
@@ -706,7 +713,10 @@
       "nOrders": "{count} orders",
       "nSold": "{count} sold",
       "viewAll": "View All",
-      "manage": "Manage"
+      "manage": "Manage",
+      "mesSyncCompleted": "MES sync completed: {synced} succeeded, {failed} failed",
+      "autoReorderTriggered": "Auto reorder created: {orderNumber} ({items} items, {quantity} units)",
+      "notification": "Notification"
     },
     "products": {
       "title": "Product Management",
@@ -1236,7 +1246,10 @@
       "allOrders": "All",
       "orderedQty": "Ordered Qty",
       "reason": "Reason",
-      "noOrders": "No purchase orders found."
+      "noOrders": "No purchase orders found.",
+      "bulkCreatedMessage": "{count} rules have been created.",
+      "confirmDeleteRule": "Are you sure you want to delete this rule?",
+      "confirmCancelOrder": "Are you sure you want to cancel this order?"
     },
     "settings": {
       "title": "Settings",
@@ -1472,7 +1485,8 @@
       "dashboard": "Dashboard",
       "tenants": "Shop Management",
       "newTenant": "New Shop",
-      "billing": "Billing"
+      "billing": "Billing",
+      "settlements": "Settlement Management"
     },
     "backToShop": "Back to Shop",
     "title": "Platform Management",
@@ -1640,6 +1654,41 @@
       "backToDetail": "Back to Tenant Detail",
       "backToList": "Back to List",
       "copy": "Copy"
+    },
+    "settlements": {
+      "title": "Settlement Management",
+      "subtitle": "Manage commissions and settlements by tenant.",
+      "summaryTitle": "Commission Summary",
+      "totalOrders": "Total Orders",
+      "totalOrderAmount": "Total Order Amount",
+      "totalCommission": "Total Commission",
+      "totalSettlement": "Total Settlement",
+      "pendingSettlement": "Pending Settlement",
+      "createSettlement": "Create Settlement",
+      "periodStart": "Period Start",
+      "periodEnd": "Period End",
+      "creating": "Creating...",
+      "created": "Settlement has been created.",
+      "createFailed": "Failed to create settlement.",
+      "selectTenant": "Select Tenant",
+      "noSummary": "No commission summary data available.",
+      "orderCount": "Order Count",
+      "orderAmount": "Order Amount",
+      "commission": "Commission",
+      "settlement": "Settlement Amount",
+      "pending": "Pending",
+      "settlementDetail": "Settlement Details",
+      "noSettlements": "No settlement records found.",
+      "period": "Period",
+      "orderTotal": "Order Total",
+      "status": "Status",
+      "settledAt": "Settled At",
+      "process": "Process",
+      "processed": "Settlement has been processed.",
+      "processFailed": "Failed to process settlement.",
+      "processConfirm": "Are you sure you want to process this settlement?",
+      "transactionId": "Transaction ID",
+      "settledBy": "Settled By"
     },
     "usage": {
       "title": "Usage Monitoring",

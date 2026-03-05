@@ -63,19 +63,7 @@ const STATUS_COLORS: Record<string, string> = {
   Refunded: "bg-gray-500",
 };
 
-function formatPrice(price: number): string {
-  return price.toLocaleString("ko-KR") + "원";
-}
-
-function formatDateTime(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString("ko-KR", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
+import { formatPrice, formatDate as formatDateTime } from "@/lib/format";
 
 export default function AdminOrderDetailPage() {
   const params = useParams();

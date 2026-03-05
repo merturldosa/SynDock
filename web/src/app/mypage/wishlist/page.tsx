@@ -8,11 +8,8 @@ import { useTranslations } from "next-intl";
 import { getWishlist, toggleWishlist } from "@/lib/reviewApi";
 import { useAuthStore } from "@/stores/authStore";
 import { useCartStore } from "@/stores/cartStore";
+import { formatPrice } from "@/lib/format";
 import type { WishlistItem } from "@/types/review";
-
-function formatPrice(price: number): string {
-  return price.toLocaleString("ko-KR") + "원";
-}
 
 export default function WishlistPage() {
   const t = useTranslations();

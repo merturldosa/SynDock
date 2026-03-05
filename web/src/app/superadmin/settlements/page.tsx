@@ -1,15 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import {
   getCommissionSummary, getSettlements, createSettlement, processSettlement,
   type CommissionSummaryItem, type SettlementDto,
 } from "@/lib/adminApi";
 import { DollarSign, Building2, Clock, CheckCircle, AlertCircle, Plus, Send } from "lucide-react";
-
-function formatPrice(n: number) {
-  return n.toLocaleString("ko-KR") + "원";
-}
+import { formatPrice } from "@/lib/format";
 
 function StatusBadge({ status }: { status: string }) {
   const styles: Record<string, string> = {
@@ -27,6 +25,7 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 export default function SettlementsPage() {
+  const t = useTranslations();
   const [summary, setSummary] = useState<CommissionSummaryItem[]>([]);
   const [selectedTenant, setSelectedTenant] = useState<string | null>(null);
   const [settlements, setSettlements] = useState<SettlementDto[]>([]);
@@ -65,11 +64,11 @@ export default function SettlementsPage() {
     if (!selectedTenant || !periodStart || !periodEnd) return;
     try {
       await createSettlement(selectedTenant.toLowerCase(), periodStart, periodEnd);
-      setMessage("정산이 생성되었습니다.");
+      setMessage(t("superadmin.settlements.created"));
       setShowCreate(false);
       loadSettlements(selectedTenant);
     } catch {
-      setMessage("정산 생성에 실패했습니다.");
+      setMessage(t("superadmin.settlements.createFailed"));
     }
   };
 
@@ -77,12 +76,12 @@ export default function SettlementsPage() {
     if (!processId || !transactionId) return;
     try {
       await processSettlement(processId, transactionId, "PlatformAdmin");
-      setMessage("정산이 처리되었습니다.");
+      setMessage(t("superadmin.settlements.processed"));
       setProcessId(null);
       setTransactionId("");
       if (selectedTenant) loadSettlements(selectedTenant);
     } catch {
-      setMessage("정산 처리에 실패했습니다.");
+      setMessage(t("superadmin.settlements.processFailed"));
     }
   };
 
@@ -101,8 +100,8 @@ export default function SettlementsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">정산 관리</h1>
-        <p className="text-sm text-gray-500 mt-1">테넌트별 수수료 및 정산 현황</p>
+        <h1 className="text-2xl font-bold text-gray-900">{t("superadmin.settlements.title")}</h1>
+        <p className="text-sm text-gray-500 mt-1">{t("superadmin.settlements.subtitle")}</p>
       </div>
 
       {/* Toast */}
@@ -120,7 +119,7 @@ export default function SettlementsPage() {
             <div className="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center">
               <DollarSign className="w-5 h-5 text-green-600" />
             </div>
-            <span className="text-sm text-gray-500">총 수수료 수입</span>
+            <span className="text-sm text-gray-500">{t("superadmin.settlements.totalCommission")}</span>
           </div>
           <p className="text-2xl font-bold text-gray-900">{formatPrice(totalCommission)}</p>
         </div>
@@ -129,7 +128,7 @@ export default function SettlementsPage() {
             <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center">
               <CheckCircle className="w-5 h-5 text-blue-600" />
             </div>
-            <span className="text-sm text-gray-500">총 정산 완료</span>
+            <span className="text-sm text-gray-500">{t("superadmin.settlements.totalSettled")}</span>
           </div>
           <p className="text-2xl font-bold text-gray-900">{formatPrice(totalSettled)}</p>
         </div>
@@ -138,7 +137,7 @@ export default function SettlementsPage() {
             <div className="w-10 h-10 rounded-lg bg-orange-50 flex items-center justify-center">
               <Clock className="w-5 h-5 text-orange-600" />
             </div>
-            <span className="text-sm text-gray-500">미정산 잔액</span>
+            <span className="text-sm text-gray-500">{t("superadmin.settlements.pendingBalance")}</span>
           </div>
           <p className="text-2xl font-bold text-orange-600">{formatPrice(totalPending)}</p>
         </div>
@@ -147,50 +146,50 @@ export default function SettlementsPage() {
       {/* Tenant Commission Summary */}
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="font-semibold text-gray-900">테넌트별 수수료 현황</h2>
+          <h2 className="font-semibold text-gray-900">{t("superadmin.settlements.commissionByTenant")}</h2>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left font-medium text-gray-500">테넌트</th>
-                <th className="px-6 py-3 text-right font-medium text-gray-500">주문 수</th>
-                <th className="px-6 py-3 text-right font-medium text-gray-500">주문 금액</th>
-                <th className="px-6 py-3 text-right font-medium text-gray-500">수수료</th>
-                <th className="px-6 py-3 text-right font-medium text-gray-500">정산 금액</th>
-                <th className="px-6 py-3 text-right font-medium text-gray-500">미정산</th>
-                <th className="px-6 py-3 text-center font-medium text-gray-500">관리</th>
+                <th className="px-6 py-3 text-left font-medium text-gray-500">{t("superadmin.settlements.tenant")}</th>
+                <th className="px-6 py-3 text-right font-medium text-gray-500">{t("superadmin.settlements.orderCount")}</th>
+                <th className="px-6 py-3 text-right font-medium text-gray-500">{t("superadmin.settlements.orderAmount")}</th>
+                <th className="px-6 py-3 text-right font-medium text-gray-500">{t("superadmin.settlements.commission")}</th>
+                <th className="px-6 py-3 text-right font-medium text-gray-500">{t("superadmin.settlements.settlementAmount")}</th>
+                <th className="px-6 py-3 text-right font-medium text-gray-500">{t("superadmin.settlements.pending")}</th>
+                <th className="px-6 py-3 text-center font-medium text-gray-500">{t("superadmin.settlements.manage")}</th>
               </tr>
             </thead>
             <tbody>
               {summary.length === 0 ? (
-                <tr><td colSpan={7} className="px-6 py-8 text-center text-gray-400">수수료 데이터가 없습니다.</td></tr>
+                <tr><td colSpan={7} className="px-6 py-8 text-center text-gray-400">{t("superadmin.settlements.noCommissionData")}</td></tr>
               ) : (
-                summary.map((t) => (
-                  <tr key={t.tenantId} className={`border-t border-gray-100 hover:bg-gray-50 ${selectedTenant === t.tenantName ? "bg-blue-50" : ""}`}>
+                summary.map((item) => (
+                  <tr key={item.tenantId} className={`border-t border-gray-100 hover:bg-gray-50 ${selectedTenant === item.tenantName ? "bg-blue-50" : ""}`}>
                     <td className="px-6 py-3">
                       <div className="flex items-center gap-2">
                         <Building2 size={16} className="text-gray-400" />
-                        <span className="font-medium text-gray-900">{t.tenantName}</span>
+                        <span className="font-medium text-gray-900">{item.tenantName}</span>
                       </div>
                     </td>
-                    <td className="px-6 py-3 text-right">{t.totalOrders}건</td>
-                    <td className="px-6 py-3 text-right">{formatPrice(t.totalOrderAmount)}</td>
-                    <td className="px-6 py-3 text-right text-green-600 font-medium">{formatPrice(t.totalCommission)}</td>
-                    <td className="px-6 py-3 text-right">{formatPrice(t.totalSettlementAmount)}</td>
+                    <td className="px-6 py-3 text-right">{item.totalOrders}건</td>
+                    <td className="px-6 py-3 text-right">{formatPrice(item.totalOrderAmount)}</td>
+                    <td className="px-6 py-3 text-right text-green-600 font-medium">{formatPrice(item.totalCommission)}</td>
+                    <td className="px-6 py-3 text-right">{formatPrice(item.totalSettlementAmount)}</td>
                     <td className="px-6 py-3 text-right">
-                      {t.pendingSettlement > 0 ? (
-                        <span className="text-orange-600 font-medium">{formatPrice(t.pendingSettlement)}</span>
+                      {item.pendingSettlement > 0 ? (
+                        <span className="text-orange-600 font-medium">{formatPrice(item.pendingSettlement)}</span>
                       ) : (
                         <span className="text-gray-400">-</span>
                       )}
                     </td>
                     <td className="px-6 py-3 text-center">
                       <button
-                        onClick={() => loadSettlements(t.tenantName)}
+                        onClick={() => loadSettlements(item.tenantName)}
                         className="text-blue-600 hover:text-blue-800 text-xs font-medium"
                       >
-                        정산 내역
+                        {t("superadmin.settlements.viewHistory")}
                       </button>
                     </td>
                   </tr>
@@ -205,10 +204,10 @@ export default function SettlementsPage() {
       {selectedTenant && (
         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-            <h2 className="font-semibold text-gray-900">{selectedTenant} 정산 내역</h2>
+            <h2 className="font-semibold text-gray-900">{t("superadmin.settlements.tenantHistory", { tenant: selectedTenant })}</h2>
             <button onClick={() => setShowCreate(true)}
               className="flex items-center gap-1 px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-medium hover:bg-blue-700">
-              <Plus size={14} /> 정산 생성
+              <Plus size={14} /> {t("superadmin.settlements.createSettlement")}
             </button>
           </div>
 
@@ -222,9 +221,9 @@ export default function SettlementsPage() {
                 <input type="date" value={periodEnd} onChange={(e) => setPeriodEnd(e.target.value)}
                   className="px-3 py-2 border rounded-lg text-sm" placeholder="종료일" />
                 <button onClick={handleCreate}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700">생성</button>
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700">{t("common.create")}</button>
                 <button onClick={() => setShowCreate(false)}
-                  className="px-4 py-2 bg-gray-200 text-gray-600 rounded-lg text-sm hover:bg-gray-300">취소</button>
+                  className="px-4 py-2 bg-gray-200 text-gray-600 rounded-lg text-sm hover:bg-gray-300">{t("common.cancel")}</button>
               </div>
             </div>
           )}
@@ -238,19 +237,19 @@ export default function SettlementsPage() {
               <table className="w-full text-sm">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-4 py-3 text-left font-medium text-gray-500">기간</th>
-                    <th className="px-4 py-3 text-right font-medium text-gray-500">주문 수</th>
-                    <th className="px-4 py-3 text-right font-medium text-gray-500">주문 합계</th>
-                    <th className="px-4 py-3 text-right font-medium text-gray-500">수수료</th>
-                    <th className="px-4 py-3 text-right font-medium text-gray-500">정산 금액</th>
-                    <th className="px-4 py-3 text-center font-medium text-gray-500">상태</th>
-                    <th className="px-4 py-3 text-left font-medium text-gray-500">은행 정보</th>
-                    <th className="px-4 py-3 text-center font-medium text-gray-500">작업</th>
+                    <th className="px-4 py-3 text-left font-medium text-gray-500">{t("superadmin.settlements.period")}</th>
+                    <th className="px-4 py-3 text-right font-medium text-gray-500">{t("superadmin.settlements.orderCount")}</th>
+                    <th className="px-4 py-3 text-right font-medium text-gray-500">{t("superadmin.settlements.orderTotal")}</th>
+                    <th className="px-4 py-3 text-right font-medium text-gray-500">{t("superadmin.settlements.commission")}</th>
+                    <th className="px-4 py-3 text-right font-medium text-gray-500">{t("superadmin.settlements.settlementAmount")}</th>
+                    <th className="px-4 py-3 text-center font-medium text-gray-500">{t("superadmin.settlements.status")}</th>
+                    <th className="px-4 py-3 text-left font-medium text-gray-500">{t("superadmin.settlements.bankInfo")}</th>
+                    <th className="px-4 py-3 text-center font-medium text-gray-500">{t("superadmin.settlements.actions")}</th>
                   </tr>
                 </thead>
                 <tbody>
                   {settlements.length === 0 ? (
-                    <tr><td colSpan={8} className="px-4 py-8 text-center text-gray-400">정산 내역이 없습니다.</td></tr>
+                    <tr><td colSpan={8} className="px-4 py-8 text-center text-gray-400">{t("superadmin.settlements.noSettlements")}</td></tr>
                   ) : (
                     settlements.map((s) => (
                       <tr key={s.id} className="border-t border-gray-100 hover:bg-gray-50">
@@ -269,7 +268,7 @@ export default function SettlementsPage() {
                           {(s.status === "Ready" || s.status === "Pending") && (
                             <button onClick={() => setProcessId(s.id)}
                               className="flex items-center gap-1 px-2 py-1 bg-green-600 text-white rounded text-xs hover:bg-green-700 mx-auto">
-                              <Send size={12} /> 처리
+                              <Send size={12} /> {t("superadmin.settlements.process")}
                             </button>
                           )}
                           {s.status === "Completed" && s.transactionId && (
@@ -290,8 +289,8 @@ export default function SettlementsPage() {
       {processId && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl">
-            <h3 className="text-lg font-semibold mb-4">정산 처리</h3>
-            <p className="text-sm text-gray-500 mb-4">이체 완료 후 거래번호를 입력하세요.</p>
+            <h3 className="text-lg font-semibold mb-4">{t("superadmin.settlements.processSettlement")}</h3>
+            <p className="text-sm text-gray-500 mb-4">{t("superadmin.settlements.enterTransactionId")}</p>
             <input
               type="text"
               value={transactionId}
@@ -301,10 +300,10 @@ export default function SettlementsPage() {
             />
             <div className="flex gap-2 justify-end">
               <button onClick={() => { setProcessId(null); setTransactionId(""); }}
-                className="px-4 py-2 bg-gray-200 text-gray-600 rounded-lg text-sm hover:bg-gray-300">취소</button>
+                className="px-4 py-2 bg-gray-200 text-gray-600 rounded-lg text-sm hover:bg-gray-300">{t("common.cancel")}</button>
               <button onClick={handleProcess} disabled={!transactionId}
                 className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 disabled:opacity-50">
-                정산 완료
+                {t("superadmin.settlements.completeSettlement")}
               </button>
             </div>
           </div>

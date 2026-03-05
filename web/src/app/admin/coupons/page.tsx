@@ -11,10 +11,7 @@ import {
   type CouponDto,
   type PagedCoupons,
 } from "@/lib/couponApi";
-
-function formatPrice(price: number): string {
-  return price.toLocaleString("ko-KR") + "원";
-}
+import { formatPrice } from "@/lib/format";
 
 export default function AdminCouponsPage() {
   const t = useTranslations();

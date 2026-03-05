@@ -7,10 +7,7 @@ import { useTranslations } from "next-intl";
 import { Package, FolderTree, ShoppingCart, Users, TrendingUp, AlertTriangle, Warehouse, BarChart3 } from "lucide-react";
 import { getDashboardStats, getSalesAnalytics, type DashboardStats, type DailySales } from "@/lib/adminApi";
 import { useAdminDashboardStore } from "@/stores/adminDashboardStore";
-
-function formatPrice(price: number): string {
-  return price.toLocaleString("ko-KR") + "원";
-}
+import { formatPrice } from "@/lib/format";
 
 export default function AdminDashboard() {
   const t = useTranslations();
@@ -72,13 +69,13 @@ export default function AdminDashboard() {
         msg = t("admin.dashboard.orderStatusChanged", { orderNumber: lastEvent.orderNumber, status: STATUS_LABELS[lastEvent.newStatus || ""] || lastEvent.newStatus || "" });
         break;
       case "MesSyncCompleted":
-        msg = `MES 동기화 완료: ${lastEvent.syncedCount || 0}건 성공, ${lastEvent.failedCount || 0}건 실패`;
+        msg = t("admin.dashboard.mesSyncCompleted", { synced: lastEvent.syncedCount || 0, failed: lastEvent.failedCount || 0 });
         break;
       case "AutoReorderTriggered":
-        msg = `자동 발주 생성: ${lastEvent.orderNumber} (${lastEvent.itemCount || 0}품목, ${lastEvent.totalQuantity || 0}개)`;
+        msg = t("admin.dashboard.autoReorderTriggered", { orderNumber: lastEvent.orderNumber, items: lastEvent.itemCount || 0, quantity: lastEvent.totalQuantity || 0 });
         break;
       default:
-        msg = "알림";
+        msg = t("admin.dashboard.notification");
     }
 
     setToast(msg);

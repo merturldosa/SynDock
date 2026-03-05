@@ -172,7 +172,7 @@ export async function createProduct(
     })),
     variants: [],
   };
-  const { data } = await api.post("/api/products", payload);
+  const { data } = await api.post("/products", payload);
   return data;
 }
 
@@ -194,11 +194,11 @@ export async function updateProduct(
   id: number,
   body: UpdateProductRequest
 ): Promise<void> {
-  await api.put(`/api/products/${id}`, body);
+  await api.put(`/products/${id}`, body);
 }
 
 export async function deleteProduct(id: number): Promise<void> {
-  await api.delete(`/api/products/${id}`);
+  await api.delete(`/products/${id}`);
 }
 
 // ── Category Admin ──
@@ -213,7 +213,7 @@ export interface CreateCategoryRequest {
 export async function createCategory(
   body: CreateCategoryRequest
 ): Promise<{ categoryId: number }> {
-  const { data } = await api.post("/api/categories", body);
+  const { data } = await api.post("/categories", body);
   return data;
 }
 
@@ -221,11 +221,11 @@ export async function updateCategory(
   id: number,
   body: Partial<CreateCategoryRequest>
 ): Promise<void> {
-  await api.put(`/api/categories/${id}`, body);
+  await api.put(`/categories/${id}`, body);
 }
 
 export async function deleteCategory(id: number): Promise<void> {
-  await api.delete(`/api/categories/${id}`);
+  await api.delete(`/categories/${id}`);
 }
 
 // ── Order Admin ──
@@ -375,12 +375,12 @@ export interface ProductVariantDto {
 }
 
 export async function getProductVariants(productId: number): Promise<ProductVariantDto[]> {
-  const { data } = await api.get(`/api/products/${productId}/variants`);
+  const { data } = await api.get(`/products/${productId}/variants`);
   return data;
 }
 
 export async function updateProductVariants(productId: number, variants: ProductVariantDto[]): Promise<void> {
-  await api.put(`/api/products/${productId}/variants`, { variants });
+  await api.put(`/products/${productId}/variants`, { variants });
 }
 
 // ── Refund ──
@@ -399,7 +399,7 @@ export interface GeneratedContent {
 export async function generateProductContent(
   productId: number
 ): Promise<GeneratedContent> {
-  const { data } = await api.post(`/api/products/${productId}/generate-content`);
+  const { data } = await api.post(`/products/${productId}/generate-content`);
   return data;
 }
 

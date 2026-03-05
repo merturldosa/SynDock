@@ -8,11 +8,8 @@ import { ShoppingCart, Trash2, Minus, Plus, ArrowRight, Truck } from "lucide-rea
 import { useCartStore } from "@/stores/cartStore";
 import { useAuthStore } from "@/stores/authStore";
 import { useTranslations } from "next-intl";
+import { formatPrice } from "@/lib/format";
 import { CheckoutSteps } from "@/components/checkout/CheckoutSteps";
-
-function formatPrice(price: number): string {
-  return price.toLocaleString("ko-KR") + "\uC6D0";
-}
 
 export default function CartPage() {
   const t = useTranslations();

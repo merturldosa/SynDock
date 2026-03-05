@@ -4,15 +4,12 @@ import Link from "next/link";
 import Image from "next/image";
 import { ShoppingCart } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { formatPrice } from "@/lib/format";
 import type { ProductSummary } from "@/types/product";
 
 interface ProductCardProps {
   product: ProductSummary;
   onAddToCart?: (product: ProductSummary) => void;
-}
-
-function formatPrice(price: number): string {
-  return price.toLocaleString("ko-KR") + "원";
 }
 
 export function ProductCard({ product, onAddToCart }: ProductCardProps) {
