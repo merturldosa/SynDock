@@ -67,7 +67,7 @@ function SalesTab() {
   const fetchData = () => {
     setLoading(true);
     if (customRange && startDate && endDate) {
-      getSalesAnalytics(undefined as unknown as number, startDate, endDate, comparison)
+      getSalesAnalytics(0, startDate, endDate, comparison)
         .then(setAnalytics).catch(() => { toast.error(t("common.fetchError")); }).finally(() => setLoading(false));
     } else {
       getSalesAnalytics(days, undefined, undefined, comparison)

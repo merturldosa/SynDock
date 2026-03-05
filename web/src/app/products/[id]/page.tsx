@@ -28,7 +28,7 @@ export async function generateMetadata({
   const { id } = await params;
   const product = await fetchProduct(id);
   if (!product) {
-    return { title: "상품을 찾을 수 없습니다" };
+    return { title: "Product not found" };
   }
 
   const primaryImage = product.images?.find((img: { isPrimary: boolean }) => img.isPrimary);
@@ -69,7 +69,7 @@ export default async function ProductDetailPage({
   const breadcrumbJsonLd = product
     ? generateBreadcrumbJsonLd([
         { name: TENANT_NAME, url: SITE_URL },
-        { name: "상품", url: `${SITE_URL}/products` },
+        { name: "Products", url: `${SITE_URL}/products` },
         ...(product.categoryName
           ? [{ name: product.categoryName, url: `${SITE_URL}/categories/${product.categorySlug || ""}` }]
           : []),

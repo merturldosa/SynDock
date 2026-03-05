@@ -1,6 +1,7 @@
 using System.Text.Json.Nodes;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Shop.Application.Common.Interfaces;
 using Shop.Domain.Interfaces;
 using SynDock.Core.Common;
@@ -21,11 +22,13 @@ public class GetTenantSettingsQueryHandler : IRequestHandler<GetTenantSettingsQu
 {
     private readonly IShopDbContext _db;
     private readonly ITenantContext _tenantContext;
+    private readonly ILogger<GetTenantSettingsQueryHandler> _logger;
 
-    public GetTenantSettingsQueryHandler(IShopDbContext db, ITenantContext tenantContext)
+    public GetTenantSettingsQueryHandler(IShopDbContext db, ITenantContext tenantContext, ILogger<GetTenantSettingsQueryHandler> logger)
     {
         _db = db;
         _tenantContext = tenantContext;
+        _logger = logger;
     }
 
     public async Task<Result<TenantSettingsDto>> Handle(GetTenantSettingsQuery request, CancellationToken cancellationToken)
@@ -44,7 +47,7 @@ public class GetTenantSettingsQueryHandler : IRequestHandler<GetTenantSettingsQu
         if (!string.IsNullOrEmpty(tenant.ConfigJson))
         {
             try { config = JsonNode.Parse(tenant.ConfigJson)?.AsObject() ?? new JsonObject(); }
-            catch { /* ignore */ }
+            catch (Exception ex) { _logger.LogWarning(ex, "Failed to parse tenant ConfigJson"); }
         }
 
         TenantSettingsThemeDto? theme = null;

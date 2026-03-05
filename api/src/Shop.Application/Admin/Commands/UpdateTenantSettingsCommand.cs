@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Shop.Application.Common.Interfaces;
 using Shop.Domain.Interfaces;
 using SynDock.Core.Common;
@@ -21,11 +22,13 @@ public class UpdateTenantSettingsCommandHandler : IRequestHandler<UpdateTenantSe
 {
     private readonly IShopDbContext _db;
     private readonly ITenantContext _tenantContext;
+    private readonly ILogger<UpdateTenantSettingsCommandHandler> _logger;
 
-    public UpdateTenantSettingsCommandHandler(IShopDbContext db, ITenantContext tenantContext)
+    public UpdateTenantSettingsCommandHandler(IShopDbContext db, ITenantContext tenantContext, ILogger<UpdateTenantSettingsCommandHandler> logger)
     {
         _db = db;
         _tenantContext = tenantContext;
+        _logger = logger;
     }
 
     public async Task<Result<bool>> Handle(UpdateTenantSettingsCommand request, CancellationToken cancellationToken)
@@ -43,7 +46,7 @@ public class UpdateTenantSettingsCommandHandler : IRequestHandler<UpdateTenantSe
         if (!string.IsNullOrEmpty(tenant.ConfigJson))
         {
             try { config = JsonNode.Parse(tenant.ConfigJson)?.AsObject() ?? new JsonObject(); }
-            catch { config = new JsonObject(); }
+            catch (Exception ex) { _logger.LogWarning(ex, "Failed to parse tenant ConfigJson"); config = new JsonObject(); }
         }
 
         // Update allowed fields only (never touch paymentConfig)

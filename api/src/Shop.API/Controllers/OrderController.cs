@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Shop.Application.Common.Interfaces;
 using Shop.Application.Orders.Commands;
 using Shop.Application.Orders.Queries;
+using Shop.Domain.Interfaces;
 
 namespace Shop.API.Controllers;
 
@@ -16,12 +17,14 @@ public class OrderController : ControllerBase
     private readonly IMediator _mediator;
     private readonly IPdfService _pdfService;
     private readonly IShopDbContext _db;
+    private readonly ITenantContext _tenantContext;
 
-    public OrderController(IMediator mediator, IPdfService pdfService, IShopDbContext db)
+    public OrderController(IMediator mediator, IPdfService pdfService, IShopDbContext db, ITenantContext tenantContext)
     {
         _mediator = mediator;
         _pdfService = pdfService;
         _db = db;
+        _tenantContext = tenantContext;
     }
 
     [HttpPost]
@@ -101,7 +104,8 @@ public class OrderController : ControllerBase
         if (order is null)
             return NotFound(new { error = "주문을 찾을 수 없습니다." });
 
-        var tenant = await _db.Tenants.AsNoTracking().FirstOrDefaultAsync();
+        var tenantId = _tenantContext.TenantId;
+        var tenant = await _db.Tenants.AsNoTracking().FirstOrDefaultAsync(t => t.Id == tenantId, ct);
         var tenantName = tenant?.Name ?? "SynDock Shop";
 
         var pdf = _pdfService.GenerateOrderReceipt(order, tenantName);

@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Shop.Application.Common.Interfaces;
 using SynDock.Core.Common;
 
@@ -15,10 +16,12 @@ public record VerifyTenantDomainCommand(int TenantId) : IRequest<Result<DomainVe
 public class VerifyTenantDomainCommandHandler : IRequestHandler<VerifyTenantDomainCommand, Result<DomainVerificationResultDto>>
 {
     private readonly IShopDbContext _db;
+    private readonly ILogger<VerifyTenantDomainCommandHandler> _logger;
 
-    public VerifyTenantDomainCommandHandler(IShopDbContext db)
+    public VerifyTenantDomainCommandHandler(IShopDbContext db, ILogger<VerifyTenantDomainCommandHandler> logger)
     {
         _db = db;
+        _logger = logger;
     }
 
     public async Task<Result<DomainVerificationResultDto>> Handle(VerifyTenantDomainCommand request, CancellationToken cancellationToken)
@@ -54,7 +57,7 @@ public class VerifyTenantDomainCommandHandler : IRequestHandler<VerifyTenantDoma
         if (!string.IsNullOrEmpty(tenant.ConfigJson))
         {
             try { config = JsonNode.Parse(tenant.ConfigJson)?.AsObject() ?? new JsonObject(); }
-            catch { config = new JsonObject(); }
+            catch (Exception ex) { _logger.LogWarning(ex, "Failed to parse tenant ConfigJson"); config = new JsonObject(); }
         }
 
         var domainConfig = config["domainConfig"]?.AsObject() ?? new JsonObject();

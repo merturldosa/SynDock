@@ -8,12 +8,12 @@ public class CreateOrderCommandValidator : AbstractValidator<CreateOrderCommand>
     public CreateOrderCommandValidator()
     {
         RuleFor(x => x.PointsToUse)
-            .GreaterThanOrEqualTo(0).WithMessage("포인트 사용량은 0 이상이어야 합니다.");
+            .GreaterThanOrEqualTo(0).WithMessage("Points to use must be 0 or greater.");
 
         RuleFor(x => x.Note)
-            .MaximumLength(500).WithMessage("주문 메모는 500자 이하여야 합니다.");
+            .MaximumLength(500).WithMessage("Order note must be 500 characters or less.");
 
         RuleFor(x => x.CouponCode)
-            .MaximumLength(50).WithMessage("쿠폰 코드는 50자 이하여야 합니다.");
+            .MaximumLength(50).WithMessage("Coupon code must be 50 characters or less.");
     }
 }

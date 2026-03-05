@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Shop.Application.Common.Interfaces;
 using SynDock.Core.Common;
 
@@ -11,11 +12,13 @@ public class ForgotPasswordCommandHandler : IRequestHandler<ForgotPasswordComman
 {
     private readonly IShopDbContext _db;
     private readonly IEmailService _emailService;
+    private readonly ILogger<ForgotPasswordCommandHandler> _logger;
 
-    public ForgotPasswordCommandHandler(IShopDbContext db, IEmailService emailService)
+    public ForgotPasswordCommandHandler(IShopDbContext db, IEmailService emailService, ILogger<ForgotPasswordCommandHandler> logger)
     {
         _db = db;
         _emailService = emailService;
+        _logger = logger;
     }
 
     public async Task<Result<bool>> Handle(ForgotPasswordCommand request, CancellationToken cancellationToken)
@@ -43,7 +46,7 @@ public class ForgotPasswordCommandHandler : IRequestHandler<ForgotPasswordComman
         {
             await _emailService.SendAsync(user.Email, subject, body, cancellationToken);
         }
-        catch { /* 이메일 실패는 무시 */ }
+        catch (Exception ex) { _logger.LogWarning(ex, "Failed to send email"); }
 
         return Result<bool>.Success(true);
     }

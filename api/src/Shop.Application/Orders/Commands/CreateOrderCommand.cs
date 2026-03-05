@@ -166,7 +166,7 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Res
             OrderNumber = orderNumber,
             UserId = userId,
             Status = nameof(OrderStatus.Pending),
-            TotalAmount = subtotal - discountAmount - pointsUsed,
+            TotalAmount = Math.Max(0, subtotal - discountAmount - pointsUsed),
             ShippingFee = 0,
             DiscountAmount = discountAmount,
             PointsUsed = pointsUsed,

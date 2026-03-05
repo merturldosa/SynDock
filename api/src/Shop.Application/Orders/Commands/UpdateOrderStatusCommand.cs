@@ -69,7 +69,7 @@ public class UpdateOrderStatusCommandHandler : IRequestHandler<UpdateOrderStatus
 
         // Validate status transition
         if (!IsValidTransition(order.Status, request.Status))
-            return Result<bool>.Failure($"'{order.Status}'에서 '{request.Status}'로 변경할 수 없습니다.");
+            return Result<bool>.Failure($"Cannot transition from '{order.Status}' to '{request.Status}'.");
 
         var previousStatus = order.Status;
         order.Status = request.Status;
@@ -174,6 +174,7 @@ public class UpdateOrderStatusCommandHandler : IRequestHandler<UpdateOrderStatus
             (nameof(OrderStatus.Processing), nameof(OrderStatus.Shipped)) => true,
             (nameof(OrderStatus.Shipped), nameof(OrderStatus.Delivered)) => true,
             (nameof(OrderStatus.Delivered), nameof(OrderStatus.Refunded)) => true,
+            (nameof(OrderStatus.Cancelled), nameof(OrderStatus.Refunded)) => true,
             _ => false
         };
     }

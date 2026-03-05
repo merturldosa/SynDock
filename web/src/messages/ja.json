@@ -475,6 +475,15 @@
       "checkOrder": "注文番号は注文履歴で確認できます。",
       "viewDetail": "注文詳細を見る",
       "continueShopping": "お買い物を続ける"
+    },
+    "status": {
+      "Pending": "注文受付",
+      "Confirmed": "注文確認",
+      "Processing": "準備中",
+      "Shipped": "配送中",
+      "Delivered": "配送完了",
+      "Cancelled": "注文キャンセル",
+      "Refunded": "返金完了"
     }
   },
   "review": {

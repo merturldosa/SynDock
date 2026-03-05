@@ -9,7 +9,6 @@ import { useTranslations } from "next-intl";
 import { getOrders } from "@/lib/orderApi";
 import { useAuthStore } from "@/stores/authStore";
 import type { OrderSummary } from "@/types/order";
-import { ORDER_STATUS_LABELS, type OrderStatusType } from "@/types/order";
 import { formatPrice, formatDateShort as formatDate } from "@/lib/format";
 
 const STATUS_COLORS: Record<string, string> = {
@@ -72,7 +71,7 @@ export default function OrdersPage() {
         <>
           <div className="space-y-4">
             {orders.map((order) => {
-              const statusLabel = ORDER_STATUS_LABELS[order.status as OrderStatusType] || order.status;
+              const statusLabel = t(`order.status.${order.status}`);
               const statusColor = STATUS_COLORS[order.status] || "bg-gray-100 text-gray-500";
 
               return (

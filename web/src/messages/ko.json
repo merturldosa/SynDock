@@ -475,6 +475,15 @@
       "checkOrder": "주문번호는 주문내역에서 확인할 수 있습니다.",
       "viewDetail": "주문 상세보기",
       "continueShopping": "쇼핑 계속하기"
+    },
+    "status": {
+      "Pending": "주문접수",
+      "Confirmed": "주문확인",
+      "Processing": "준비중",
+      "Shipped": "배송중",
+      "Delivered": "배송완료",
+      "Cancelled": "주문취소",
+      "Refunded": "환불완료"
     }
   },
   "review": {

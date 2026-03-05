@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import type { Cart, CartItem } from "@/types/cart";
 import * as cartApi from "@/lib/cartApi";
+import toast from "react-hot-toast";
 
 interface CartState {
   cart: Cart | null;
@@ -25,7 +26,8 @@ export const useCartStore = create<CartState>((set, get) => ({
       const cart = await cartApi.getCart();
       set({ cart, isLoading: false });
     } catch {
-      set({ isLoading: false, error: "장바구니를 불러올 수 없습니다." });
+      toast.error("Failed to load cart");
+      set({ isLoading: false, error: "Failed to load cart" });
     }
   },
 
@@ -35,7 +37,8 @@ export const useCartStore = create<CartState>((set, get) => ({
       await get().fetchCart();
       return true;
     } catch {
-      set({ error: "장바구니에 추가할 수 없습니다." });
+      toast.error("Failed to add item to cart");
+      set({ error: "Failed to add item to cart" });
       return false;
     }
   },
@@ -61,7 +64,8 @@ export const useCartStore = create<CartState>((set, get) => ({
       await cartApi.updateCartItem(itemId, quantity);
       await get().fetchCart();
     } catch {
-      set({ cart: prevCart, error: "수량을 변경할 수 없습니다." });
+      toast.error("Failed to update quantity");
+      set({ cart: prevCart, error: "Failed to update quantity" });
     }
   },
 
@@ -83,7 +87,8 @@ export const useCartStore = create<CartState>((set, get) => ({
       await cartApi.removeCartItem(itemId);
       await get().fetchCart();
     } catch {
-      set({ cart: prevCart, error: "항목을 삭제할 수 없습니다." });
+      toast.error("Failed to remove item");
+      set({ cart: prevCart, error: "Failed to remove item" });
     }
   },
 
@@ -94,7 +99,8 @@ export const useCartStore = create<CartState>((set, get) => ({
     try {
       await cartApi.clearCart();
     } catch {
-      set({ cart: prevCart, error: "장바구니를 비울 수 없습니다." });
+      toast.error("Failed to clear cart");
+      set({ cart: prevCart, error: "Failed to clear cart" });
     }
   },
 

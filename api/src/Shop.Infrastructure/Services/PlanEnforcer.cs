@@ -19,7 +19,7 @@ public class PlanEnforcer : IPlanEnforcer
     {
         var (usage, limits) = await GetUsageAndLimits(tenantId, ct);
         if (usage.ProductCount >= limits.MaxProducts)
-            return Result<bool>.Failure($"상품 등록 한도({limits.MaxProducts}개)를 초과했습니다. 플랜 업그레이드가 필요합니다.");
+            return Result<bool>.Failure($"Product limit ({limits.MaxProducts}) exceeded. Plan upgrade required.");
         return Result<bool>.Success(true);
     }
 
@@ -27,7 +27,7 @@ public class PlanEnforcer : IPlanEnforcer
     {
         var (usage, limits) = await GetUsageAndLimits(tenantId, ct);
         if (usage.UserCount >= limits.MaxUsers)
-            return Result<bool>.Failure($"회원 등록 한도({limits.MaxUsers}명)를 초과했습니다. 플랜 업그레이드가 필요합니다.");
+            return Result<bool>.Failure($"User limit ({limits.MaxUsers}) exceeded. Plan upgrade required.");
         return Result<bool>.Success(true);
     }
 
@@ -37,7 +37,7 @@ public class PlanEnforcer : IPlanEnforcer
         var currentPeriod = DateTime.UtcNow.ToString("yyyy-MM");
         var monthlyOrders = usage.CurrentPeriod == currentPeriod ? usage.MonthlyOrderCount : 0;
         if (monthlyOrders >= limits.MaxMonthlyOrders)
-            return Result<bool>.Failure($"월 주문 한도({limits.MaxMonthlyOrders}건)를 초과했습니다. 플랜 업그레이드가 필요합니다.");
+            return Result<bool>.Failure($"Monthly order limit ({limits.MaxMonthlyOrders}) exceeded. Plan upgrade required.");
         return Result<bool>.Success(true);
     }
 

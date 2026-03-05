@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Shop.Application.Common.Interfaces;
 using SynDock.Core.Common;
 
@@ -20,10 +21,12 @@ public record UpdateTenantDomainCommand(int TenantId, string? CustomDomain, stri
 public class UpdateTenantDomainCommandHandler : IRequestHandler<UpdateTenantDomainCommand, Result<DomainConfigDto>>
 {
     private readonly IShopDbContext _db;
+    private readonly ILogger<UpdateTenantDomainCommandHandler> _logger;
 
-    public UpdateTenantDomainCommandHandler(IShopDbContext db)
+    public UpdateTenantDomainCommandHandler(IShopDbContext db, ILogger<UpdateTenantDomainCommandHandler> logger)
     {
         _db = db;
+        _logger = logger;
     }
 
     public async Task<Result<DomainConfigDto>> Handle(UpdateTenantDomainCommand request, CancellationToken cancellationToken)
@@ -43,7 +46,7 @@ public class UpdateTenantDomainCommandHandler : IRequestHandler<UpdateTenantDoma
         if (!string.IsNullOrEmpty(tenant.ConfigJson))
         {
             try { config = JsonNode.Parse(tenant.ConfigJson)?.AsObject() ?? new JsonObject(); }
-            catch { config = new JsonObject(); }
+            catch (Exception ex) { _logger.LogWarning(ex, "Failed to parse tenant ConfigJson"); config = new JsonObject(); }
         }
 
         var domainConfig = new JsonObject

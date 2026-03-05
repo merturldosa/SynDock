@@ -21,6 +21,7 @@ import { ShareButton } from "@/components/ShareButton";
 import { AddToCollectionModal } from "@/components/AddToCollectionModal";
 import { useTranslations } from "next-intl";
 import { formatPrice } from "@/lib/format";
+import DOMPurify from "isomorphic-dompurify";
 import type { ProductDetail, ProductVariant } from "@/types/product";
 
 function calcDiscountPercent(price: number, salePrice: number): number {
@@ -515,7 +516,7 @@ export default function ProductDetailClient() {
                         </div>
                       )}
                       {section.content && (
-                        <div className="text-gray-600 whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: section.content }} />
+                        <div className="text-gray-600 whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(section.content || "") }} />
                       )}
                     </div>
                   ))}

@@ -69,7 +69,7 @@ public class CreateNotificationCommandHandler : IRequestHandler<CreateNotificati
         await _sender.SendUnreadCount(request.UserId, unreadCount, cancellationToken);
 
         // Web Push notification (fire-and-forget, non-blocking)
-        _ = _webPush.SendPushAsync(request.UserId, request.Title, request.Message ?? "", null, cancellationToken);
+        _ = _webPush.SendPushAsync(request.UserId, request.Title, request.Message ?? "", null, CancellationToken.None);
 
         return Result<int>.Success(notification.Id);
     }

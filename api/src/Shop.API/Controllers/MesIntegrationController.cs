@@ -75,12 +75,12 @@ public class MesIntegrationController : ControllerBase
         var productIds = mappings.Keys.ToList();
         var products = await _db.Products.AsNoTracking()
             .Where(p => productIds.Contains(p.Id))
-            .ToDictionaryAsync(p => p.Id);
+            .ToDictionaryAsync(p => p.Id, ct);
         var stockByProduct = await _db.ProductVariants.AsNoTracking()
             .Where(v => productIds.Contains(v.ProductId) && v.IsActive)
             .GroupBy(v => v.ProductId)
             .Select(g => new { ProductId = g.Key, TotalStock = g.Sum(v => v.Stock) })
-            .ToDictionaryAsync(x => x.ProductId, x => x.TotalStock);
+            .ToDictionaryAsync(x => x.ProductId, x => x.TotalStock, ct);
 
         foreach (var mapping in mappings)
         {
@@ -116,12 +116,12 @@ public class MesIntegrationController : ControllerBase
         var productIds = mappings.Keys.ToList();
         var products = await _db.Products.AsNoTracking()
             .Where(p => productIds.Contains(p.Id))
-            .ToDictionaryAsync(p => p.Id);
+            .ToDictionaryAsync(p => p.Id, ct);
         var stockByProduct = await _db.ProductVariants.AsNoTracking()
             .Where(v => productIds.Contains(v.ProductId) && v.IsActive)
             .GroupBy(v => v.ProductId)
             .Select(g => new { ProductId = g.Key, TotalStock = g.Sum(v => v.Stock) })
-            .ToDictionaryAsync(x => x.ProductId, x => x.TotalStock);
+            .ToDictionaryAsync(x => x.ProductId, x => x.TotalStock, ct);
 
         // 1) Shop 매핑 상품 순회
         foreach (var mapping in mappings)
@@ -176,9 +176,9 @@ public class MesIntegrationController : ControllerBase
 
         var mesStock = (int)Math.Round(mesItem.AvailableQuantity);
 
-        var variants = await _db.ProductVariants
+        var variants = await _db.ProductVariants.IgnoreQueryFilters()
             .Where(v => v.ProductId == productId && v.IsActive)
-            .ToListAsync();
+            .ToListAsync(ct);
 
         if (variants.Count == 0)
             return BadRequest(new { message = "Shop에 해당 상품의 옵션이 없습니다." });
@@ -186,7 +186,7 @@ public class MesIntegrationController : ControllerBase
         // 대표 variant에 MES 재고 반영
         var primaryVariant = variants.First();
         primaryVariant.Stock = mesStock;
-        await _db.SaveChangesAsync();
+        await _db.SaveChangesAsync(ct);
 
         return Ok(new { message = "재고가 동기화되었습니다.", productId, mesStock });
     }
@@ -197,7 +197,7 @@ public class MesIntegrationController : ControllerBase
         var query = _db.MesSyncHistories.AsNoTracking()
             .OrderByDescending(h => h.StartedAt);
 
-        var total = await query.CountAsync();
+        var total = await query.CountAsync(ct);
         var items = await query
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
@@ -214,7 +214,7 @@ public class MesIntegrationController : ControllerBase
                 h.ErrorDetailsJson,
                 h.ConflictDetailsJson
             })
-            .ToListAsync();
+            .ToListAsync(ct);
 
         return Ok(new { items, total, page, pageSize });
     }
@@ -223,7 +223,7 @@ public class MesIntegrationController : ControllerBase
     public async Task<IActionResult> GetSyncHistoryDetail(int id, CancellationToken ct)
     {
         var item = await _db.MesSyncHistories.AsNoTracking()
-            .FirstOrDefaultAsync(h => h.Id == id);
+            .FirstOrDefaultAsync(h => h.Id == id, ct);
 
         if (item is null)
             return NotFound(new { message = "동기화 이력을 찾을 수 없습니다." });
@@ -235,14 +235,14 @@ public class MesIntegrationController : ControllerBase
     public async Task<IActionResult> ForwardOrder(int orderId, CancellationToken ct)
     {
         var order = await _db.Orders.AsNoTracking()
-            .FirstOrDefaultAsync(o => o.Id == orderId);
+            .FirstOrDefaultAsync(o => o.Id == orderId, ct);
 
         if (order is null)
             return NotFound(new { message = "주문을 찾을 수 없습니다." });
 
         var orderItems = await _db.OrderItems.AsNoTracking()
             .Where(oi => oi.OrderId == orderId)
-            .ToListAsync();
+            .ToListAsync(ct);
 
         var customerId = _configuration.GetValue<long>("Mes:CustomerId", 1);
         var salesUserId = _configuration.GetValue<long>("Mes:SalesUserId", 1);
@@ -282,7 +282,7 @@ public class MesIntegrationController : ControllerBase
             if (trackedOrder is not null && result.MesOrderId is not null)
             {
                 trackedOrder.MesOrderId = result.MesOrderId;
-                await _db.SaveChangesAsync();
+                await _db.SaveChangesAsync(ct);
             }
             return Ok(new { message = "주문이 MES로 전달되었습니다.", mesOrderId = result.MesOrderId });
         }
@@ -313,7 +313,7 @@ public class MesIntegrationController : ControllerBase
     public async Task<IActionResult> GetMesOrderStatus(int orderId, CancellationToken ct)
     {
         var order = await _db.Orders.AsNoTracking()
-            .FirstOrDefaultAsync(o => o.Id == orderId);
+            .FirstOrDefaultAsync(o => o.Id == orderId, ct);
 
         if (order is null)
             return NotFound(new { message = "주문을 찾을 수 없습니다." });
@@ -351,7 +351,7 @@ public class MesIntegrationController : ControllerBase
             return BadRequest(new { message = "ShopOrderNo is required" });
 
         var order = await _db.Orders
-            .FirstOrDefaultAsync(o => o.OrderNumber == payload.ShopOrderNo);
+            .FirstOrDefaultAsync(o => o.OrderNumber == payload.ShopOrderNo, ct);
 
         if (order is null)
             return NotFound(new { message = $"Shop order {payload.ShopOrderNo} not found" });
@@ -362,7 +362,7 @@ public class MesIntegrationController : ControllerBase
         if (payload.MesOrderNo is not null)
             order.MesOrderNo = payload.MesOrderNo;
 
-        await _db.SaveChangesAsync();
+        await _db.SaveChangesAsync(ct);
 
         return Ok(new { message = "Order status updated", shopOrderNo = payload.ShopOrderNo });
     }
@@ -395,7 +395,7 @@ public class MesIntegrationController : ControllerBase
                 s.AiReason, s.TrendAnalysis, s.SeasonalityFactor, s.ConfidenceScore,
                 s.MesOrderId, s.ApprovedAt, s.ApprovedBy, s.CreatedAt
             })
-            .ToListAsync();
+            .ToListAsync(ct);
 
         return Ok(suggestions);
     }
@@ -495,7 +495,7 @@ public class MesIntegrationController : ControllerBase
     {
         var po = await _db.PurchaseOrders
             .Include(p => p.Items)
-            .FirstOrDefaultAsync(p => p.Id == id);
+            .FirstOrDefaultAsync(p => p.Id == id, ct);
 
         if (po is null) return NotFound(new { message = "발주를 찾을 수 없습니다." });
         if (po.Status != "Created") return BadRequest(new { message = "이미 전송된 발주입니다." });
@@ -529,7 +529,7 @@ public class MesIntegrationController : ControllerBase
         po.Status = "Forwarded";
         po.MesOrderId = mesResult.MesOrderId;
         po.ForwardedAt = DateTime.UtcNow;
-        await _db.SaveChangesAsync();
+        await _db.SaveChangesAsync(ct);
 
         return Ok(new { message = "MES로 전송되었습니다.", mesOrderId = mesResult.MesOrderId });
     }

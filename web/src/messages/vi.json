@@ -475,6 +475,15 @@
       "checkOrder": "Bạn có thể kiểm tra mã đơn hàng trong lịch sử đơn hàng.",
       "viewDetail": "Xem chi tiết đơn hàng",
       "continueShopping": "Tiếp tục mua sắm"
+    },
+    "status": {
+      "Pending": "Chờ xử lý",
+      "Confirmed": "Đã xác nhận",
+      "Processing": "Đang xử lý",
+      "Shipped": "Đang giao",
+      "Delivered": "Đã giao",
+      "Cancelled": "Đã hủy",
+      "Refunded": "Đã hoàn tiền"
     }
   },
   "review": {

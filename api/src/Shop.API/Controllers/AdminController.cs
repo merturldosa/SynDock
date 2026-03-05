@@ -188,7 +188,7 @@ public class AdminController : ControllerBase
             _ => usersQuery
         };
 
-        var emails = await usersQuery.Select(u => u.Email).ToListAsync();
+        var emails = await usersQuery.Select(u => u.Email).ToListAsync(ct);
 
         var htmlBody = Shop.Infrastructure.Services.EmailTemplates.MarketingBroadcast(request.Title, request.Content);
         var sentCount = 0;
@@ -197,7 +197,7 @@ public class AdminController : ControllerBase
         {
             try
             {
-                await _emailService.SendAsync(email, request.Title, htmlBody);
+                await _emailService.SendAsync(email, request.Title, htmlBody, ct);
                 sentCount++;
             }
             catch (Exception ex) { _logger.LogWarning(ex, "Failed to send marketing email to {Email}", email); }

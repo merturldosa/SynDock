@@ -26,7 +26,7 @@ export async function generateMetadata({
   const { id } = await params;
   const post = await fetchPost(id);
   if (!post) {
-    return { title: "게시글을 찾을 수 없습니다" };
+    return { title: "Post not found" };
   }
 
   return generatePostMetadata({

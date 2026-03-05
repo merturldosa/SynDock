@@ -8,31 +8,31 @@ public class UpsertCommissionSettingCommandValidator : AbstractValidator<UpsertC
     public UpsertCommissionSettingCommandValidator()
     {
         RuleFor(x => x.TenantId)
-            .GreaterThan(0).WithMessage("테넌트 ID는 필수입니다.");
+            .GreaterThan(0).WithMessage("Tenant ID is required.");
 
         RuleFor(x => x.CommissionRate)
-            .InclusiveBetween(0, 100).WithMessage("수수료율은 0~100% 사이여야 합니다.");
+            .InclusiveBetween(0, 100).WithMessage("Commission rate must be between 0 and 100%.");
 
         RuleFor(x => x.SettlementCycle)
-            .NotEmpty().WithMessage("정산 주기는 필수입니다.")
-            .MaximumLength(50).WithMessage("정산 주기는 50자 이하여야 합니다.");
+            .NotEmpty().WithMessage("Settlement cycle is required.")
+            .MaximumLength(50).WithMessage("Settlement cycle must be 50 characters or less.");
 
         RuleFor(x => x.SettlementDayOfWeek)
-            .InclusiveBetween(0, 6).WithMessage("정산 요일은 0(일)~6(토) 사이여야 합니다.");
+            .InclusiveBetween(0, 6).WithMessage("Settlement day of week must be between 0 (Sun) and 6 (Sat).");
 
         RuleFor(x => x.MinSettlementAmount)
-            .GreaterThanOrEqualTo(0).WithMessage("최소 정산 금액은 0 이상이어야 합니다.");
+            .GreaterThanOrEqualTo(0).WithMessage("Minimum settlement amount must be 0 or greater.");
 
         RuleFor(x => x.BankName)
             .MaximumLength(50).When(x => x.BankName is not null)
-            .WithMessage("은행명은 50자 이하여야 합니다.");
+            .WithMessage("Bank name must be 50 characters or less.");
 
         RuleFor(x => x.BankAccount)
             .MaximumLength(50).When(x => x.BankAccount is not null)
-            .WithMessage("계좌번호는 50자 이하여야 합니다.");
+            .WithMessage("Bank account must be 50 characters or less.");
 
         RuleFor(x => x.BankHolder)
             .MaximumLength(50).When(x => x.BankHolder is not null)
-            .WithMessage("예금주는 50자 이하여야 합니다.");
+            .WithMessage("Account holder must be 50 characters or less.");
     }
 }

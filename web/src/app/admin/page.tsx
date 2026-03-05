@@ -35,9 +35,22 @@ export default function AdminDashboard() {
   }, []);
 
   useEffect(() => {
-    loadStats();
-    getSalesAnalytics(7).then((d) => setTrend(d.dailySales || [])).catch(() => toast.error(t("common.fetchError")));
-    setLoading(false);
+    const load = async () => {
+      try {
+        const [statsData, salesData] = await Promise.all([
+          getDashboardStats(),
+          getSalesAnalytics(7),
+        ]);
+        if (statsData) setStats(statsData);
+        if (salesData) setTrend(salesData.dailySales || []);
+      } catch (err) {
+        console.error(err);
+        toast.error(t("common.fetchError"));
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
 
     const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
     if (token) {

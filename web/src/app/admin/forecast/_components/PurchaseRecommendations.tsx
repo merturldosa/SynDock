@@ -25,6 +25,7 @@ export default function PurchaseRecommendations() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [ordering, setOrdering] = useState(false);
   const [orderResult, setOrderResult] = useState<string | null>(null);
+  const [orderSuccess, setOrderSuccess] = useState(false);
 
   useEffect(() => {
     getPurchaseRecommendations(14)
@@ -53,9 +54,11 @@ export default function PurchaseRecommendations() {
   const handleAutoOrder = async () => {
     setOrdering(true);
     setOrderResult(null);
+    setOrderSuccess(false);
     try {
       const result = await createAutoPurchaseOrder(Array.from(selectedIds));
       if (result.success) {
+        setOrderSuccess(true);
         setOrderResult(
           t("admin.forecast.purchase.orderSuccess", {
             count: result.productCount,
@@ -64,9 +67,11 @@ export default function PurchaseRecommendations() {
         );
         setSelectedIds(new Set());
       } else {
+        setOrderSuccess(false);
         setOrderResult(result.errorMessage || t("admin.forecast.purchase.orderFailed"));
       }
     } catch {
+      setOrderSuccess(false);
       setOrderResult(t("admin.forecast.purchase.orderFailed"));
     }
     setOrdering(false);
@@ -120,7 +125,7 @@ export default function PurchaseRecommendations() {
       {orderResult && (
         <div
           className={`rounded-lg p-3 text-sm ${
-            orderResult.includes("success") || orderResult.includes("성공") || orderResult.includes("Success")
+            orderSuccess
               ? "bg-green-50 text-green-700"
               : "bg-red-50 text-red-700"
           }`}

@@ -1,6 +1,7 @@
 using System.Text.Json.Nodes;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Shop.Application.Common.Interfaces;
 using Shop.Application.Platform.Commands;
 using SynDock.Core.Common;
@@ -12,10 +13,12 @@ public record GetTenantDomainConfigQuery(string Slug) : IRequest<Result<DomainCo
 public class GetTenantDomainConfigQueryHandler : IRequestHandler<GetTenantDomainConfigQuery, Result<DomainConfigDto>>
 {
     private readonly IShopDbContext _db;
+    private readonly ILogger<GetTenantDomainConfigQueryHandler> _logger;
 
-    public GetTenantDomainConfigQueryHandler(IShopDbContext db)
+    public GetTenantDomainConfigQueryHandler(IShopDbContext db, ILogger<GetTenantDomainConfigQueryHandler> logger)
     {
         _db = db;
+        _logger = logger;
     }
 
     public async Task<Result<DomainConfigDto>> Handle(GetTenantDomainConfigQuery request, CancellationToken cancellationToken)
@@ -30,7 +33,7 @@ public class GetTenantDomainConfigQueryHandler : IRequestHandler<GetTenantDomain
         if (!string.IsNullOrEmpty(tenant.ConfigJson))
         {
             try { config = JsonNode.Parse(tenant.ConfigJson)?.AsObject() ?? new JsonObject(); }
-            catch { /* ignore */ }
+            catch (Exception ex) { _logger.LogWarning(ex, "Failed to parse tenant ConfigJson"); }
         }
 
         var domainConfig = config["domainConfig"]?.AsObject();
@@ -39,14 +42,14 @@ public class GetTenantDomainConfigQueryHandler : IRequestHandler<GetTenantDomain
         if (domainConfig?["verifiedAt"] is not null)
         {
             try { verifiedAt = DateTime.Parse(domainConfig["verifiedAt"]!.GetValue<string>()); }
-            catch { /* ignore */ }
+            catch (Exception ex) { _logger.LogWarning(ex, "Failed to parse verifiedAt date"); }
         }
         var sslStatus = domainConfig?["sslStatus"]?.GetValue<string>() ?? "None";
         DateTime? sslExpiresAt = null;
         if (domainConfig?["sslExpiresAt"] is not null)
         {
             try { sslExpiresAt = DateTime.Parse(domainConfig["sslExpiresAt"]!.GetValue<string>()); }
-            catch { /* ignore */ }
+            catch (Exception ex) { _logger.LogWarning(ex, "Failed to parse sslExpiresAt date"); }
         }
 
         var dnsInstructions = new List<DnsInstructionDto>();

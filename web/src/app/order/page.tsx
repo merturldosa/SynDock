@@ -134,7 +134,7 @@ export default function OrderPage() {
         }
 
         const widget = tossPayments(paymentClientKey);
-        await widget.requestPayment("카드", {
+        await widget.requestPayment("CARD", {
           amount: finalAmount,
           orderId: orderNumber,
           orderName: cart.items.length > 1

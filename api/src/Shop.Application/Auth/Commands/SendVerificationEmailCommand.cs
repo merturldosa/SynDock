@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Shop.Application.Common.Interfaces;
 using SynDock.Core.Common;
 using SynDock.Core.Interfaces;
@@ -13,12 +14,14 @@ public class SendVerificationEmailCommandHandler : IRequestHandler<SendVerificat
     private readonly IShopDbContext _db;
     private readonly ICurrentUserService _currentUser;
     private readonly IEmailService _emailService;
+    private readonly ILogger<SendVerificationEmailCommandHandler> _logger;
 
-    public SendVerificationEmailCommandHandler(IShopDbContext db, ICurrentUserService currentUser, IEmailService emailService)
+    public SendVerificationEmailCommandHandler(IShopDbContext db, ICurrentUserService currentUser, IEmailService emailService, ILogger<SendVerificationEmailCommandHandler> logger)
     {
         _db = db;
         _currentUser = currentUser;
         _emailService = emailService;
+        _logger = logger;
     }
 
     public async Task<Result<bool>> Handle(SendVerificationEmailCommand request, CancellationToken cancellationToken)
@@ -50,7 +53,7 @@ public class SendVerificationEmailCommandHandler : IRequestHandler<SendVerificat
         {
             await _emailService.SendAsync(user.Email, subject, body, cancellationToken);
         }
-        catch { /* 이메일 실패는 무시 */ }
+        catch (Exception ex) { _logger.LogWarning(ex, "Failed to send email"); }
 
         return Result<bool>.Success(true);
     }

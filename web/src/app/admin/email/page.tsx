@@ -5,6 +5,7 @@ import { Send, Eye, Plus, BarChart3, FlaskConical } from "lucide-react";
 import { useTranslations } from "next-intl";
 import toast from "react-hot-toast";
 import { formatDate, formatPrice, formatDateShort } from "@/lib/format";
+import DOMPurify from "isomorphic-dompurify";
 import {
   sendMarketingEmail,
   getCampaigns,
@@ -233,7 +234,7 @@ export default function AdminEmailPage() {
                 <div className="bg-[var(--color-primary)] text-white p-4 rounded-t-lg -m-4 mb-4">
                   <h3 className="font-bold">{title || t("admin.email.noTitle")}</h3>
                 </div>
-                <div className="prose prose-sm max-w-none mt-4" dangerouslySetInnerHTML={{ __html: content || `<p style='color:#999'>${t("admin.email.noContent")}</p>` }} />
+                <div className="prose prose-sm max-w-none mt-4" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(content || `<p style='color:#999'>${t("admin.email.noContent")}</p>`) }} />
               </div>
             </div>
           )}

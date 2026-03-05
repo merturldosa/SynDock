@@ -475,6 +475,15 @@
       "checkOrder": "You can check the order number in your order history.",
       "viewDetail": "View Order Detail",
       "continueShopping": "Continue Shopping"
+    },
+    "status": {
+      "Pending": "Pending",
+      "Confirmed": "Confirmed",
+      "Processing": "Processing",
+      "Shipped": "Shipped",
+      "Delivered": "Delivered",
+      "Cancelled": "Cancelled",
+      "Refunded": "Refunded"
     }
   },
   "review": {

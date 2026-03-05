@@ -48,7 +48,7 @@ public class PlatformController : ControllerBase
             .AsNoTracking()
             .OrderBy(t => t.Id)
             .Select(t => new TenantDto(t.Id, t.Slug, t.Name, t.CustomDomain, t.Subdomain, t.IsActive, t.ConfigJson))
-            .ToListAsync();
+            .ToListAsync(ct);
 
         return Ok(tenants);
     }
@@ -69,7 +69,7 @@ public class PlatformController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateTenant([FromBody] CreateTenantRequest request, CancellationToken ct)
     {
-        if (await _db.Tenants.AnyAsync(t => t.Slug == request.Slug))
+        if (await _db.Tenants.AnyAsync(t => t.Slug == request.Slug, ct))
             return BadRequest(new { error = "이미 존재하는 Slug입니다." });
 
         var tenant = new Tenant
@@ -84,7 +84,7 @@ public class PlatformController : ControllerBase
         };
 
         _db.Tenants.Add(tenant);
-        await _db.SaveChangesAsync();
+        await _db.SaveChangesAsync(ct);
 
         // TenantAdmin 자동 발행: 관리자 이메일이 제공된 경우
         int? tenantAdminId = null;
@@ -104,7 +104,7 @@ public class PlatformController : ControllerBase
             };
 
             _db.Users.Add(adminUser);
-            await _db.SaveChangesAsync();
+            await _db.SaveChangesAsync(ct);
             tenantAdminId = adminUser.Id;
         }
 
@@ -119,7 +119,7 @@ public class PlatformController : ControllerBase
     [HttpPut("{slug}")]
     public async Task<IActionResult> UpdateTenant(string slug, [FromBody] UpdateTenantRequest request, CancellationToken ct)
     {
-        var tenant = await _db.Tenants.FirstOrDefaultAsync(t => t.Slug == slug);
+        var tenant = await _db.Tenants.FirstOrDefaultAsync(t => t.Slug == slug, ct);
         if (tenant == null)
             return NotFound(new { error = "테넌트를 찾을 수 없습니다." });
 
@@ -131,7 +131,7 @@ public class PlatformController : ControllerBase
         tenant.UpdatedBy = "PlatformAdmin";
         tenant.UpdatedAt = DateTime.UtcNow;
 
-        await _db.SaveChangesAsync();
+        await _db.SaveChangesAsync(ct);
 
         return Ok(new TenantDto(tenant.Id, tenant.Slug, tenant.Name, tenant.CustomDomain, tenant.Subdomain, tenant.IsActive, tenant.ConfigJson));
     }

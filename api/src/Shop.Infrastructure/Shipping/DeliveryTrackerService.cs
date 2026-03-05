@@ -38,7 +38,7 @@ public class DeliveryTrackerService : IShippingTracker
         {
             var carrierId = ResolveCarrierCode(carrier);
             if (carrierId is null)
-                return new ShippingTrackingResult(false, null, null, $"지원하지 않는 택배사입니다: {carrier}");
+                return new ShippingTrackingResult(false, null, null, $"Unsupported carrier: {carrier}");
 
             var query = @"
                 query Track($carrierId: ID!, $trackingNumber: String!) {
@@ -73,7 +73,7 @@ public class DeliveryTrackerService : IShippingTracker
             if (!response.IsSuccessStatusCode)
             {
                 _logger.LogWarning("Delivery Tracker API error: {StatusCode} {Body}", response.StatusCode, responseBody);
-                return new ShippingTrackingResult(false, null, null, "배송 조회에 실패했습니다.");
+                return new ShippingTrackingResult(false, null, null, "Shipping tracking query failed.");
             }
 
             using var doc = JsonDocument.Parse(responseBody);
@@ -82,7 +82,7 @@ public class DeliveryTrackerService : IShippingTracker
             // Check for GraphQL errors
             if (root.TryGetProperty("errors", out var errors) && errors.GetArrayLength() > 0)
             {
-                var errorMsg = errors[0].TryGetProperty("message", out var msg) ? msg.GetString() : "배송 조회 오류";
+                var errorMsg = errors[0].TryGetProperty("message", out var msg) ? msg.GetString() : "Shipping tracking error";
                 return new ShippingTrackingResult(false, null, null, errorMsg);
             }
 
@@ -116,7 +116,7 @@ public class DeliveryTrackerService : IShippingTracker
         catch (Exception ex)
         {
             _logger.LogError(ex, "Delivery tracking exception for {Carrier} {TrackingNumber}", carrier, trackingNumber);
-            return new ShippingTrackingResult(false, null, null, $"배송 조회 중 오류: {ex.Message}");
+            return new ShippingTrackingResult(false, null, null, $"Error during shipping tracking: {ex.Message}");
         }
     }
 
@@ -128,6 +128,6 @@ public class DeliveryTrackerService : IShippingTracker
     public static bool IsDelivered(string? statusName)
     {
         if (statusName is null) return false;
-        return statusName.Contains("배달완료") || statusName.Contains("수령") || statusName.Contains("Delivered");
+        return statusName.Contains("배달완료") || statusName.Contains("수령") || statusName.Contains("Delivered") || statusName.Contains("delivered") || statusName.Contains("completed");
     }
 }

@@ -60,13 +60,13 @@ export type OrderStatusType =
   | "Refunded";
 
 export const ORDER_STATUS_LABELS: Record<OrderStatusType, string> = {
-  Pending: "주문접수",
-  Confirmed: "주문확인",
-  Processing: "준비중",
-  Shipped: "배송중",
-  Delivered: "배송완료",
-  Cancelled: "주문취소",
-  Refunded: "환불완료",
+  Pending: "Pending",
+  Confirmed: "Confirmed",
+  Processing: "Processing",
+  Shipped: "Shipped",
+  Delivered: "Delivered",
+  Cancelled: "Cancelled",
+  Refunded: "Refunded",
 };
 
 export interface OrderHistory {

@@ -34,22 +34,22 @@ public class ValidateCouponQueryHandler : IRequestHandler<ValidateCouponQuery, R
             .FirstOrDefaultAsync(c => c.Code == request.Code.ToUpper().Trim(), cancellationToken);
 
         if (coupon is null)
-            return Result<CouponValidationResult>.Success(new CouponValidationResult(false, "존재하지 않는 쿠폰 코드입니다.", 0));
+            return Result<CouponValidationResult>.Success(new CouponValidationResult(false, "Coupon code not found.", 0));
 
         if (!coupon.IsActive)
-            return Result<CouponValidationResult>.Success(new CouponValidationResult(false, "비활성화된 쿠폰입니다.", 0));
+            return Result<CouponValidationResult>.Success(new CouponValidationResult(false, "This coupon is inactive.", 0));
 
         if (now < coupon.StartDate)
-            return Result<CouponValidationResult>.Success(new CouponValidationResult(false, "아직 사용 기간이 아닙니다.", 0));
+            return Result<CouponValidationResult>.Success(new CouponValidationResult(false, "This coupon is not yet available.", 0));
 
         if (now > coupon.EndDate)
-            return Result<CouponValidationResult>.Success(new CouponValidationResult(false, "만료된 쿠폰입니다.", 0));
+            return Result<CouponValidationResult>.Success(new CouponValidationResult(false, "This coupon has expired.", 0));
 
         if (coupon.MaxUsageCount > 0 && coupon.CurrentUsageCount >= coupon.MaxUsageCount)
-            return Result<CouponValidationResult>.Success(new CouponValidationResult(false, "쿠폰 사용 한도를 초과했습니다.", 0));
+            return Result<CouponValidationResult>.Success(new CouponValidationResult(false, "Coupon usage limit exceeded.", 0));
 
         if (request.OrderAmount < coupon.MinOrderAmount)
-            return Result<CouponValidationResult>.Success(new CouponValidationResult(false, $"최소 주문 금액 {coupon.MinOrderAmount:N0}원 이상이어야 합니다.", 0));
+            return Result<CouponValidationResult>.Success(new CouponValidationResult(false, $"Minimum order amount of {coupon.MinOrderAmount:N0} required.", 0));
 
         // Check if user has this coupon and hasn't used it
         var userCoupon = await _db.UserCoupons
@@ -57,10 +57,10 @@ public class ValidateCouponQueryHandler : IRequestHandler<ValidateCouponQuery, R
             .FirstOrDefaultAsync(uc => uc.UserId == userId && uc.CouponId == coupon.Id, cancellationToken);
 
         if (userCoupon is null)
-            return Result<CouponValidationResult>.Success(new CouponValidationResult(false, "발급받지 않은 쿠폰입니다.", 0));
+            return Result<CouponValidationResult>.Success(new CouponValidationResult(false, "Coupon not issued to this user.", 0));
 
         if (userCoupon.IsUsed)
-            return Result<CouponValidationResult>.Success(new CouponValidationResult(false, "이미 사용한 쿠폰입니다.", 0));
+            return Result<CouponValidationResult>.Success(new CouponValidationResult(false, "This coupon has already been used.", 0));
 
         // Calculate discount
         decimal discountAmount;

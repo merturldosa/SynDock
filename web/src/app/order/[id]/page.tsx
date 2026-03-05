@@ -10,7 +10,6 @@ import toast from "react-hot-toast";
 import { getOrderById, cancelOrder, getShippingTracking, type TrackingEvent } from "@/lib/orderApi";
 import { useAuthStore } from "@/stores/authStore";
 import type { Order } from "@/types/order";
-import { ORDER_STATUS_LABELS, type OrderStatusType } from "@/types/order";
 
 interface OrderHistory {
   id: number;
@@ -105,7 +104,7 @@ export default function OrderDetailPage() {
   };
 
   const canCancel = order.status === "Pending" || order.status === "Confirmed";
-  const statusLabel = ORDER_STATUS_LABELS[order.status as OrderStatusType] || order.status;
+  const statusLabel = t(`order.status.${order.status}`);
   const statusColor = STATUS_COLORS[order.status] || "bg-gray-100 text-gray-500";
 
   const handleCancel = async () => {
@@ -205,7 +204,7 @@ export default function OrderDetailPage() {
                     <div className={`absolute left-0 top-1 w-[18px] h-[18px] rounded-full ${color} border-2 border-white shadow`} />
                     <div>
                       <p className="text-sm font-medium text-[var(--color-secondary)]">
-                        {ORDER_STATUS_LABELS[h.status as OrderStatusType] || h.status}
+                        {t(`order.status.${h.status}`)}
                       </p>
                       {h.note && (
                         <p className="text-xs text-gray-500 mt-0.5">{h.note}</p>
