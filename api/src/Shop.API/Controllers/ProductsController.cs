@@ -68,7 +68,7 @@ public class ProductsController : ControllerBase
     {
         var result = await _mediator.Send(new GetProductByIdQuery(id), ct);
         if (result == null)
-            return NotFound(new { error = "상품을 찾을 수 없습니다." });
+            return NotFound(new { error = "Product not found." });
         return Ok(result);
     }
 
@@ -147,7 +147,7 @@ public class ProductsController : ControllerBase
     {
         var product = await _mediator.Send(new GetProductByIdQuery(id), ct);
         if (product == null)
-            return NotFound(new { error = "상품을 찾을 수 없습니다." });
+            return NotFound(new { error = "Product not found." });
 
         var prompt = string.IsNullOrWhiteSpace(request.Prompt)
             ? $"Professional product photography of {product.Name}. Clean white background, studio lighting, e-commerce style, high quality."
@@ -156,7 +156,7 @@ public class ProductsController : ControllerBase
         var result = await _imageGenerator.GenerateAsync(prompt, request.Size ?? "1024x1024");
 
         if (string.IsNullOrEmpty(result.Url))
-            return BadRequest(new { error = result.RevisedPrompt ?? "이미지 생성에 실패했습니다." });
+            return BadRequest(new { error = result.RevisedPrompt ?? "Image generation failed." });
 
         return Ok(new { url = result.Url, revisedPrompt = result.RevisedPrompt });
     }

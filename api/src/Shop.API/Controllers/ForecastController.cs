@@ -72,7 +72,7 @@ public class ForecastController : ControllerBase
     {
         var result = await _forecastService.GetAccuracyAsync(productId);
         if (result is null)
-            return Ok(new { message = "예측 정확도 데이터가 없습니다." });
+            return Ok(new { message = "No forecast accuracy data available." });
         return Ok(result);
     }
 
@@ -87,7 +87,7 @@ public class ForecastController : ControllerBase
     public async Task<IActionResult> UpdateAccuracy(CancellationToken ct)
     {
         await _forecastService.UpdateActualDemandAsync();
-        return Ok(new { message = "정확도 데이터가 갱신되었습니다." });
+        return Ok(new { message = "Accuracy data has been updated." });
     }
 
     [HttpPost("auto-purchase-order")]

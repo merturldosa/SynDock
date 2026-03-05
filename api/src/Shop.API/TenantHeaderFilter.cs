@@ -16,7 +16,7 @@ public class TenantHeaderFilter : IOperationFilter
         {
             Name = "X-Tenant-Id",
             In = ParameterLocation.Header,
-            Description = "테넌트 Slug (예: catholia)",
+            Description = "Tenant Slug (e.g., catholia)",
             Required = true,
             Schema = new OpenApiSchema { Type = "string", Default = new Microsoft.OpenApi.Any.OpenApiString("catholia") }
         });
