@@ -48,7 +48,7 @@ public class OrderController : ControllerBase
     {
         var result = await _mediator.Send(new GetOrderByIdQuery(id), ct);
         if (result is null)
-            return NotFound(new { error = "주문을 찾을 수 없습니다." });
+            return NotFound(new { error = "Order not found." });
         return Ok(result);
     }
 
@@ -102,7 +102,7 @@ public class OrderController : ControllerBase
     {
         var order = await _mediator.Send(new GetOrderByIdQuery(id), ct);
         if (order is null)
-            return NotFound(new { error = "주문을 찾을 수 없습니다." });
+            return NotFound(new { error = "Order not found." });
 
         var tenantId = _tenantContext.TenantId;
         var tenant = await _db.Tenants.AsNoTracking().FirstOrDefaultAsync(t => t.Id == tenantId, ct);

@@ -61,7 +61,7 @@ public class PlatformController : ControllerBase
             .FirstOrDefaultAsync(t => t.Slug == slug, ct);
 
         if (tenant == null)
-            return NotFound(new { error = "테넌트를 찾을 수 없습니다." });
+            return NotFound(new { error = "Tenant not found." });
 
         return Ok(new TenantDto(tenant.Id, tenant.Slug, tenant.Name, tenant.CustomDomain, tenant.Subdomain, tenant.IsActive, tenant.ConfigJson));
     }
@@ -70,7 +70,7 @@ public class PlatformController : ControllerBase
     public async Task<IActionResult> CreateTenant([FromBody] CreateTenantRequest request, CancellationToken ct)
     {
         if (await _db.Tenants.AnyAsync(t => t.Slug == request.Slug, ct))
-            return BadRequest(new { error = "이미 존재하는 Slug입니다." });
+            return BadRequest(new { error = "Slug already exists." });
 
         var tenant = new Tenant
         {
@@ -97,7 +97,7 @@ public class PlatformController : ControllerBase
                 Username = request.AdminEmail.Split('@')[0],
                 Email = request.AdminEmail,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(tempPassword),
-                Name = request.AdminName ?? request.Name + " 관리자",
+                Name = request.AdminName ?? request.Name + " Admin",
                 Role = nameof(UserRole.TenantAdmin),
                 IsActive = true,
                 CreatedBy = "PlatformAdmin"
@@ -121,7 +121,7 @@ public class PlatformController : ControllerBase
     {
         var tenant = await _db.Tenants.FirstOrDefaultAsync(t => t.Slug == slug, ct);
         if (tenant == null)
-            return NotFound(new { error = "테넌트를 찾을 수 없습니다." });
+            return NotFound(new { error = "Tenant not found." });
 
         tenant.Name = request.Name ?? tenant.Name;
         tenant.CustomDomain = request.CustomDomain ?? tenant.CustomDomain;
@@ -149,7 +149,7 @@ public class PlatformController : ControllerBase
     {
         var tenant = await _db.Tenants.AsNoTracking().FirstOrDefaultAsync(t => t.Slug == slug, ct);
         if (tenant == null)
-            return NotFound(new { error = "테넌트를 찾을 수 없습니다." });
+            return NotFound(new { error = "Tenant not found." });
 
         var result = await _mediator.Send(new GetTenantBillingQuery(tenant.Id), ct);
         if (!result.IsSuccess)
@@ -162,7 +162,7 @@ public class PlatformController : ControllerBase
     {
         var tenant = await _db.Tenants.AsNoTracking().FirstOrDefaultAsync(t => t.Slug == slug, ct);
         if (tenant == null)
-            return NotFound(new { error = "테넌트를 찾을 수 없습니다." });
+            return NotFound(new { error = "Tenant not found." });
 
         if (request.PlanType is not null)
         {
@@ -205,7 +205,7 @@ public class PlatformController : ControllerBase
     {
         var tenant = await _db.Tenants.AsNoTracking().FirstOrDefaultAsync(t => t.Slug == slug, ct);
         if (tenant == null)
-            return NotFound(new { error = "테넌트를 찾을 수 없습니다." });
+            return NotFound(new { error = "Tenant not found." });
 
         var result = await _mediator.Send(new GenerateInvoiceCommand(tenant.Id, request.BillingPeriod), ct);
         if (!result.IsSuccess)
@@ -245,7 +245,7 @@ public class PlatformController : ControllerBase
     {
         var tenant = await _db.Tenants.AsNoTracking().FirstOrDefaultAsync(t => t.Slug == slug, ct);
         if (tenant == null)
-            return NotFound(new { error = "테넌트를 찾을 수 없습니다." });
+            return NotFound(new { error = "Tenant not found." });
 
         var result = await _mediator.Send(new Application.Platform.Commands.UpdateTenantDomainCommand(
             tenant.Id, request.CustomDomain, request.Subdomain), ct);
@@ -259,7 +259,7 @@ public class PlatformController : ControllerBase
     {
         var tenant = await _db.Tenants.AsNoTracking().FirstOrDefaultAsync(t => t.Slug == slug, ct);
         if (tenant == null)
-            return NotFound(new { error = "테넌트를 찾을 수 없습니다." });
+            return NotFound(new { error = "Tenant not found." });
 
         var result = await _mediator.Send(new Application.Platform.Commands.VerifyTenantDomainCommand(tenant.Id), ct);
         if (!result.IsSuccess)
@@ -283,7 +283,7 @@ public class PlatformController : ControllerBase
     {
         var tenant = await _db.Tenants.AsNoTracking().FirstOrDefaultAsync(t => t.Slug == slug, ct);
         if (tenant == null)
-            return NotFound(new { error = "테넌트를 찾을 수 없습니다." });
+            return NotFound(new { error = "Tenant not found." });
 
         var result = await _mediator.Send(new GetCommissionSettingsQuery(tenant.Id), ct);
         if (!result.IsSuccess)
@@ -296,7 +296,7 @@ public class PlatformController : ControllerBase
     {
         var tenant = await _db.Tenants.AsNoTracking().FirstOrDefaultAsync(t => t.Slug == slug, ct);
         if (tenant == null)
-            return NotFound(new { error = "테넌트를 찾을 수 없습니다." });
+            return NotFound(new { error = "Tenant not found." });
 
         var result = await _mediator.Send(new UpsertCommissionSettingCommand(
             tenant.Id, request.ProductId, request.CategoryId,
@@ -314,7 +314,7 @@ public class PlatformController : ControllerBase
     {
         var tenant = await _db.Tenants.AsNoTracking().FirstOrDefaultAsync(t => t.Slug == slug, ct);
         if (tenant == null)
-            return NotFound(new { error = "테넌트를 찾을 수 없습니다." });
+            return NotFound(new { error = "Tenant not found." });
 
         var result = await _mediator.Send(new GetCommissionsQuery(tenant.Id, status), ct);
         if (!result.IsSuccess)
@@ -327,7 +327,7 @@ public class PlatformController : ControllerBase
     {
         var tenant = await _db.Tenants.AsNoTracking().FirstOrDefaultAsync(t => t.Slug == slug, ct);
         if (tenant == null)
-            return NotFound(new { error = "테넌트를 찾을 수 없습니다." });
+            return NotFound(new { error = "Tenant not found." });
 
         var result = await _mediator.Send(new GetSettlementsQuery(tenant.Id, status), ct);
         if (!result.IsSuccess)
@@ -340,7 +340,7 @@ public class PlatformController : ControllerBase
     {
         var tenant = await _db.Tenants.AsNoTracking().FirstOrDefaultAsync(t => t.Slug == slug, ct);
         if (tenant == null)
-            return NotFound(new { error = "테넌트를 찾을 수 없습니다." });
+            return NotFound(new { error = "Tenant not found." });
 
         var result = await _mediator.Send(new CreateSettlementCommand(tenant.Id, request.PeriodStart, request.PeriodEnd), ct);
         if (!result.IsSuccess)
@@ -364,7 +364,7 @@ public class PlatformController : ControllerBase
     {
         var tenant = await _db.Tenants.AsNoTracking().FirstOrDefaultAsync(t => t.Slug == slug, ct);
         if (tenant is null)
-            return NotFound(new { error = "테넌트를 찾을 수 없습니다." });
+            return NotFound(new { error = "Tenant not found." });
 
         var cmd = command with { TenantId = tenant.Id };
         var result = await _mediator.Send(cmd, ct);

@@ -28,7 +28,7 @@ public class BulkUpdateOrderStatusCommandHandler : IRequestHandler<BulkUpdateOrd
     public async Task<Result<BulkUpdateResultDto>> Handle(BulkUpdateOrderStatusCommand request, CancellationToken cancellationToken)
     {
         if (!Enum.TryParse<OrderStatus>(request.Status, out _))
-            return Result<BulkUpdateResultDto>.Failure($"유효하지 않은 주문 상태입니다: {request.Status}");
+            return Result<BulkUpdateResultDto>.Failure($"Invalid order status: {request.Status}");
 
         var orders = await _db.Orders
             .Where(o => request.OrderIds.Contains(o.Id))
@@ -41,7 +41,7 @@ public class BulkUpdateOrderStatusCommandHandler : IRequestHandler<BulkUpdateOrd
         {
             if (!IsValidTransition(order.Status, request.Status))
             {
-                errors.Add($"{order.OrderNumber}: '{order.Status}'에서 '{request.Status}'로 변경 불가");
+                errors.Add($"{order.OrderNumber}: Cannot transition from '{order.Status}' to '{request.Status}'");
                 continue;
             }
 

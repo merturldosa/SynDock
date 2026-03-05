@@ -72,7 +72,7 @@ public class ConfirmPaymentCommandHandler : IRequestHandler<ConfirmPaymentComman
             await _db.Payments.AddAsync(new Payment
             {
                 OrderId = order.Id,
-                PaymentMethod = "카드",
+                PaymentMethod = "Card",
                 Status = nameof(PaymentStatus.Failed),
                 Amount = request.Amount,
                 PaymentKey = request.PaymentKey,
@@ -89,7 +89,7 @@ public class ConfirmPaymentCommandHandler : IRequestHandler<ConfirmPaymentComman
         var payment = new Payment
         {
             OrderId = order.Id,
-            PaymentMethod = "카드",
+            PaymentMethod = "Card",
             Status = nameof(PaymentStatus.Completed),
             Amount = request.Amount,
             TransactionId = verifyResult.TransactionId,

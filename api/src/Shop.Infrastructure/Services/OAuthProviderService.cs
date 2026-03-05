@@ -23,7 +23,7 @@ public class OAuthProviderService : IOAuthProviderService
         {
             "kakao" => await ExchangeKakao(code, redirectUri, ct),
             "google" => await ExchangeGoogle(code, redirectUri, ct),
-            _ => throw new ArgumentException($"지원하지 않는 OAuth 제공자: {provider}")
+            _ => throw new ArgumentException($"Unsupported OAuth provider: {provider}")
         };
     }
 
@@ -69,9 +69,9 @@ public class OAuthProviderService : IOAuthProviderService
             ? imgProp.GetString() : null;
 
         if (string.IsNullOrEmpty(email))
-            throw new InvalidOperationException("카카오 계정에 이메일이 등록되어 있지 않습니다.");
+            throw new InvalidOperationException("No email registered with Kakao account");
 
-        return new OAuthProfile("kakao", kakaoId, email, nickname ?? "카카오 사용자", profileImage);
+        return new OAuthProfile("kakao", kakaoId, email, nickname ?? "Kakao User", profileImage);
     }
 
     private async Task<OAuthProfile> ExchangeGoogle(string code, string redirectUri, CancellationToken ct)

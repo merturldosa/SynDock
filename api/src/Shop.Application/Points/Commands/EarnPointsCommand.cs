@@ -51,7 +51,7 @@ public class EarnPointsCommandHandler : IRequestHandler<EarnPointsCommand, Resul
             UserId = request.UserId,
             Amount = request.Amount,
             TransactionType = nameof(PointTransactionType.Earned),
-            Description = request.Description ?? "주문 적립",
+            Description = request.Description ?? "Order points",
             OrderId = request.OrderId,
             CreatedBy = "system"
         };

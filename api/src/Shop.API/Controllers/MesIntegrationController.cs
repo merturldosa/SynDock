@@ -55,12 +55,12 @@ public class MesIntegrationController : ControllerBase
     {
         var isAvailable = await _mesClient.IsAvailableAsync();
         if (!isAvailable)
-            return BadRequest(new { message = "MES 서버에 연결할 수 없습니다." });
+            return BadRequest(new { message = "Cannot connect to MES server." });
 
         // The actual sync is done by the background job,
         // but we trigger an immediate check by returning current status
         var status = await _mesClient.GetSyncStatusAsync();
-        return Ok(new { message = "동기화가 요청되었습니다.", status });
+        return Ok(new { message = "Sync has been requested.", status });
     }
 
     [HttpGet("discrepancies")]
@@ -167,12 +167,12 @@ public class MesIntegrationController : ControllerBase
     {
         var mesCode = await _mapper.GetMesProductCodeAsync(productId);
         if (mesCode is null)
-            return BadRequest(new { message = "MES 매핑이 없는 상품입니다." });
+            return BadRequest(new { message = "Product has no MES mapping." });
 
         var mesInventory = await _mesClient.GetInventoryAsync();
         var mesItem = mesInventory.FirstOrDefault(i => i.ProductCode == mesCode);
         if (mesItem is null)
-            return BadRequest(new { message = "MES에서 해당 상품의 재고를 찾을 수 없습니다." });
+            return BadRequest(new { message = "Product inventory not found in MES." });
 
         var mesStock = (int)Math.Round(mesItem.AvailableQuantity);
 
@@ -181,14 +181,14 @@ public class MesIntegrationController : ControllerBase
             .ToListAsync(ct);
 
         if (variants.Count == 0)
-            return BadRequest(new { message = "Shop에 해당 상품의 옵션이 없습니다." });
+            return BadRequest(new { message = "No product variants found in Shop." });
 
         // 대표 variant에 MES 재고 반영
         var primaryVariant = variants.First();
         primaryVariant.Stock = mesStock;
         await _db.SaveChangesAsync(ct);
 
-        return Ok(new { message = "재고가 동기화되었습니다.", productId, mesStock });
+        return Ok(new { message = "Inventory has been synced.", productId, mesStock });
     }
 
     [HttpGet("sync-history")]
@@ -226,7 +226,7 @@ public class MesIntegrationController : ControllerBase
             .FirstOrDefaultAsync(h => h.Id == id, ct);
 
         if (item is null)
-            return NotFound(new { message = "동기화 이력을 찾을 수 없습니다." });
+            return NotFound(new { message = "Sync history not found." });
 
         return Ok(item);
     }
@@ -238,7 +238,7 @@ public class MesIntegrationController : ControllerBase
             .FirstOrDefaultAsync(o => o.Id == orderId, ct);
 
         if (order is null)
-            return NotFound(new { message = "주문을 찾을 수 없습니다." });
+            return NotFound(new { message = "Order not found." });
 
         var orderItems = await _db.OrderItems.AsNoTracking()
             .Where(oi => oi.OrderId == orderId)
@@ -264,7 +264,7 @@ public class MesIntegrationController : ControllerBase
         }
 
         if (items.Count == 0)
-            return BadRequest(new { message = "MES 매핑된 상품이 없습니다." });
+            return BadRequest(new { message = "No MES-mapped products found." });
 
         var request = new MesSalesOrderRequest(
             OrderNo: order.OrderNumber,
@@ -284,7 +284,7 @@ public class MesIntegrationController : ControllerBase
                 trackedOrder.MesOrderId = result.MesOrderId;
                 await _db.SaveChangesAsync(ct);
             }
-            return Ok(new { message = "주문이 MES로 전달되었습니다.", mesOrderId = result.MesOrderId });
+            return Ok(new { message = "Order has been forwarded to MES.", mesOrderId = result.MesOrderId });
         }
         return BadRequest(new { message = result.ErrorMessage });
     }
@@ -316,11 +316,11 @@ public class MesIntegrationController : ControllerBase
             .FirstOrDefaultAsync(o => o.Id == orderId, ct);
 
         if (order is null)
-            return NotFound(new { message = "주문을 찾을 수 없습니다." });
+            return NotFound(new { message = "Order not found." });
 
         var status = await _mesClient.GetOrderStatusAsync(order.OrderNumber);
         if (status is null)
-            return Ok(new { message = "MES에 해당 주문이 없습니다.", shopOrderNo = order.OrderNumber });
+            return Ok(new { message = "Order not found in MES.", shopOrderNo = order.OrderNumber });
 
         return Ok(status);
     }
@@ -404,7 +404,7 @@ public class MesIntegrationController : ControllerBase
     public async Task<IActionResult> ApproveProductionPlan(int id, [FromServices] IProductionPlanService planService, CancellationToken ct)
     {
         var result = await planService.ApproveSuggestionAsync(id, User.Identity?.Name ?? "Admin");
-        if (result is null) return BadRequest(new { message = "승인할 수 없는 상태입니다." });
+        if (result is null) return BadRequest(new { message = "Cannot approve in current status." });
         return Ok(result);
     }
 
@@ -412,7 +412,7 @@ public class MesIntegrationController : ControllerBase
     public async Task<IActionResult> RejectProductionPlan(int id, [FromBody] RejectRequest request, [FromServices] IProductionPlanService planService, CancellationToken ct)
     {
         var success = await planService.RejectSuggestionAsync(id, request.Reason);
-        if (!success) return BadRequest(new { message = "거절할 수 없는 상태입니다." });
+        if (!success) return BadRequest(new { message = "Cannot reject in current status." });
         return Ok(new { success = true });
     }
 
@@ -420,7 +420,7 @@ public class MesIntegrationController : ControllerBase
     public async Task<IActionResult> ForwardProductionPlanToMes(int id, [FromServices] IProductionPlanService planService, CancellationToken ct)
     {
         var mesOrderId = await planService.ForwardToMesAsync(id);
-        if (mesOrderId is null) return BadRequest(new { message = "MES 전송에 실패했습니다." });
+        if (mesOrderId is null) return BadRequest(new { message = "Failed to forward to MES." });
         return Ok(new { mesOrderId });
     }
 
@@ -497,11 +497,11 @@ public class MesIntegrationController : ControllerBase
             .Include(p => p.Items)
             .FirstOrDefaultAsync(p => p.Id == id, ct);
 
-        if (po is null) return NotFound(new { message = "발주를 찾을 수 없습니다." });
-        if (po.Status != "Created") return BadRequest(new { message = "이미 전송된 발주입니다." });
+        if (po is null) return NotFound(new { message = "Purchase order not found." });
+        if (po.Status != "Created") return BadRequest(new { message = "Purchase order has already been forwarded." });
 
         var mesItems = po.Items.Where(i => !string.IsNullOrEmpty(i.MesProductCode)).ToList();
-        if (mesItems.Count == 0) return BadRequest(new { message = "MES 매핑된 상품이 없습니다." });
+        if (mesItems.Count == 0) return BadRequest(new { message = "No MES-mapped products found." });
 
         var customerId = _configuration.GetValue<long>("Mes:CustomerId", 1);
         var salesUserId = _configuration.GetValue<long>("Mes:SalesUserId", 1);
@@ -531,7 +531,7 @@ public class MesIntegrationController : ControllerBase
         po.ForwardedAt = DateTime.UtcNow;
         await _db.SaveChangesAsync(ct);
 
-        return Ok(new { message = "MES로 전송되었습니다.", mesOrderId = mesResult.MesOrderId });
+        return Ok(new { message = "Forwarded to MES.", mesOrderId = mesResult.MesOrderId });
     }
 
     [HttpPost("purchase-orders/{id:int}/cancel")]

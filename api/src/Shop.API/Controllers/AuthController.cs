@@ -102,7 +102,7 @@ public class AuthController : ControllerBase
         if (!result.IsSuccess)
             _logger.LogWarning("ForgotPassword failed for {Email}: {Error}", request.Email, result.Error);
         // Always return 200 to prevent email enumeration
-        return Ok(new { message = "비밀번호 재설정 링크가 이메일로 전송되었습니다." });
+        return Ok(new { message = "Password reset link has been sent to your email." });
     }
 
     [HttpPost("reset-password")]
@@ -112,7 +112,7 @@ public class AuthController : ControllerBase
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
 
-        return Ok(new { message = "비밀번호가 성공적으로 변경되었습니다." });
+        return Ok(new { message = "Password has been reset successfully." });
     }
 
     // ── Email Verification ──
@@ -125,7 +125,7 @@ public class AuthController : ControllerBase
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
 
-        return Ok(new { message = "인증 메일이 전송되었습니다." });
+        return Ok(new { message = "Verification email has been sent." });
     }
 
     [HttpPost("verify-email")]

@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Shop.Application.Common.Interfaces;
 using Shop.Domain.Entities;
 using Shop.Domain.Enums;
@@ -26,8 +27,9 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Res
     private readonly IAdminDashboardNotifier _adminNotifier;
     private readonly IPlanEnforcer _planEnforcer;
     private readonly IEmailService _emailService;
+    private readonly ILogger<CreateOrderCommandHandler> _logger;
 
-    public CreateOrderCommandHandler(IShopDbContext db, ICurrentUserService currentUser, IUnitOfWork unitOfWork, IAdminDashboardNotifier adminNotifier, IPlanEnforcer planEnforcer, IEmailService emailService)
+    public CreateOrderCommandHandler(IShopDbContext db, ICurrentUserService currentUser, IUnitOfWork unitOfWork, IAdminDashboardNotifier adminNotifier, IPlanEnforcer planEnforcer, IEmailService emailService, ILogger<CreateOrderCommandHandler> logger)
     {
         _db = db;
         _currentUser = currentUser;
@@ -35,6 +37,7 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Res
         _adminNotifier = adminNotifier;
         _planEnforcer = planEnforcer;
         _emailService = emailService;
+        _logger = logger;
     }
 
     public async Task<Result<CreateOrderResult>> Handle(CreateOrderCommand request, CancellationToken cancellationToken)
@@ -198,7 +201,7 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Res
 
         // Notify admin dashboard
         try { await _adminNotifier.NotifyNewOrder(order.TenantId, order.OrderNumber, order.TotalAmount, cancellationToken); }
-        catch { /* notification failure should not block order creation */ }
+        catch (Exception ex) { _logger.LogWarning(ex, "Admin dashboard notification failed for order {OrderNumber}", order.OrderNumber); }
 
         // Send order confirmation email
         try
@@ -228,7 +231,7 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Res
                 await _emailService.SendAsync(user.Email, $"주문 접수 확인 [{order.OrderNumber}]", emailBody, cancellationToken);
             }
         }
-        catch { /* Email failure should not block order creation */ }
+        catch (Exception ex) { _logger.LogWarning(ex, "Order confirmation email failed for order {OrderNumber}", order.OrderNumber); }
 
         return Result<CreateOrderResult>.Success(new CreateOrderResult(order.Id, order.OrderNumber));
     }

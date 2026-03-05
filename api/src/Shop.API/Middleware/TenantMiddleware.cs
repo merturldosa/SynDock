@@ -31,14 +31,14 @@ public class TenantMiddleware
         {
             _logger.LogWarning("Tenant not found for request: {Path}", context.Request.Path);
             context.Response.StatusCode = 404;
-            await context.Response.WriteAsJsonAsync(new { error = "테넌트를 찾을 수 없습니다." });
+            await context.Response.WriteAsJsonAsync(new { error = "Tenant not found." });
             return;
         }
 
         if (!tenant.IsActive)
         {
             context.Response.StatusCode = 403;
-            await context.Response.WriteAsJsonAsync(new { error = "비활성화된 테넌트입니다." });
+            await context.Response.WriteAsJsonAsync(new { error = "Tenant is inactive." });
             return;
         }
 

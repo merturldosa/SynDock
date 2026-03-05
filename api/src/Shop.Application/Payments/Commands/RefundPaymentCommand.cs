@@ -60,7 +60,7 @@ public class RefundPaymentCommandHandler : IRequestHandler<RefundPaymentCommand,
             // Call payment provider to cancel/refund
             var cancelResult = await _paymentProvider.CancelPayment(payment.PaymentKey, request.Reason, cancellationToken);
             if (!cancelResult.IsSuccess)
-                return Result<bool>.Failure(cancelResult.Error ?? "환불 처리에 실패했습니다.");
+                return Result<bool>.Failure(cancelResult.Error ?? "Refund processing failed.");
 
             payment.Status = nameof(PaymentStatus.Refunded);
             payment.UpdatedBy = _currentUser.Username;

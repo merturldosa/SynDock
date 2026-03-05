@@ -44,7 +44,7 @@ public class OAuthLoginCommandHandler : IRequestHandler<OAuthLoginCommand, Resul
         }
         catch (Exception ex)
         {
-            return Result<AuthResponse>.Failure($"OAuth 인증에 실패했습니다: {ex.Message}");
+            return Result<AuthResponse>.Failure($"OAuth authentication failed: {ex.Message}");
         }
 
         var user = await _db.Users

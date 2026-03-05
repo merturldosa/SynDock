@@ -43,8 +43,7 @@ export default function AdminDashboard() {
         ]);
         if (statsData) setStats(statsData);
         if (salesData) setTrend(salesData.dailySales || []);
-      } catch (err) {
-        console.error(err);
+      } catch {
         toast.error(t("common.fetchError"));
       } finally {
         setLoading(false);

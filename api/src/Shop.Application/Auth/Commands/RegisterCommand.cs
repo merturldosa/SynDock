@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Shop.Application.Common.DTOs;
 using Shop.Domain.Entities;
 using Shop.Domain.Enums;
@@ -27,8 +28,9 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, Result<Au
     private readonly IUnitOfWork _unitOfWork;
     private readonly IPlanEnforcer _planEnforcer;
     private readonly IAutoCouponService _autoCoupon;
+    private readonly ILogger<RegisterCommandHandler> _logger;
 
-    public RegisterCommandHandler(IShopDbContext db, ITokenService tokenService, ITenantContext tenantContext, IUnitOfWork unitOfWork, IPlanEnforcer planEnforcer, IAutoCouponService autoCoupon)
+    public RegisterCommandHandler(IShopDbContext db, ITokenService tokenService, ITenantContext tenantContext, IUnitOfWork unitOfWork, IPlanEnforcer planEnforcer, IAutoCouponService autoCoupon, ILogger<RegisterCommandHandler> logger)
     {
         _db = db;
         _tokenService = tokenService;
@@ -36,6 +38,7 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, Result<Au
         _unitOfWork = unitOfWork;
         _planEnforcer = planEnforcer;
         _autoCoupon = autoCoupon;
+        _logger = logger;
     }
 
     public async Task<Result<AuthResponse>> Handle(RegisterCommand request, CancellationToken cancellationToken)
@@ -76,7 +79,7 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, Result<Au
             await _autoCoupon.IssueWelcomeCouponAsync(_tenantContext.TenantId, user.Id, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
         }
-        catch { /* Welcome coupon failure should not block registration */ }
+        catch (Exception ex) { _logger.LogWarning(ex, "Welcome coupon issuance failed for user {UserId}", user.Id); }
 
         var refreshTokenValue = _tokenService.GenerateRefreshToken();
         var refreshToken = new RefreshToken

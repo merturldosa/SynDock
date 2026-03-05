@@ -47,9 +47,9 @@ public class VerifyTenantDomainCommandHandler : IRequestHandler<VerifyTenantDoma
                 message = "Domain verified successfully.";
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            // DNS lookup failed - domain not yet configured
+            _logger.LogDebug(ex, "DNS lookup failed for {Domain}", tenant.CustomDomain);
         }
 
         // Update config

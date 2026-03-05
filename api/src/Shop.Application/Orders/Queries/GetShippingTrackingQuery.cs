@@ -38,7 +38,7 @@ public class GetShippingTrackingQueryHandler : IRequestHandler<GetShippingTracki
         if (history is null || string.IsNullOrEmpty(history.TrackingNumber))
             return Result<ShippingTrackingResult>.Failure("No tracking information available.");
 
-        var carrier = history.TrackingCarrier ?? "CJ대한통운";
+        var carrier = history.TrackingCarrier ?? "CJ Logistics";
         var result = await _shippingTracker.GetTrackingInfo(carrier, history.TrackingNumber, cancellationToken);
 
         return Result<ShippingTrackingResult>.Success(result);

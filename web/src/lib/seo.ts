@@ -14,7 +14,7 @@ export function generateProductMetadata(product: {
   const title = `${product.name} | ${TENANT_NAME}`;
   const description =
     product.description?.slice(0, 160) ||
-    `${product.name} - ${product.categoryName || "상품"} | ${TENANT_NAME}`;
+    `${product.name} - ${product.categoryName || "Products"} | ${TENANT_NAME}`;
   const priceText = product.salePrice
     ? `${product.salePrice.toLocaleString("ko-KR")}원`
     : `${product.price.toLocaleString("ko-KR")}원`;
@@ -47,8 +47,8 @@ export function generatePostMetadata(post: {
   imageUrl?: string | null;
 }): Metadata {
   const title = post.title
-    ? `${post.title} | 커뮤니티`
-    : `${post.userName}님의 게시글 | 커뮤니티`;
+    ? `${post.title} | Community`
+    : `${post.userName}'s post | Community`;
   const description = post.content.slice(0, 160);
 
   return {

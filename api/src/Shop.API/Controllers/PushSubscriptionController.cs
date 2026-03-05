@@ -75,7 +75,7 @@ public class PushSubscriptionController : ControllerBase
             });
         }
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChangesAsync(ct);
         return Ok(new { success = true });
     }
 
@@ -94,7 +94,7 @@ public class PushSubscriptionController : ControllerBase
             subscription.IsActive = false;
             subscription.UpdatedBy = _currentUser.Username;
             subscription.UpdatedAt = DateTime.UtcNow;
-            await _unitOfWork.SaveChangesAsync();
+            await _unitOfWork.SaveChangesAsync(ct);
         }
 
         return Ok(new { success = true });

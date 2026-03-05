@@ -27,7 +27,7 @@ public class ExceptionHandlingMiddleware
             context.Response.ContentType = "application/json";
             await context.Response.WriteAsync(JsonSerializer.Serialize(new
             {
-                error = "유효성 검사에 실패했습니다.",
+                error = "Validation failed.",
                 errors = ex.Errors
             }));
         }
@@ -58,7 +58,7 @@ public class ExceptionHandlingMiddleware
             context.Response.ContentType = "application/json";
             await context.Response.WriteAsync(JsonSerializer.Serialize(new
             {
-                error = "서버 오류가 발생했습니다."
+                error = "An internal server error occurred."
             }));
         }
     }

@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Shop.Application.Common.Interfaces;
 using Shop.Domain.Entities;
 using SynDock.Core.Common;
@@ -221,12 +222,14 @@ public class ProcessSettlementCommandHandler : IRequestHandler<ProcessSettlement
     private readonly IShopDbContext _db;
     private readonly ITransferService _transferService;
     private readonly IEmailService _emailService;
+    private readonly ILogger<ProcessSettlementCommandHandler> _logger;
 
-    public ProcessSettlementCommandHandler(IShopDbContext db, ITransferService transferService, IEmailService emailService)
+    public ProcessSettlementCommandHandler(IShopDbContext db, ITransferService transferService, IEmailService emailService, ILogger<ProcessSettlementCommandHandler> logger)
     {
         _db = db;
         _transferService = transferService;
         _emailService = emailService;
+        _logger = logger;
     }
 
     public async Task<Result<bool>> Handle(ProcessSettlementCommand request, CancellationToken cancellationToken)
@@ -263,7 +266,7 @@ public class ProcessSettlementCommandHandler : IRequestHandler<ProcessSettlement
                 settlement.UpdatedBy = "SettlementSystem";
                 settlement.UpdatedAt = DateTime.UtcNow;
                 await _db.SaveChangesAsync(cancellationToken);
-                return Result<bool>.Failure($"이체 실패: {transferResult.Error}");
+                return Result<bool>.Failure($"Transfer failed: {transferResult.Error}");
             }
 
             transactionId = transferResult.TransactionId;
@@ -326,10 +329,10 @@ public class ProcessSettlementCommandHandler : IRequestHandler<ProcessSettlement
             foreach (var email in adminEmails)
             {
                 try { await _emailService.SendAsync(email, subject, body); }
-                catch { /* Email failure does not affect settlement processing */ }
+                catch (Exception ex) { _logger.LogWarning(ex, "Settlement email notification failed for {Email}", email); }
             }
         }
-        catch { /* Notification failure is non-critical */ }
+        catch (Exception ex) { _logger.LogWarning(ex, "Settlement notification failed for settlement {SettlementId}", settlement.Id); }
     }
 
     private static string BuildSettlementEmailBody(

@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { type AxiosResponse } from "axios";
 
 const api = axios.create({
   baseURL: "/api",
@@ -7,7 +7,7 @@ const api = axios.create({
 });
 
 // Singleton refresh promise to prevent concurrent token refresh
-let refreshPromise: Promise<any> | null = null;
+let refreshPromise: Promise<AxiosResponse> | null = null;
 
 // Locale-to-Accept-Language mapping
 const langMap: Record<string, string> = {

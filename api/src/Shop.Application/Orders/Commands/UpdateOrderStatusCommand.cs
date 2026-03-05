@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Shop.Application.Common.Interfaces;
 using Shop.Application.Orders.Events;
 using Shop.Domain.Entities;
@@ -25,8 +26,9 @@ public class UpdateOrderStatusCommandHandler : IRequestHandler<UpdateOrderStatus
     private readonly IKakaoAlimtalkService _alimtalk;
     private readonly IAdminDashboardNotifier _adminNotifier;
     private readonly IMediator _mediator;
+    private readonly ILogger<UpdateOrderStatusCommandHandler> _logger;
 
-    public UpdateOrderStatusCommandHandler(IShopDbContext db, ICurrentUserService currentUser, IUnitOfWork unitOfWork, IEmailService emailService, IKakaoAlimtalkService alimtalk, IAdminDashboardNotifier adminNotifier, IMediator mediator)
+    public UpdateOrderStatusCommandHandler(IShopDbContext db, ICurrentUserService currentUser, IUnitOfWork unitOfWork, IEmailService emailService, IKakaoAlimtalkService alimtalk, IAdminDashboardNotifier adminNotifier, IMediator mediator, ILogger<UpdateOrderStatusCommandHandler> logger)
     {
         _db = db;
         _currentUser = currentUser;
@@ -35,6 +37,7 @@ public class UpdateOrderStatusCommandHandler : IRequestHandler<UpdateOrderStatus
         _alimtalk = alimtalk;
         _adminNotifier = adminNotifier;
         _mediator = mediator;
+        _logger = logger;
     }
 
     public async Task<Result<bool>> Handle(UpdateOrderStatusCommand request, CancellationToken cancellationToken)
@@ -127,7 +130,7 @@ public class UpdateOrderStatusCommandHandler : IRequestHandler<UpdateOrderStatus
                         await _emailService.SendAsync(user.Email, "배송 시작", emailBody, cancellationToken);
                     }
                 }
-                catch { /* Email failure should not block order status update */ }
+                catch (Exception ex) { _logger.LogWarning(ex, "Email notification failed for order {OrderNumber}", order.OrderNumber); }
             }
 
             // Kakao Alimtalk
@@ -143,7 +146,7 @@ public class UpdateOrderStatusCommandHandler : IRequestHandler<UpdateOrderStatus
                         _ => false
                     };
                 }
-                catch { /* Alimtalk failure should not block order status update */ }
+                catch (Exception ex) { _logger.LogWarning(ex, "Alimtalk notification failed for order {OrderNumber}", order.OrderNumber); }
             }
         }
 
@@ -153,12 +156,12 @@ public class UpdateOrderStatusCommandHandler : IRequestHandler<UpdateOrderStatus
         if (request.Status == nameof(OrderStatus.Confirmed))
         {
             try { await _mediator.Publish(new OrderConfirmedEvent(order.Id, order.TenantId, order.OrderNumber), cancellationToken); }
-            catch { /* MES forwarding failure should not block order confirmation */ }
+            catch (Exception ex) { _logger.LogWarning(ex, "MES forwarding failed for order {OrderNumber}", order.OrderNumber); }
         }
 
         // Notify admin dashboard
         try { await _adminNotifier.NotifyOrderStatusChanged(order.TenantId, order.OrderNumber, request.Status, cancellationToken); }
-        catch { /* notification failure should not block status update */ }
+        catch (Exception ex) { _logger.LogWarning(ex, "Admin dashboard notification failed for order {OrderNumber}", order.OrderNumber); }
 
         return Result<bool>.Success(true);
     }

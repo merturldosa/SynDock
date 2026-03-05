@@ -47,7 +47,7 @@ public class WebPushService : IWebPushService
 
         foreach (var sub in subscriptions)
         {
-            await SendToSubscription(sub, title, message, url);
+            await SendToSubscription(sub, title, message, url, ct);
         }
     }
 
@@ -66,11 +66,11 @@ public class WebPushService : IWebPushService
 
         foreach (var sub in subscriptions)
         {
-            await SendToSubscription(sub, title, message, url);
+            await SendToSubscription(sub, title, message, url, ct);
         }
     }
 
-    private async Task SendToSubscription(Domain.Entities.PushSubscription sub, string title, string message, string? url)
+    private async Task SendToSubscription(Domain.Entities.PushSubscription sub, string title, string message, string? url, CancellationToken ct = default)
     {
         try
         {
@@ -96,18 +96,18 @@ public class WebPushService : IWebPushService
                 request.Headers.TryAddWithoutValidation("Urgency", "normal");
             }
 
-            var response = await _httpClient.SendAsync(request);
+            var response = await _httpClient.SendAsync(request, ct);
 
             if (response.StatusCode == System.Net.HttpStatusCode.Gone ||
                 response.StatusCode == System.Net.HttpStatusCode.NotFound)
             {
                 _logger.LogInformation("Push subscription expired, marking inactive: {Endpoint}", sub.Endpoint[..Math.Min(50, sub.Endpoint.Length)]);
                 var entity = await ((Microsoft.EntityFrameworkCore.DbContext)(object)_db).Set<Domain.Entities.PushSubscription>()
-                    .FirstOrDefaultAsync(s => s.Id == sub.Id);
+                    .FirstOrDefaultAsync(s => s.Id == sub.Id, ct);
                 if (entity != null)
                 {
                     entity.IsActive = false;
-                    await _db.SaveChangesAsync();
+                    await _db.SaveChangesAsync(ct);
                 }
             }
             else if (!response.IsSuccessStatusCode)

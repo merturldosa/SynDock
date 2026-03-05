@@ -25,14 +25,14 @@ public class UploadController : ControllerBase
     public async Task<IActionResult> UploadImage(IFormFile file, [FromQuery] string folder = "general", CancellationToken ct = default)
     {
         if (file == null || file.Length == 0)
-            return BadRequest(new { error = "파일을 선택해 주세요." });
+            return BadRequest(new { error = "Please select a file." });
 
         if (file.Length > MaxFileSize)
-            return BadRequest(new { error = "파일 크기는 10MB 이하여야 합니다." });
+            return BadRequest(new { error = "File size must be 10MB or less." });
 
         var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
         if (!AllowedExtensions.Contains(ext))
-            return BadRequest(new { error = "허용되지 않는 파일 형식입니다. (jpg, png, gif, webp)" });
+            return BadRequest(new { error = "Unsupported file format. Allowed: jpg, png, gif, webp." });
 
         var url = await ProcessAndUploadAsync(file, ext, folder);
         return Ok(new { url });
@@ -42,10 +42,10 @@ public class UploadController : ControllerBase
     public async Task<IActionResult> UploadImages(List<IFormFile> files, [FromQuery] string folder = "general", CancellationToken ct = default)
     {
         if (files == null || files.Count == 0)
-            return BadRequest(new { error = "파일을 선택해 주세요." });
+            return BadRequest(new { error = "Please select a file." });
 
         if (files.Count > 10)
-            return BadRequest(new { error = "한 번에 최대 10개까지 업로드할 수 있습니다." });
+            return BadRequest(new { error = "Maximum 10 files can be uploaded at once." });
 
         var urls = new List<string>();
         foreach (var file in files)
