@@ -6,7 +6,7 @@ namespace Shop.API.Controllers;
 
 [ApiController]
 [Route("api/admin/forecast")]
-[Authorize]
+[Authorize(Roles = "TenantAdmin,Admin,PlatformAdmin")]
 public class ForecastController : ControllerBase
 {
     private readonly IDemandForecastService _forecastService;

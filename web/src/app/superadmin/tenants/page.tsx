@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Plus, Edit2, Store } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { getPlatformTenants, type TenantDetail } from "@/lib/platformApi";
+import { formatDateShort } from "@/lib/format";
 
 export default function SuperAdminTenantsPage() {
   const t = useTranslations();
@@ -87,7 +88,7 @@ export default function SuperAdminTenantsPage() {
                     </span>
                   </td>
                   <td className="p-3 text-gray-500">
-                    {new Date(tenant.createdAt).toLocaleDateString("ko-KR")}
+                    {formatDateShort(tenant.createdAt)}
                   </td>
                   <td className="p-3 text-center">
                     <Link

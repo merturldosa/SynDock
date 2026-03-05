@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Coins, ArrowUpCircle, ArrowDownCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { getPointBalance, getPointHistory, type PointHistoryDto, type PagedPointHistory } from "@/lib/pointApi";
-import { formatNumber } from "@/lib/format";
+import { formatNumber, formatDateShort } from "@/lib/format";
 
 const TYPE_CONFIG: Record<string, { labelKey: string; color: string; icon: typeof ArrowUpCircle }> = {
   Earned: { labelKey: "mypage.points.earned", color: "text-emerald-600", icon: ArrowUpCircle },
@@ -87,7 +87,7 @@ export default function PointsPage() {
                       {item.description || t(typeInfo.labelKey)}
                     </p>
                     <p className="text-xs text-gray-400">
-                      {new Date(item.createdAt).toLocaleDateString("ko-KR")}
+                      {formatDateShort(item.createdAt)}
                     </p>
                   </div>
                   <p className={`font-bold ${item.amount >= 0 ? "text-emerald-600" : "text-red-500"}`}>

@@ -145,7 +145,7 @@ export function Header() {
           </Link>
 
           {/* Mobile menu */}
-          <button className="md:hidden p-2" onClick={() => setMobileOpen(!mobileOpen)}>
+          <button className="md:hidden p-2" onClick={() => setMobileOpen(!mobileOpen)} aria-label="Toggle menu" aria-expanded={mobileOpen}>
             {mobileOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
         </div>

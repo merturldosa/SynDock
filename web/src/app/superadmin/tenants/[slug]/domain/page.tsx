@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { ChevronLeft, Globe, Shield, Copy, Check, RefreshCw } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { formatDateShort } from "@/lib/format";
 import {
   getTenantDomainConfig,
   updateTenantDomain,
@@ -139,7 +140,7 @@ export default function DomainManagementPage() {
               </span>
               {config.verifiedAt && (
                 <span className="text-xs text-gray-400 ml-2">
-                  ({new Date(config.verifiedAt).toLocaleDateString("ko-KR")})
+                  ({formatDateShort(config.verifiedAt)})
                 </span>
               )}
             </div>

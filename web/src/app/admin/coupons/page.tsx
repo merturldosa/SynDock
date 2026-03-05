@@ -11,7 +11,7 @@ import {
   type CouponDto,
   type PagedCoupons,
 } from "@/lib/couponApi";
-import { formatPrice } from "@/lib/format";
+import { formatPrice, formatDateShort } from "@/lib/format";
 
 export default function AdminCouponsPage() {
   const t = useTranslations();
@@ -112,8 +112,8 @@ export default function AdminCouponsPage() {
                       {coupon.currentUsageCount} / {coupon.maxUsageCount || t("admin.coupons.unlimited")}
                     </td>
                     <td className="p-3 text-xs text-gray-500">
-                      {new Date(coupon.startDate).toLocaleDateString("ko-KR")} ~{" "}
-                      {new Date(coupon.endDate).toLocaleDateString("ko-KR")}
+                      {formatDateShort(coupon.startDate)} ~{" "}
+                      {formatDateShort(coupon.endDate)}
                     </td>
                     <td className="p-3 text-center">
                       <span

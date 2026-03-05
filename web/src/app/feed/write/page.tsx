@@ -120,6 +120,7 @@ export default function FeedWritePage() {
                   onClick={() =>
                     setImageUrls((prev) => prev.filter((_, idx) => idx !== i))
                   }
+                  aria-label="Remove image"
                   className="absolute top-0.5 right-0.5 p-0.5 bg-red-500 text-white rounded-full"
                 >
                   <X size={10} />
@@ -178,6 +179,7 @@ export default function FeedWritePage() {
                       onClick={() =>
                         setHashtags((prev) => prev.filter((t) => t !== tag))
                       }
+                      aria-label="Remove hashtag"
                     >
                       <X size={10} />
                     </button>

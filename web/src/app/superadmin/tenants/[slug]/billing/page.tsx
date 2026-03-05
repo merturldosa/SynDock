@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ChevronLeft, FileText, CheckCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { formatPrice } from "@/lib/format";
+import { formatPrice, formatDateShort } from "@/lib/format";
 import {
   getTenantBilling,
   updateTenantBilling,
@@ -155,7 +155,7 @@ export default function TenantBillingPage() {
                   <p className="text-gray-400">{t("superadmin.billing.monthlyFee")}</p>
                   <p className="font-medium">
                     {billing.monthlyPrice > 0
-                      ? `${billing.monthlyPrice.toLocaleString()}원`
+                      ? formatPrice(billing.monthlyPrice)
                       : t("superadmin.billing.free")}
                   </p>
                 </div>
@@ -163,7 +163,7 @@ export default function TenantBillingPage() {
                   <p className="text-gray-400">{t("superadmin.billing.nextPayment")}</p>
                   <p className="font-medium">
                     {billing.nextBillingAt
-                      ? new Date(billing.nextBillingAt).toLocaleDateString("ko-KR")
+                      ? formatDateShort(billing.nextBillingAt)
                       : "-"}
                   </p>
                 </div>
@@ -257,7 +257,7 @@ export default function TenantBillingPage() {
                       </td>
                       <td className="px-4 py-3">{inv.billingPeriod}</td>
                       <td className="px-4 py-3 text-right font-medium">
-                        {inv.amount.toLocaleString()}원
+                        {formatPrice(inv.amount)}
                       </td>
                       <td className="px-4 py-3">
                         <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${INV_STATUS_COLORS[inv.status] || "bg-gray-100 text-gray-500"}`}>
@@ -265,7 +265,7 @@ export default function TenantBillingPage() {
                         </span>
                       </td>
                       <td className="px-4 py-3 text-gray-500">
-                        {new Date(inv.issuedAt).toLocaleDateString("ko-KR")}
+                        {formatDateShort(inv.issuedAt)}
                       </td>
                       <td className="px-4 py-3 text-right">
                         {inv.status === "Pending" && (

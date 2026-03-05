@@ -51,9 +51,21 @@ public class UpdateOrderStatusCommandHandler : IRequestHandler<UpdateOrderStatus
         if (order is null)
             return Result<bool>.Failure("주문을 찾을 수 없습니다.");
 
-        // Only allow the order owner or admin to update
-        if (order.UserId != _currentUser.UserId.Value)
+        // Role-based state transition enforcement
+        var isAdmin = _currentUser.Role == "TenantAdmin" || _currentUser.Role == "Admin" || _currentUser.Role == "PlatformAdmin";
+        var isOwner = order.UserId == _currentUser.UserId.Value;
+
+        if (!isAdmin && !isOwner)
             return Result<bool>.Failure("권한이 없습니다.");
+
+        // Members can only cancel their own pending orders
+        if (!isAdmin)
+        {
+            if (request.Status != nameof(OrderStatus.Cancelled))
+                return Result<bool>.Failure("권한이 없습니다. 관리자만 주문 상태를 변경할 수 있습니다.");
+            if (order.Status != nameof(OrderStatus.Pending))
+                return Result<bool>.Failure("대기 중인 주문만 취소할 수 있습니다.");
+        }
 
         // Validate status transition
         if (!IsValidTransition(order.Status, request.Status))

@@ -71,6 +71,7 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
                 e.stopPropagation();
                 onAddToCart?.(product);
               }}
+              aria-label="Add to cart"
               className="absolute bottom-3 right-3 p-3 bg-[var(--color-secondary)] text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-[var(--color-primary)]"
             >
               <ShoppingCart size={18} />

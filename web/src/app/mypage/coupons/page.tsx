@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Ticket } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { getMyCoupons, type UserCouponDto } from "@/lib/couponApi";
-import { formatPrice } from "@/lib/format";
+import { formatPrice, formatDateShort } from "@/lib/format";
 
 export default function MyCouponsPage() {
   const t = useTranslations();
@@ -86,7 +86,7 @@ export default function MyCouponsPage() {
                     }`}
                   >
                     {daysLeft > 0
-                      ? t("mypage.coupons.daysLeft", { days: daysLeft, date: new Date(coupon.endDate).toLocaleDateString("ko-KR") })
+                      ? t("mypage.coupons.daysLeft", { days: daysLeft, date: formatDateShort(coupon.endDate) })
                       : t("mypage.points.expired")}
                   </p>
                 </div>

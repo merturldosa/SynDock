@@ -204,12 +204,14 @@ export default function ProductDetailClient() {
               <>
                 <button
                   onClick={handlePrevImage}
+                  aria-label="Previous image"
                   className="absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 rounded-full flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white"
                 >
                   <ChevronLeft size={20} />
                 </button>
                 <button
                   onClick={handleNextImage}
+                  aria-label="Next image"
                   className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 rounded-full flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white"
                 >
                   <ChevronRight size={20} />
@@ -343,6 +345,7 @@ export default function ProductDetailClient() {
                   <button
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
                     disabled={quantity <= 1}
+                    aria-label="Decrease quantity"
                     className="p-2.5 hover:bg-gray-50 transition-colors rounded-l-lg disabled:opacity-30"
                   >
                     <Minus size={16} />
@@ -361,6 +364,7 @@ export default function ProductDetailClient() {
                   <button
                     onClick={() => setQuantity(Math.min(quantity + 1, stockCount && stockCount > 0 ? stockCount : 99))}
                     disabled={isOutOfStock}
+                    aria-label="Increase quantity"
                     className="p-2.5 hover:bg-gray-50 transition-colors rounded-r-lg disabled:opacity-30"
                   >
                     <Plus size={16} />
@@ -388,6 +392,7 @@ export default function ProductDetailClient() {
           <div className="hidden md:flex gap-3 mb-3">
             <button
               onClick={handleToggleWishlist}
+              aria-label="Add to wishlist"
               className={`p-4 rounded-xl border-2 transition-colors ${isWished ? "border-red-400 text-red-500" : "border-gray-200 text-gray-400 hover:border-red-300 hover:text-red-400"}`}
             >
               <Heart size={22} className={isWished ? "fill-red-500" : ""} />
@@ -396,6 +401,7 @@ export default function ProductDetailClient() {
             {isAuthenticated && (
               <button
                 onClick={() => setShowCollectionModal(true)}
+                aria-label="Add to collection"
                 className="p-4 rounded-xl border-2 border-gray-200 text-gray-400 hover:border-purple-300 hover:text-purple-500 transition-colors"
                 title={t("products.addToCollection")}
               >
@@ -440,6 +446,7 @@ export default function ProductDetailClient() {
           <div className="flex md:hidden gap-3 mb-3">
             <button
               onClick={handleToggleWishlist}
+              aria-label="Add to wishlist"
               className={`p-3 rounded-xl border-2 transition-colors ${isWished ? "border-red-400 text-red-500" : "border-gray-200 text-gray-400 hover:border-red-300 hover:text-red-400"}`}
             >
               <Heart size={20} className={isWished ? "fill-red-500" : ""} />
@@ -448,6 +455,7 @@ export default function ProductDetailClient() {
             {isAuthenticated && (
               <button
                 onClick={() => setShowCollectionModal(true)}
+                aria-label="Add to collection"
                 className="p-3 rounded-xl border-2 border-gray-200 text-gray-400 hover:border-purple-300 hover:text-purple-500 transition-colors"
               >
                 <FolderPlus size={20} />

@@ -291,7 +291,7 @@ try
         Predicate = check => check.Tags.Contains("ready"),
         ResponseWriter = WriteHealthCheckResponse
     });
-    // Prometheus metrics endpoint
+    // Prometheus metrics endpoint (nginx blocks external access; internal only)
     app.MapMetrics("/metrics");
 
     app.MapHealthChecks("/api/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions

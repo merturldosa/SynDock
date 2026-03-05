@@ -50,6 +50,7 @@ public class OrderController : ControllerBase
     }
 
     [HttpPut("{id:int}/status")]
+    [Authorize(Roles = "TenantAdmin,Admin,PlatformAdmin")]
     public async Task<IActionResult> UpdateOrderStatus(int id, [FromBody] UpdateOrderStatusRequest request)
     {
         var result = await _mediator.Send(new UpdateOrderStatusCommand(id, request.Status, request.TrackingNumber, request.TrackingCarrier));
@@ -59,6 +60,7 @@ public class OrderController : ControllerBase
     }
 
     [HttpPut("{id:int}/shipping")]
+    [Authorize(Roles = "TenantAdmin,Admin,PlatformAdmin")]
     public async Task<IActionResult> UpdateShippingInfo(int id, [FromBody] UpdateShippingRequest request)
     {
         var result = await _mediator.Send(new UpdateOrderStatusCommand(id, "Shipped", request.TrackingNumber, request.TrackingCarrier));

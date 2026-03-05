@@ -46,6 +46,13 @@ public class AdminController : ControllerBase
     [HttpPut("users/{id:int}")]
     public async Task<IActionResult> UpdateUser(int id, [FromBody] UpdateUserRequest request)
     {
+        // Role escalation prevention
+        var currentRole = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+        if (currentRole == "TenantAdmin" && (request.Role == "Admin" || request.Role == "PlatformAdmin"))
+            return Forbid();
+        if (currentRole == "Admin" && request.Role == "PlatformAdmin")
+            return Forbid();
+
         var result = await _mediator.Send(new UpdateUserCommand(id, request.Role, request.IsActive));
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });

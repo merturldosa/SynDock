@@ -20,6 +20,7 @@ public class CouponsController : ControllerBase
 
     // Admin: Get all coupons
     [HttpGet]
+    [Authorize(Roles = "TenantAdmin,Admin,PlatformAdmin")]
     public async Task<IActionResult> GetCoupons([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
     {
         var result = await _mediator.Send(new GetCouponsQuery(page, pageSize));
@@ -30,6 +31,7 @@ public class CouponsController : ControllerBase
 
     // Admin: Create coupon
     [HttpPost]
+    [Authorize(Roles = "TenantAdmin,Admin,PlatformAdmin")]
     public async Task<IActionResult> CreateCoupon([FromBody] CreateCouponRequest request)
     {
         var result = await _mediator.Send(new CreateCouponCommand(
@@ -45,6 +47,7 @@ public class CouponsController : ControllerBase
 
     // Admin: Update coupon
     [HttpPut("{id:int}")]
+    [Authorize(Roles = "TenantAdmin,Admin,PlatformAdmin")]
     public async Task<IActionResult> UpdateCoupon(int id, [FromBody] UpdateCouponRequest request)
     {
         var result = await _mediator.Send(new UpdateCouponCommand(
@@ -60,6 +63,7 @@ public class CouponsController : ControllerBase
 
     // Admin: Delete coupon
     [HttpDelete("{id:int}")]
+    [Authorize(Roles = "TenantAdmin,Admin,PlatformAdmin")]
     public async Task<IActionResult> DeleteCoupon(int id)
     {
         var result = await _mediator.Send(new DeleteCouponCommand(id));
@@ -70,6 +74,7 @@ public class CouponsController : ControllerBase
 
     // Admin: Issue coupon to users
     [HttpPost("{id:int}/issue")]
+    [Authorize(Roles = "TenantAdmin,Admin,PlatformAdmin")]
     public async Task<IActionResult> IssueCoupon(int id, [FromBody] IssueCouponRequest request)
     {
         var result = await _mediator.Send(new IssueCouponCommand(id, request.UserIds));

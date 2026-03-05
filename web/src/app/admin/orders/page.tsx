@@ -20,7 +20,7 @@ const STATUS_COLORS: Record<string, string> = {
   Refunded: "bg-gray-100 text-gray-700",
 };
 
-import { formatPrice } from "@/lib/format";
+import { formatPrice, formatDateShort } from "@/lib/format";
 
 const STATUS_OPTIONS = ["Pending", "Confirmed", "Processing", "Shipped", "Delivered"];
 
@@ -284,7 +284,7 @@ export default function AdminOrdersPage() {
                         </span>
                       </td>
                       <td className="p-3 text-gray-500 text-xs">
-                        {new Date(order.createdAt).toLocaleDateString("ko-KR")}
+                        {formatDateShort(order.createdAt)}
                       </td>
                       <td className="p-3 text-center">
                         <select

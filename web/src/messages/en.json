@@ -1,4 +1,14 @@
 {
+  "error": {
+    "title": "Something went wrong",
+    "description": "An error occurred while loading the page",
+    "retry": "Try again"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "description": "The page you requested does not exist or has been moved.",
+    "goHome": "Go to home"
+  },
   "common": {
     "home": "Home",
     "allProducts": "All Products",

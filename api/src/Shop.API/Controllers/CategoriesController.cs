@@ -32,7 +32,7 @@ public class CategoriesController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize]
+    [Authorize(Roles = "TenantAdmin,Admin,PlatformAdmin")]
     public async Task<IActionResult> Create([FromBody] CreateCategoryRequest request)
     {
         var result = await _mediator.Send(new CreateCategoryCommand(
@@ -44,7 +44,7 @@ public class CategoriesController : ControllerBase
     }
 
     [HttpPut("{id:int}")]
-    [Authorize]
+    [Authorize(Roles = "TenantAdmin,Admin,PlatformAdmin")]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateCategoryRequest request)
     {
         var result = await _mediator.Send(new UpdateCategoryCommand(
@@ -56,7 +56,7 @@ public class CategoriesController : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
-    [Authorize]
+    [Authorize(Roles = "TenantAdmin,Admin,PlatformAdmin")]
     public async Task<IActionResult> Delete(int id)
     {
         var result = await _mediator.Send(new DeleteCategoryCommand(id));

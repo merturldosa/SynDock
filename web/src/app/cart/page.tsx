@@ -146,6 +146,7 @@ export default function CartPage() {
                       onClick={() => updateQuantity(item.id, Math.max(1, item.quantity - 1))}
                       className="p-1.5 hover:bg-gray-100 transition-colors rounded-l-lg"
                       disabled={item.quantity <= 1}
+                      aria-label="Decrease quantity"
                     >
                       <Minus size={14} className={item.quantity <= 1 ? "text-gray-300" : "text-gray-600"} />
                     </button>
@@ -153,12 +154,14 @@ export default function CartPage() {
                     <button
                       onClick={() => updateQuantity(item.id, item.quantity + 1)}
                       className="p-1.5 hover:bg-gray-100 transition-colors rounded-r-lg"
+                      aria-label="Increase quantity"
                     >
                       <Plus size={14} className="text-gray-600" />
                     </button>
                   </div>
                   <button
                     onClick={() => removeItem(item.id)}
+                    aria-label="Remove item"
                     className="p-2 text-gray-400 hover:text-red-500 transition-colors"
                   >
                     <Trash2 size={16} />

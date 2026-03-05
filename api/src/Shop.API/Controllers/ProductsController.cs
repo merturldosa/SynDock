@@ -72,7 +72,7 @@ public class ProductsController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize]
+    [Authorize(Roles = "TenantAdmin,Admin,PlatformAdmin")]
     public async Task<IActionResult> Create([FromBody] CreateProductRequest request)
     {
         var result = await _mediator.Send(new CreateProductCommand(
@@ -87,7 +87,7 @@ public class ProductsController : ControllerBase
     }
 
     [HttpPut("{id:int}")]
-    [Authorize]
+    [Authorize(Roles = "TenantAdmin,Admin,PlatformAdmin")]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateProductRequest request)
     {
         var result = await _mediator.Send(new UpdateProductCommand(
@@ -102,7 +102,7 @@ public class ProductsController : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
-    [Authorize]
+    [Authorize(Roles = "TenantAdmin,Admin,PlatformAdmin")]
     public async Task<IActionResult> Delete(int id)
     {
         var result = await _mediator.Send(new DeleteProductCommand(id));
@@ -119,7 +119,7 @@ public class ProductsController : ControllerBase
     }
 
     [HttpPut("{id:int}/variants")]
-    [Authorize]
+    [Authorize(Roles = "TenantAdmin,Admin,PlatformAdmin")]
     public async Task<IActionResult> UpdateVariants(int id, [FromBody] UpdateProductVariantsRequest request)
     {
         var variants = request.Variants.Select(v =>
@@ -131,7 +131,7 @@ public class ProductsController : ControllerBase
     }
 
     [HttpPost("{id:int}/generate-content")]
-    [Authorize]
+    [Authorize(Roles = "TenantAdmin,Admin,PlatformAdmin")]
     public async Task<IActionResult> GenerateContent(int id)
     {
         var result = await _mediator.Send(new GenerateProductContentCommand(id));
@@ -141,7 +141,7 @@ public class ProductsController : ControllerBase
     }
 
     [HttpPost("{id:int}/generate-image")]
-    [Authorize]
+    [Authorize(Roles = "TenantAdmin,Admin,PlatformAdmin")]
     public async Task<IActionResult> GenerateImage(int id, [FromBody] GenerateImageRequest request)
     {
         var product = await _mediator.Send(new GetProductByIdQuery(id));
@@ -161,7 +161,7 @@ public class ProductsController : ControllerBase
     }
 
     [HttpGet("export")]
-    [Authorize]
+    [Authorize(Roles = "TenantAdmin,Admin,PlatformAdmin")]
     public async Task<IActionResult> Export()
     {
         var result = await _mediator.Send(new ExportProductsCommand());
@@ -171,7 +171,7 @@ public class ProductsController : ControllerBase
     }
 
     [HttpPost("import")]
-    [Authorize]
+    [Authorize(Roles = "TenantAdmin,Admin,PlatformAdmin")]
     public async Task<IActionResult> Import(IFormFile file)
     {
         if (file == null || file.Length == 0)

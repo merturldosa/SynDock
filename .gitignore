@@ -3,6 +3,9 @@ bin/
 obj/
 *.user
 *.suo
+
+# Docker secrets
+docker/.env
 *.vs/
 *.DotSettings.user
 

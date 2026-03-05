@@ -8,7 +8,7 @@ import {
 import { BarChart3, TrendingUp, TrendingDown, ShoppingCart, DollarSign, Users, Package, Download, ArrowUpRight, ArrowDownRight } from "lucide-react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
-import { formatPrice } from "@/lib/format";
+import { formatPrice, formatDateShort } from "@/lib/format";
 
 function MiniBarChart({ data, maxValue, t }: { data: DailySales[]; maxValue: number; t: ReturnType<typeof useTranslations> }) {
   if (!data.length) return null;
@@ -341,7 +341,7 @@ function CustomerTab() {
                   <td className="px-6 py-3 text-right">{t("admin.analytics.orderCountUnit", { count: c.orderCount })}</td>
                   <td className="px-6 py-3 text-right font-medium text-gray-900">{formatPrice(c.totalSpent)}</td>
                   <td className="px-6 py-3 text-right text-gray-500 text-xs">
-                    {new Date(c.lastOrderAt).toLocaleDateString("ko-KR")}
+                    {formatDateShort(c.lastOrderAt)}
                   </td>
                 </tr>
               ))}

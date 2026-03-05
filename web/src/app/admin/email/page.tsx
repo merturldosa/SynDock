@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Send, Eye, Plus, BarChart3, FlaskConical } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { formatDate } from "@/lib/format";
+import { formatDate, formatPrice, formatDateShort } from "@/lib/format";
 import {
   sendMarketingEmail,
   getCampaigns,
@@ -319,7 +319,7 @@ export default function AdminEmailPage() {
                     </div>
                     <div className="flex items-center gap-4 text-xs text-gray-400">
                       <span>{t("admin.email.campaignTarget", { target: TARGETS.find((tgt) => tgt.value === c.target)?.label || c.target })}</span>
-                      {c.sentAt && <span>{t("admin.email.campaignSent", { date: new Date(c.sentAt).toLocaleDateString("ko-KR") })}</span>}
+                      {c.sentAt && <span>{t("admin.email.campaignSent", { date: formatDateShort(c.sentAt) })}</span>}
                       {c.sentCount > 0 && <span>{t("admin.email.campaignStats", { success: c.sentCount, fail: c.failCount })}</span>}
                       {c.scheduledAt && c.status === "Scheduled" && <span>{t("admin.email.campaignScheduledAt", { date: formatDate(c.scheduledAt) })}</span>}
                     </div>
@@ -399,7 +399,7 @@ export default function AdminEmailPage() {
                 <SummaryCard label={t("admin.email.totalSent")} value={summary.totalSent.toLocaleString()} />
                 <SummaryCard label={t("admin.email.avgOpenRate")} value={`${summary.avgOpenRate}%`} />
                 <SummaryCard label={t("admin.email.avgClickRate")} value={`${summary.avgClickRate}%`} />
-                <SummaryCard label={t("admin.email.totalRevenue")} value={`${summary.totalRevenue.toLocaleString()}원`} />
+                <SummaryCard label={t("admin.email.totalRevenue")} value={formatPrice(summary.totalRevenue)} />
               </div>
               <div className="bg-white rounded-xl shadow-sm p-6">
                 <h2 className="font-semibold text-[var(--color-secondary)] mb-4">{t("admin.email.campaignPerformance")}</h2>

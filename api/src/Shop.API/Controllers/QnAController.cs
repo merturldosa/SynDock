@@ -45,7 +45,7 @@ public class QnAController : ControllerBase
     }
 
     [HttpPost("{id:int}/answer")]
-    [Authorize]
+    [Authorize(Roles = "TenantAdmin,Admin,PlatformAdmin")]
     public async Task<IActionResult> Answer(int id, [FromBody] AnswerQnARequest request)
     {
         var result = await _mediator.Send(new AnswerQnACommand(id, request.Content));

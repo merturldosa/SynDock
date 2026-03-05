@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { getAdminUsers, updateUser, type UserSummary } from "@/lib/adminApi";
+import { formatDateShort } from "@/lib/format";
 
 export default function AdminUsersPage() {
   const t = useTranslations();
@@ -127,7 +128,7 @@ export default function AdminUsersPage() {
                     )}
                   </td>
                   <td className="p-3 text-gray-500 text-xs">
-                    {new Date(user.createdAt).toLocaleDateString("ko-KR")}
+                    {formatDateShort(user.createdAt)}
                   </td>
                 </tr>
               ))}

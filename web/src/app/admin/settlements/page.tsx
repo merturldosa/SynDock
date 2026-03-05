@@ -7,7 +7,7 @@ import {
   type SettlementDto, type CommissionDto, type CommissionSettingDto,
 } from "@/lib/adminApi";
 import { DollarSign, Clock, CheckCircle, FileText, Settings2, Receipt } from "lucide-react";
-import { formatPrice } from "@/lib/format";
+import { formatPrice, formatDateShort } from "@/lib/format";
 
 function StatusBadge({ status }: { status: string }) {
   const styles: Record<string, string> = {
@@ -205,7 +205,7 @@ export default function AdminSettlementsPage() {
                         {s.bankName ? `${s.bankName} ${s.bankAccount}` : "-"}
                       </td>
                       <td className="px-4 py-3 text-gray-500 text-xs">
-                        {s.settledAt ? new Date(s.settledAt).toLocaleDateString("ko-KR") : "-"}
+                        {s.settledAt ? formatDateShort(s.settledAt) : "-"}
                       </td>
                     </tr>
                   ))
@@ -261,7 +261,7 @@ export default function AdminSettlementsPage() {
                       <td className="px-4 py-3 text-right font-medium">{formatPrice(c.settlementAmount)}</td>
                       <td className="px-4 py-3 text-center"><StatusBadge status={c.status} /></td>
                       <td className="px-4 py-3 text-gray-500 text-xs">
-                        {new Date(c.createdAt).toLocaleDateString("ko-KR")}
+                        {formatDateShort(c.createdAt)}
                       </td>
                     </tr>
                   ))

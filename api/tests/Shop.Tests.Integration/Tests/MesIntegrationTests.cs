@@ -423,33 +423,32 @@ public class MesIntegrationTests : IClassFixture<CustomWebApplicationFactory>
         response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.NotFound);
     }
 
-    // ── Authorization: MES controller uses [Authorize] without role restriction ───
-    // Members can access MES endpoints (controller has no role-based authorization)
+    // ── Authorization: MES controller requires TenantAdmin/Admin/PlatformAdmin ───
 
     [Fact]
-    public async Task GetStatus_AsMember_ReturnsOk()
+    public async Task GetStatus_AsMember_ReturnsForbidden()
     {
         var client = _factory.CreateAuthenticatedClient(userId: 2, username: "member", role: "Member");
         var response = await client.GetAsync("/api/admin/mes/status");
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
     [Fact]
-    public async Task GetInventory_AsMember_ReturnsOk()
+    public async Task GetInventory_AsMember_ReturnsForbidden()
     {
         var client = _factory.CreateAuthenticatedClient(userId: 2, username: "member", role: "Member");
         var response = await client.GetAsync("/api/admin/mes/inventory");
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
     [Fact]
-    public async Task TriggerSync_AsMember_ReturnsOk()
+    public async Task TriggerSync_AsMember_ReturnsForbidden()
     {
         var client = _factory.CreateAuthenticatedClient(userId: 2, username: "member", role: "Member");
         var response = await client.PostAsync("/api/admin/mes/sync", null);
 
-        response.StatusCode.Should().BeOneOf(HttpStatusCode.OK, HttpStatusCode.BadRequest);
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 }

@@ -61,7 +61,10 @@ export default function AdminLayout({
       sessionStorage.setItem("returnTo", pathname);
       router.replace("/login");
     }
-  }, [isLoading, isAuthenticated, router, pathname]);
+    if (!isLoading && isAuthenticated && user && !["Admin", "TenantAdmin", "PlatformAdmin"].includes(user.role)) {
+      router.replace("/");
+    }
+  }, [isLoading, isAuthenticated, user, router, pathname]);
 
   if (isLoading || !user) {
     return (

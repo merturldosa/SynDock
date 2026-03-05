@@ -107,25 +107,44 @@ public class GetDashboardStatsQueryHandler : IRequestHandler<GetDashboardStatsQu
             .Where(o => o.CreatedAt >= todayStart && o.Status != nameof(OrderStatus.Cancelled) && o.Status != nameof(OrderStatus.Refunded))
             .SumAsync(o => o.TotalAmount, cancellationToken);
 
-        // Category sales (top 5) — load then group in-memory for InMemory DB compatibility
+        // Category sales (top 5) — try DB-side GroupBy first, fall back to in-memory for InMemory DB
         var cancelledStatuses = new[] { nameof(OrderStatus.Cancelled), nameof(OrderStatus.Refunded) };
-        var allOrderItems = await _db.OrderItems
-            .AsNoTracking()
-            .Include(oi => oi.Order)
-            .Include(oi => oi.Product)
-                .ThenInclude(p => p.Category)
-            .ToListAsync(cancellationToken);
+        List<CategorySalesDto> categorySales;
+        try
+        {
+            categorySales = await _db.OrderItems
+                .AsNoTracking()
+                .Where(oi => !cancelledStatuses.Contains(oi.Order.Status))
+                .GroupBy(oi => oi.Product.Category.Name ?? "기타")
+                .Select(g => new CategorySalesDto(
+                    g.Key,
+                    g.Sum(oi => oi.TotalPrice),
+                    g.Select(oi => oi.OrderId).Distinct().Count()))
+                .OrderByDescending(c => c.TotalSales)
+                .Take(5)
+                .ToListAsync(cancellationToken);
+        }
+        catch (InvalidOperationException)
+        {
+            // Fallback for InMemory DB which doesn't support GroupBy with navigation properties
+            var allOrderItems = await _db.OrderItems
+                .AsNoTracking()
+                .Include(oi => oi.Order)
+                .Include(oi => oi.Product)
+                    .ThenInclude(p => p.Category)
+                .ToListAsync(cancellationToken);
 
-        var categorySales = allOrderItems
-            .Where(oi => !cancelledStatuses.Contains(oi.Order.Status))
-            .GroupBy(oi => oi.Product.Category?.Name ?? "기타")
-            .Select(g => new CategorySalesDto(
-                g.Key,
-                g.Sum(oi => oi.TotalPrice),
-                g.Select(oi => oi.OrderId).Distinct().Count()))
-            .OrderByDescending(c => c.TotalSales)
-            .Take(5)
-            .ToList();
+            categorySales = allOrderItems
+                .Where(oi => !cancelledStatuses.Contains(oi.Order.Status))
+                .GroupBy(oi => oi.Product.Category?.Name ?? "기타")
+                .Select(g => new CategorySalesDto(
+                    g.Key,
+                    g.Sum(oi => oi.TotalPrice),
+                    g.Select(oi => oi.OrderId).Distinct().Count()))
+                .OrderByDescending(c => c.TotalSales)
+                .Take(5)
+                .ToList();
+        }
 
         return Result<DashboardStatsDto>.Success(new DashboardStatsDto(
             totalProducts, totalCategories, totalOrders, totalRevenue, totalUsers,

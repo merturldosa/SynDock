@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
+import { formatPrice, formatDateShort } from "@/lib/format";
 import { getAllBilling, type TenantBilling } from "@/lib/platformApi";
 
 const STATUS_COLORS: Record<string, string> = {
@@ -68,7 +69,7 @@ export default function BillingOverviewPage() {
         <div className="bg-white rounded-xl p-4 shadow-sm">
           <p className="text-xs text-gray-400">{t("superadmin.billing.monthlyIncome")}</p>
           <p className="text-2xl font-bold text-gray-900">
-            {totalRevenue.toLocaleString()}원
+            {formatPrice(totalRevenue)}
           </p>
         </div>
       </div>
@@ -131,12 +132,12 @@ export default function BillingOverviewPage() {
                 </td>
                 <td className="px-4 py-3 text-right">
                   {b.monthlyPrice > 0
-                    ? `${b.monthlyPrice.toLocaleString()}원`
+                    ? formatPrice(b.monthlyPrice)
                     : "-"}
                 </td>
                 <td className="px-4 py-3 text-gray-500">
                   {b.nextBillingAt
-                    ? new Date(b.nextBillingAt).toLocaleDateString("ko-KR")
+                    ? formatDateShort(b.nextBillingAt)
                     : "-"}
                 </td>
                 <td className="px-4 py-3 text-right">

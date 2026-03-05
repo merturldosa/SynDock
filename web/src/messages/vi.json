@@ -1,4 +1,14 @@
 {
+  "error": {
+    "title": "Đã xảy ra lỗi",
+    "description": "Đã xảy ra lỗi khi tải trang",
+    "retry": "Thử lại"
+  },
+  "notFound": {
+    "title": "Không tìm thấy trang",
+    "description": "Trang bạn yêu cầu không tồn tại hoặc đã được di chuyển.",
+    "goHome": "Về trang chủ"
+  },
   "common": {
     "home": "Trang chủ",
     "allProducts": "Tất cả sản phẩm",

@@ -5,16 +5,16 @@ services:
     image: postgres:16-alpine
     container_name: syndock-shop-db
     ports:
-      - "5434:5432"
+      - "127.0.0.1:5434:5432"
     environment:
-      POSTGRES_DB: syndock_shop
-      POSTGRES_USER: shop_admin
-      POSTGRES_PASSWORD: Shop@2026!
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - shop-db-data:/var/lib/postgresql/data
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U shop_admin -d syndock_shop"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -23,7 +23,7 @@ services:
     image: redis:7-alpine
     container_name: syndock-shop-redis
     ports:
-      - "6381:6379"
+      - "127.0.0.1:6381:6379"
     command: redis-server --appendonly yes
     volumes:
       - shop-redis-data:/data
@@ -43,14 +43,14 @@ services:
       - "5100:5100"
     environment:
       ASPNETCORE_ENVIRONMENT: Production
-      ConnectionStrings__ShopDb: "Host=shop-db;Port=5432;Database=syndock_shop;Username=shop_admin;Password=Shop@2026!"
+      ConnectionStrings__ShopDb: "Host=shop-db;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
       ConnectionStrings__Redis: "shop-redis:6379"
-      Jwt__Secret: "SynDockShopPlatform2026SuperSecretKey!@#$%^&*()_+ForJWTAuth"
-      Jwt__Issuer: "SynDock.Shop"
-      Jwt__Audience: "SynDock.Shop.Client"
-      Cors__AllowedOrigins__0: "http://localhost:3200"
-      Cors__AllowedOrigins__1: "https://catholia.com"
-      Cors__AllowedOrigins__2: "https://mohyun.com"
+      Jwt__Secret: "${JWT_SECRET}"
+      Jwt__Issuer: "${JWT_ISSUER}"
+      Jwt__Audience: "${JWT_AUDIENCE}"
+      Cors__AllowedOrigins__0: "${CORS_ORIGIN_0}"
+      Cors__AllowedOrigins__1: "${CORS_ORIGIN_1}"
+      Cors__AllowedOrigins__2: "${CORS_ORIGIN_2}"
     depends_on:
       shop-db:
         condition: service_healthy
@@ -58,7 +58,7 @@ services:
         condition: service_healthy
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:5100/health || exit 1"]
+      test: ["CMD-SHELL", "wget -qO- http://localhost:5100/health/live || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3

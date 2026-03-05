@@ -13,7 +13,7 @@ namespace Shop.API.Controllers;
 
 [ApiController]
 [Route("api/admin/mes")]
-[Authorize]
+[Authorize(Roles = "TenantAdmin,Admin,PlatformAdmin")]
 public class MesIntegrationController : ControllerBase
 {
     private readonly IMesClient _mesClient;
@@ -71,18 +71,25 @@ public class MesIntegrationController : ControllerBase
 
         var discrepancies = new List<MesStockDiscrepancy>();
 
+        // Batch-load all needed data to avoid N+1 queries
+        var productIds = mappings.Keys.ToList();
+        var products = await _db.Products.AsNoTracking()
+            .Where(p => productIds.Contains(p.Id))
+            .ToDictionaryAsync(p => p.Id);
+        var stockByProduct = await _db.ProductVariants.AsNoTracking()
+            .Where(v => productIds.Contains(v.ProductId) && v.IsActive)
+            .GroupBy(v => v.ProductId)
+            .Select(g => new { ProductId = g.Key, TotalStock = g.Sum(v => v.Stock) })
+            .ToDictionaryAsync(x => x.ProductId, x => x.TotalStock);
+
         foreach (var mapping in mappings)
         {
             var mesItem = mesInventory.FirstOrDefault(i => i.ProductCode == mapping.Value);
             if (mesItem is null) continue;
 
-            var product = await _db.Products.AsNoTracking()
-                .FirstOrDefaultAsync(p => p.Id == mapping.Key);
-            if (product is null) continue;
+            if (!products.TryGetValue(mapping.Key, out var product)) continue;
 
-            var shopStock = await _db.ProductVariants.AsNoTracking()
-                .Where(v => v.ProductId == mapping.Key && v.IsActive)
-                .SumAsync(v => v.Stock);
+            var shopStock = stockByProduct.GetValueOrDefault(mapping.Key, 0);
 
             var mesStock = (int)Math.Round(mesItem.AvailableQuantity);
             var difference = shopStock - mesStock;
@@ -105,16 +112,23 @@ public class MesIntegrationController : ControllerBase
 
         var comparisons = new List<MesInventoryComparison>();
 
+        // Batch-load all needed data to avoid N+1 queries
+        var productIds = mappings.Keys.ToList();
+        var products = await _db.Products.AsNoTracking()
+            .Where(p => productIds.Contains(p.Id))
+            .ToDictionaryAsync(p => p.Id);
+        var stockByProduct = await _db.ProductVariants.AsNoTracking()
+            .Where(v => productIds.Contains(v.ProductId) && v.IsActive)
+            .GroupBy(v => v.ProductId)
+            .Select(g => new { ProductId = g.Key, TotalStock = g.Sum(v => v.Stock) })
+            .ToDictionaryAsync(x => x.ProductId, x => x.TotalStock);
+
         // 1) Shop 매핑 상품 순회
         foreach (var mapping in mappings)
         {
-            var product = await _db.Products.AsNoTracking()
-                .FirstOrDefaultAsync(p => p.Id == mapping.Key);
-            if (product is null) continue;
+            if (!products.TryGetValue(mapping.Key, out var product)) continue;
 
-            var shopStock = await _db.ProductVariants.AsNoTracking()
-                .Where(v => v.ProductId == mapping.Key && v.IsActive)
-                .SumAsync(v => v.Stock);
+            var shopStock = stockByProduct.GetValueOrDefault(mapping.Key, 0);
 
             var mesItem = mesInventory.FirstOrDefault(i => i.ProductCode == mapping.Value);
             var mesStock = mesItem is not null ? (int)Math.Round(mesItem.AvailableQuantity) : 0;

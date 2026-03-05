@@ -7,7 +7,7 @@ import { useTranslations } from "next-intl";
 import { Package, FolderTree, ShoppingCart, Users, TrendingUp, AlertTriangle, Warehouse, BarChart3 } from "lucide-react";
 import { getDashboardStats, getSalesAnalytics, type DashboardStats, type DailySales } from "@/lib/adminApi";
 import { useAdminDashboardStore } from "@/stores/adminDashboardStore";
-import { formatPrice } from "@/lib/format";
+import { formatPrice, formatDateShort } from "@/lib/format";
 
 export default function AdminDashboard() {
   const t = useTranslations();
@@ -310,7 +310,7 @@ export default function AdminDashboard() {
                 >
                   <div>
                     <p className="text-xs font-mono text-[var(--color-primary)]">{order.orderNumber}</p>
-                    <p className="text-xs text-gray-400">{new Date(order.createdAt).toLocaleDateString("ko-KR")}</p>
+                    <p className="text-xs text-gray-400">{formatDateShort(order.createdAt)}</p>
                   </div>
                   <div className="text-right">
                     <p className="text-sm font-medium">{formatPrice(order.totalAmount)}</p>
