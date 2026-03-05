@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import toast from "react-hot-toast";
 import { Package, ChevronRight } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { getOrders } from "@/lib/orderApi";
@@ -38,7 +39,7 @@ export default function OrdersPage() {
         setOrders(res.items);
         setTotalCount(res.totalCount);
       })
-      .catch(() => {})
+      .catch(() => toast.error(t("common.fetchError")))
       .finally(() => setLoading(false));
   }, [isAuthenticated, page]);
 

@@ -349,7 +349,7 @@ export default function AdminEmailPage() {
                   <h2 className="text-lg font-bold text-[var(--color-secondary)]">{selectedAnalytics.title}</h2>
                   <button onClick={() => setSelectedAnalytics(null)} className="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
                 </div>
-                <div className="grid grid-cols-4 gap-3 mb-6">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
                   <MetricCard label={t("admin.email.sent")} value={selectedAnalytics.sentCount.toLocaleString()} />
                   <MetricCard label={t("admin.email.openRate")} value={`${selectedAnalytics.openRate}%`} />
                   <MetricCard label={t("admin.email.clickRate")} value={`${selectedAnalytics.clickRate}%`} />
@@ -368,7 +368,7 @@ export default function AdminEmailPage() {
                             <span className="text-xs text-gray-400">{v.trafficPercent}% {t("admin.email.traffic")}</span>
                           </div>
                           <p className="text-sm text-gray-600 mb-2">{v.subjectLine}</p>
-                          <div className="grid grid-cols-4 gap-2 text-xs">
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
                             <div><span className="text-gray-400">{t("admin.email.sent")}:</span> {v.sentCount}</div>
                             <div><span className="text-gray-400">{t("admin.email.openRate")}:</span> {v.openRate}%</div>
                             <div><span className="text-gray-400">{t("admin.email.clickRate")}:</span> {v.clickRate}%</div>

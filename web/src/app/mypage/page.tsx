@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import toast from "react-hot-toast";
 import { Package, Coins, Ticket, Bell, Cross } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 import { Button } from "@/components/ui/Button";
@@ -45,16 +46,16 @@ export default function MyPage() {
   useEffect(() => {
     getOrders({ page: 1, pageSize: 1 })
       .then((res) => setRecentOrderCount(res.totalCount))
-      .catch(() => {});
+      .catch(() => toast.error(t("common.fetchError")));
     getPointBalance()
       .then((res) => setPointBalance(res.balance))
-      .catch(() => {});
+      .catch(() => toast.error(t("common.fetchError")));
     getMyCoupons()
       .then((coupons) => setCouponCount(coupons.filter((c) => !c.isUsed).length))
-      .catch(() => {});
+      .catch(() => toast.error(t("common.fetchError")));
     getUnreadCount()
       .then((res) => setUnreadNotifications(res.count))
-      .catch(() => {});
+      .catch(() => toast.error(t("common.fetchError")));
   }, []);
 
   const handleSaveBaptismalName = async () => {

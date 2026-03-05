@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
@@ -21,6 +21,8 @@ import {
   Landmark,
   Factory,
   RefreshCcw,
+  Menu,
+  X,
 } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 
@@ -51,6 +53,7 @@ export default function AdminLayout({
   const pathname = usePathname();
   const { user, isAuthenticated, isLoading, fetchMe } = useAuthStore();
   const t = useTranslations();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     fetchMe();
@@ -76,9 +79,30 @@ export default function AdminLayout({
 
   return (
     <div className="flex min-h-[calc(100vh-64px)]">
+      {/* Mobile hamburger button */}
+      <button
+        onClick={() => setSidebarOpen(true)}
+        className="md:hidden fixed top-[72px] left-3 z-40 p-2 bg-[var(--color-secondary)] text-white rounded-lg shadow-lg"
+        aria-label="Open menu"
+      >
+        <Menu size={20} />
+      </button>
+
+      {/* Mobile overlay */}
+      {sidebarOpen && (
+        <div
+          className="md:hidden fixed inset-0 bg-black/50 z-40"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <aside className="w-60 bg-[var(--color-secondary)] text-white flex-shrink-0">
-        <div className="p-4 border-b border-white/10">
+      <aside
+        className={`w-60 bg-[var(--color-secondary)] text-white flex-shrink-0 fixed md:static inset-y-0 left-0 z-50 transform transition-transform duration-200 ease-in-out ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        } md:translate-x-0`}
+      >
+        <div className="p-4 border-b border-white/10 flex items-center justify-between">
           <Link
             href="/"
             className="flex items-center gap-2 text-sm text-white/60 hover:text-white"
@@ -86,6 +110,13 @@ export default function AdminLayout({
             <ChevronLeft size={14} />
             {t("admin.nav.backToShop")}
           </Link>
+          <button
+            onClick={() => setSidebarOpen(false)}
+            className="md:hidden text-white/60 hover:text-white"
+            aria-label="Close menu"
+          >
+            <X size={18} />
+          </button>
         </div>
 
         <div className="p-4 border-b border-white/10">
@@ -93,7 +124,7 @@ export default function AdminLayout({
           <p className="font-medium truncate">{user.name}</p>
         </div>
 
-        <nav className="p-2">
+        <nav className="p-2 overflow-y-auto max-h-[calc(100vh-140px)]">
           {NAV_ITEMS.map((item) => {
             const isActive =
               pathname === item.href ||
@@ -102,6 +133,7 @@ export default function AdminLayout({
               <Link
                 key={item.href}
                 href={item.href}
+                onClick={() => setSidebarOpen(false)}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
                   isActive
                     ? "bg-white/10 text-white"
@@ -117,7 +149,7 @@ export default function AdminLayout({
       </aside>
 
       {/* Main content */}
-      <main className="flex-1 bg-gray-50 p-6 overflow-auto">{children}</main>
+      <main className="flex-1 bg-gray-50 p-6 overflow-auto md:ml-0 ml-0">{children}</main>
     </div>
   );
 }

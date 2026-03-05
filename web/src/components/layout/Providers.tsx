@@ -1,7 +1,6 @@
 "use client";
 
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useTenantStore } from "@/stores/tenantStore";
 
 function TenantInitializer({ children }: { children: React.ReactNode }) {
@@ -17,21 +16,7 @@ function TenantInitializer({ children }: { children: React.ReactNode }) {
 }
 
 export function Providers({ children }: { children: React.ReactNode }) {
-  const [queryClient] = useState(
-    () =>
-      new QueryClient({
-        defaultOptions: {
-          queries: {
-            staleTime: 60 * 1000,
-            retry: 1,
-          },
-        },
-      })
-  );
-
   return (
-    <QueryClientProvider client={queryClient}>
-      <TenantInitializer>{children}</TenantInitializer>
-    </QueryClientProvider>
+    <TenantInitializer>{children}</TenantInitializer>
   );
 }

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import toast from "react-hot-toast";
 import { Calendar, Church, Star, ChevronRight } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { getTodayLiturgy, getLiturgicalSeasons } from "@/lib/liturgyApi";
@@ -44,7 +45,7 @@ export default function LiturgyPage() {
         setToday(todayData);
         setSeasons(seasonsData);
       })
-      .catch(() => {})
+      .catch(() => toast.error(t("common.fetchError")))
       .finally(() => setLoading(false));
   }, [currentYear]);
 

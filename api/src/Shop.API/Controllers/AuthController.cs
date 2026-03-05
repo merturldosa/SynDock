@@ -16,11 +16,13 @@ public class AuthController : ControllerBase
 {
     private readonly IMediator _mediator;
     private readonly ICurrentUserService _currentUser;
+    private readonly ILogger<AuthController> _logger;
 
-    public AuthController(IMediator mediator, ICurrentUserService currentUser)
+    public AuthController(IMediator mediator, ICurrentUserService currentUser, ILogger<AuthController> logger)
     {
         _mediator = mediator;
         _currentUser = currentUser;
+        _logger = logger;
     }
 
     [HttpPost("register")]
@@ -97,6 +99,9 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request)
     {
         var result = await _mediator.Send(new ForgotPasswordCommand(request.Email));
+        if (!result.IsSuccess)
+            _logger.LogWarning("ForgotPassword failed for {Email}: {Error}", request.Email, result.Error);
+        // Always return 200 to prevent email enumeration
         return Ok(new { message = "비밀번호 재설정 링크가 이메일로 전송되었습니다." });
     }
 

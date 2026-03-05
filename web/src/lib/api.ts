@@ -14,6 +14,8 @@ const langMap: Record<string, string> = {
   ko: "ko-KR,ko;q=0.9",
   en: "en-US,en;q=0.9",
   ja: "ja-JP,ja;q=0.9",
+  "zh-CN": "zh-CN,zh;q=0.9",
+  vi: "vi-VN,vi;q=0.9",
 };
 
 // Request interceptor: attach JWT token + X-Tenant-Id + Accept-Language

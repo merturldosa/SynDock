@@ -20,6 +20,7 @@ const STATUS_COLORS: Record<string, string> = {
   Refunded: "bg-gray-100 text-gray-700",
 };
 
+import toast from "react-hot-toast";
 import { formatPrice, formatDateShort } from "@/lib/format";
 
 const STATUS_OPTIONS = ["Pending", "Confirmed", "Processing", "Shipped", "Delivered"];
@@ -52,7 +53,7 @@ export default function AdminOrdersPage() {
     setLoading(true);
     getAdminOrdersSearch(statusFilter || undefined, page, 20, searchQuery || undefined)
       .then(setData)
-      .catch(() => {})
+      .catch(() => toast.error(t("common.fetchError")))
       .finally(() => setLoading(false));
   };
 

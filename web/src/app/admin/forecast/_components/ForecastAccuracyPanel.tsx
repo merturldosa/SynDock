@@ -79,7 +79,7 @@ export default function ForecastAccuracyPanel() {
   return (
     <div className="space-y-6">
       {/* Summary Cards */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-white rounded-xl shadow-sm p-5 text-center">
           <p className="text-xs text-gray-500 mb-1">
             {t("admin.forecast.accuracy.overallMape")}

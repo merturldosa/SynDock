@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Factory, CheckCircle, XCircle, Send, RefreshCw } from "lucide-react";
+import { useEffect, useState, useCallback } from "react";
+import { Factory, CheckCircle, XCircle, Send, RefreshCw, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import api from "@/lib/api";
 
@@ -44,6 +44,9 @@ export default function ProductionPlanPage() {
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>("");
+  const [rejectModal, setRejectModal] = useState<{ id: number; reason: string } | null>(null);
+  const [forwardModal, setForwardModal] = useState<number | null>(null);
+  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   const loadSuggestions = async () => {
     setLoading(true);
@@ -57,13 +60,18 @@ export default function ProductionPlanPage() {
 
   useEffect(() => { loadSuggestions(); }, [statusFilter]);
 
+  const showMessage = useCallback((type: "success" | "error", text: string) => {
+    setMessage({ type, text });
+    setTimeout(() => setMessage(null), 3000);
+  }, []);
+
   const handleGenerate = async () => {
     setGenerating(true);
     try {
       await api.post("/admin/mes/production-plan/generate");
       await loadSuggestions();
     } catch {
-      alert(t("admin.productionPlan.generateFailed"));
+      showMessage("error", t("admin.productionPlan.generateFailed"));
     }
     setGenerating(false);
   };
@@ -73,29 +81,38 @@ export default function ProductionPlanPage() {
       await api.put(`/admin/mes/production-plan/${id}/approve`);
       await loadSuggestions();
     } catch {
-      alert(t("admin.productionPlan.approveFailed"));
+      showMessage("error", t("admin.productionPlan.approveFailed"));
     }
   };
 
   const handleReject = async (id: number) => {
-    const reason = prompt(t("admin.productionPlan.rejectReasonPrompt"));
-    if (!reason) return;
+    setRejectModal({ id, reason: "" });
+  };
+
+  const submitReject = async () => {
+    if (!rejectModal || !rejectModal.reason) return;
     try {
-      await api.put(`/admin/mes/production-plan/${id}/reject`, { reason });
+      await api.put(`/admin/mes/production-plan/${rejectModal.id}/reject`, { reason: rejectModal.reason });
+      setRejectModal(null);
       await loadSuggestions();
     } catch {
-      alert(t("admin.productionPlan.rejectFailed"));
+      showMessage("error", t("admin.productionPlan.rejectFailed"));
     }
   };
 
   const handleForwardMes = async (id: number) => {
-    if (!confirm(t("admin.productionPlan.forwardConfirm"))) return;
+    setForwardModal(id);
+  };
+
+  const submitForward = async () => {
+    if (forwardModal === null) return;
     try {
-      const { data } = await api.post(`/admin/mes/production-plan/${id}/forward-mes`);
-      alert(t("admin.productionPlan.forwardSuccess", { mesOrderId: data.mesOrderId }));
+      const { data } = await api.post(`/admin/mes/production-plan/${forwardModal}/forward-mes`);
+      setForwardModal(null);
+      showMessage("success", t("admin.productionPlan.forwardSuccess", { mesOrderId: data.mesOrderId }));
       await loadSuggestions();
     } catch {
-      alert(t("admin.productionPlan.forwardFailed"));
+      showMessage("error", t("admin.productionPlan.forwardFailed"));
     }
   };
 
@@ -121,8 +138,60 @@ export default function ProductionPlanPage() {
         </button>
       </div>
 
+      {/* Toast Message */}
+      {message && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg shadow-lg text-white text-sm ${
+          message.type === "success" ? "bg-emerald-600" : "bg-red-600"
+        }`}>
+          {message.text}
+        </div>
+      )}
+
+      {/* Reject Modal */}
+      {rejectModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-md">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold">{t("admin.productionPlan.rejectReasonPrompt")}</h3>
+              <button onClick={() => setRejectModal(null)} className="text-gray-400 hover:text-gray-600"><X size={20} /></button>
+            </div>
+            <textarea
+              value={rejectModal.reason}
+              onChange={(e) => setRejectModal({ ...rejectModal, reason: e.target.value })}
+              className="w-full border rounded-lg p-3 text-sm mb-4 h-24 resize-none"
+              autoFocus
+            />
+            <div className="flex gap-2 justify-end">
+              <button onClick={() => setRejectModal(null)} className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg">
+                {t("common.cancel")}
+              </button>
+              <button onClick={submitReject} disabled={!rejectModal.reason} className="px-4 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50">
+                {t("admin.productionPlan.reject")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Forward Confirm Modal */}
+      {forwardModal !== null && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-sm">
+            <p className="text-sm mb-4">{t("admin.productionPlan.forwardConfirm")}</p>
+            <div className="flex gap-2 justify-end">
+              <button onClick={() => setForwardModal(null)} className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg">
+                {t("common.cancel")}
+              </button>
+              <button onClick={submitForward} className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                {t("common.confirm")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Summary Cards */}
-      <div className="grid grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-white rounded-xl shadow-sm p-4 text-center">
           <p className="text-xs text-gray-400">{t("admin.productionPlan.totalSuggestions")}</p>
           <p className="text-2xl font-bold text-[var(--color-secondary)]">{suggestions.length}</p>
@@ -182,7 +251,7 @@ export default function ProductionPlanPage() {
                       {s.status}
                     </span>
                   </div>
-                  <div className="grid grid-cols-4 gap-4 text-sm mb-2">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-2">
                     <div>
                       <span className="text-gray-400">{t("admin.productionPlan.currentStock")}:</span>{" "}
                       <span className="font-medium">{s.currentStock}</span>

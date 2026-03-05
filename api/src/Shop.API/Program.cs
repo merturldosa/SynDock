@@ -239,7 +239,10 @@ try
     {
         using var scope = app.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<ShopDbContext>();
-        await db.Database.EnsureCreatedAsync();
+        if (db.Database.IsRelational())
+            await db.Database.MigrateAsync();
+        else
+            await db.Database.EnsureCreatedAsync();
 
         // Seed initial tenant data (Catholia + MoHyun)
         await InitialDataSeeder.SeedAsync(app.Services);
@@ -247,8 +250,8 @@ try
 
     // HTTP pipeline
     app.UseHttpMetrics(); // Prometheus request metrics
-    app.UseMiddleware<SecurityHeadersMiddleware>();
     app.UseMiddleware<ExceptionHandlingMiddleware>();
+    app.UseMiddleware<SecurityHeadersMiddleware>();
 
     if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Testing"))
     {

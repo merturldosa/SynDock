@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import toast from "react-hot-toast";
 import { MessageCircle, Hash, PenSquare } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { getFeed, getTrendingHashtags, toggleReaction } from "@/lib/postApi";
@@ -36,7 +37,7 @@ export default function FeedPage() {
         setData(feed);
         setTrending(tags);
       })
-      .catch(() => {})
+      .catch(() => toast.error(t("common.fetchError")))
       .finally(() => setLoading(false));
   }, [page]);
 

@@ -52,7 +52,8 @@
     "saving": "保存中...",
     "items": "{count}",
     "noData": "暂无数据。",
-    "default": "默认"
+    "default": "默认",
+    "fetchError": "数据加载失败"
   },
   "header": {
     "logout": "退出登录",
@@ -127,7 +128,11 @@
     "totalPrice": "合计",
     "inStock": "有货",
     "lowStock": "仅剩{count}件",
-    "outOfStock": "缺货"
+    "outOfStock": "缺货",
+    "meta": {
+      "title": "商品列表",
+      "description": "按分类浏览各种商品，找到您需要的商品。"
+    }
   },
   "checkout": {
     "steps": {
@@ -196,6 +201,21 @@
       "processing": "正在处理登录...",
       "loginFailedTitle": "登录失败",
       "backToLogin": "返回登录页面"
+    },
+    "forgotPassword": {
+      "title": "忘记密码",
+      "email": "注册邮箱",
+      "submit": "发送重置链接",
+      "success": "密码重置链接已发送到您的邮箱。",
+      "backToLogin": "返回登录"
+    },
+    "resetPassword": {
+      "title": "重置密码",
+      "newPassword": "新密码",
+      "confirmPassword": "确认密码",
+      "submit": "更改密码",
+      "success": "密码已更改。请登录。",
+      "mismatch": "密码不匹配。"
     }
   },
   "error": {
@@ -383,6 +403,10 @@
       "answered": "已回复",
       "waiting": "待回复",
       "deleteConfirm": "确定删除此咨询？"
+    },
+    "meta": {
+      "title": "我的页面",
+      "description": "查看和管理您的订单、积分、优惠券和个人信息。"
     }
   },
   "order": {
@@ -614,7 +638,11 @@
   "search": {
     "title": "搜索",
     "placeholder": "搜索商品...",
-    "noResults": "未找到搜索结果。"
+    "noResults": "未找到搜索结果。",
+    "meta": {
+      "title": "商品搜索",
+      "description": "通过关键词搜索商品。"
+    }
   },
   "chat": {
     "title": "AI 聊天",

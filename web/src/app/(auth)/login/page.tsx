@@ -106,6 +106,14 @@ export default function LoginPage() {
             error={errors.password?.message}
             {...register("password")}
           />
+          <div className="text-right">
+            <Link
+              href="/forgot-password"
+              className="text-sm text-[var(--color-primary)] hover:underline"
+            >
+              {t("auth.forgotPassword.title")}
+            </Link>
+          </div>
           <Button type="submit" isLoading={isLoading} className="mt-2">
             {t("auth.login")}
           </Button>

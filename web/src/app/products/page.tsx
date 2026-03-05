@@ -10,6 +10,7 @@ import { useTranslations } from "next-intl";
 import type { ProductSummary, CategoryInfo } from "@/types/product";
 import Link from "next/link";
 import Image from "next/image";
+import toast from "react-hot-toast";
 import { Search, X, SlidersHorizontal, Star } from "lucide-react";
 
 function ProductList() {
@@ -50,7 +51,7 @@ function ProductList() {
   const [isNew, setIsNew] = useState(isNewParam === "true");
 
   useEffect(() => {
-    getCategories().then(setCategories).catch(() => {});
+    getCategories().then(setCategories).catch(() => toast.error(t("common.fetchError")));
   }, []);
 
   // Close suggestions on outside click
@@ -98,7 +99,7 @@ function ProductList() {
         setTotalCount(res.totalCount);
         setTotalPages(res.totalPages);
       })
-      .catch(() => {})
+      .catch(() => toast.error(t("common.fetchError")))
       .finally(() => setLoading(false));
   }, [categoryFilter, sortParam, searchParam, minPriceParam, maxPriceParam, minRatingParam, isFeaturedParam, isNewParam]);
 
@@ -130,7 +131,7 @@ function ProductList() {
         getSearchSuggestions(value).then((s) => {
           setSuggestions(s);
           setShowSuggestions(s.length > 0);
-        }).catch(() => {});
+        }).catch(() => toast.error(t("common.fetchError")));
       }, 300);
     } else {
       setSuggestions([]);

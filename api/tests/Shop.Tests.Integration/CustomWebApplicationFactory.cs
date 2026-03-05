@@ -4,6 +4,7 @@ using System.Text;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
@@ -15,7 +16,7 @@ namespace Shop.Tests.Integration;
 
 public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 {
-    private const string TestJwtSecret = "SynDockShopPlatform2026SuperSecretKey!@#$%^&*()_+ForJWTAuth";
+    private const string TestJwtSecret = "SynDockShopTestOnlyKey2026!@#$%^&*()_+DevEnvironment";
     private const string TestJwtIssuer = "SynDock.Shop";
     private const string TestJwtAudience = "SynDock.Shop.Client";
 
@@ -44,6 +45,18 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Testing");
+
+        builder.ConfigureAppConfiguration((context, config) =>
+        {
+            config.AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["Jwt:Secret"] = TestJwtSecret,
+                ["Jwt:Issuer"] = TestJwtIssuer,
+                ["Jwt:Audience"] = TestJwtAudience,
+                ["Encryption:Key"] = "RGV2T25seUFFUzI1NktleUZvclRlc3RpbmchMTIzNDU=",
+                ["Mes:WebhookSecret"] = "test-webhook-secret",
+            });
+        });
 
         builder.ConfigureServices(services =>
         {

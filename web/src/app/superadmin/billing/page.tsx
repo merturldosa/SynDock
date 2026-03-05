@@ -49,7 +49,7 @@ export default function BillingOverviewPage() {
       <h1 className="text-2xl font-bold text-gray-900 mb-6">{t("superadmin.billing.title")}</h1>
 
       {/* Summary cards */}
-      <div className="grid grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-white rounded-xl p-4 shadow-sm">
           <p className="text-xs text-gray-400">{t("superadmin.billing.totalTenants")}</p>
           <p className="text-2xl font-bold text-gray-900">{billings.length}</p>

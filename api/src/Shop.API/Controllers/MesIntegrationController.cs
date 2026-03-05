@@ -341,7 +341,9 @@ public class MesIntegrationController : ControllerBase
         [FromHeader(Name = "X-MES-Webhook-Secret")] string? webhookSecret)
     {
         var expectedSecret = _configuration["Mes:WebhookSecret"];
-        if (!string.IsNullOrEmpty(expectedSecret) && webhookSecret != expectedSecret)
+        if (string.IsNullOrEmpty(expectedSecret))
+            return StatusCode(503, new { message = "Webhook secret not configured" });
+        if (webhookSecret != expectedSecret)
             return Unauthorized(new { message = "Invalid webhook secret" });
 
         if (string.IsNullOrEmpty(payload.ShopOrderNo))

@@ -52,7 +52,8 @@
     "saving": "Saving...",
     "items": "{count}",
     "noData": "No data available.",
-    "default": "Default"
+    "default": "Default",
+    "fetchError": "Failed to load data"
   },
   "header": {
     "logout": "Logout",
@@ -127,7 +128,11 @@
     "totalPrice": "Total",
     "inStock": "In Stock",
     "lowStock": "Only {count} left",
-    "outOfStock": "Out of Stock"
+    "outOfStock": "Out of Stock",
+    "meta": {
+      "title": "Products",
+      "description": "Browse our wide selection of products by category and find what you need."
+    }
   },
   "checkout": {
     "steps": {
@@ -196,6 +201,21 @@
       "processing": "Processing login...",
       "loginFailedTitle": "Login Failed",
       "backToLogin": "Back to Login"
+    },
+    "forgotPassword": {
+      "title": "Forgot Password",
+      "email": "Registered email",
+      "submit": "Send reset link",
+      "success": "Password reset link has been sent to your email.",
+      "backToLogin": "Back to login"
+    },
+    "resetPassword": {
+      "title": "Reset Password",
+      "newPassword": "New password",
+      "confirmPassword": "Confirm password",
+      "submit": "Change password",
+      "success": "Password changed. Please log in.",
+      "mismatch": "Passwords do not match."
     }
   },
   "error": {
@@ -383,6 +403,10 @@
       "answered": "Answered",
       "waiting": "Pending",
       "deleteConfirm": "Delete this inquiry?"
+    },
+    "meta": {
+      "title": "My Page",
+      "description": "View and manage your orders, points, coupons, and personal information."
     }
   },
   "order": {
@@ -614,7 +638,11 @@
   "search": {
     "title": "Search",
     "placeholder": "Search products...",
-    "noResults": "No results found."
+    "noResults": "No results found.",
+    "meta": {
+      "title": "Search Products",
+      "description": "Search for products by keyword."
+    }
   },
   "chat": {
     "title": "AI Chat",

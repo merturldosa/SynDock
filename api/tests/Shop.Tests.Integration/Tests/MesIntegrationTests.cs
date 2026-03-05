@@ -188,10 +188,11 @@ public class MesIntegrationTests : IClassFixture<CustomWebApplicationFactory>
     // ── 14. POST webhook/order-status (AllowAnonymous) ───
 
     [Fact]
-    public async Task MesOrderStatusWebhook_AllowAnonymous_Returns200OrNotFound()
+    public async Task MesOrderStatusWebhook_WithSecret_Returns200OrNotFound()
     {
         var client = _factory.CreateClient();
         client.DefaultRequestHeaders.Add("X-Tenant-Id", "catholia");
+        client.DefaultRequestHeaders.Add("X-MES-Webhook-Secret", "test-webhook-secret");
         var body = new
         {
             shopOrderNo = "test",
@@ -207,10 +208,29 @@ public class MesIntegrationTests : IClassFixture<CustomWebApplicationFactory>
     }
 
     [Fact]
+    public async Task MesOrderStatusWebhook_WithoutSecret_ReturnsUnauthorized()
+    {
+        var client = _factory.CreateClient();
+        client.DefaultRequestHeaders.Add("X-Tenant-Id", "catholia");
+        var body = new
+        {
+            shopOrderNo = "test",
+            mesOrderId = "mes-1",
+            mesOrderNo = "MES-001",
+            status = "completed",
+            message = "done"
+        };
+        var response = await client.PostAsJsonAsync("/api/admin/mes/webhook/order-status", body);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
     public async Task MesOrderStatusWebhook_EmptyShopOrderNo_ReturnsBadRequest()
     {
         var client = _factory.CreateClient();
         client.DefaultRequestHeaders.Add("X-Tenant-Id", "catholia");
+        client.DefaultRequestHeaders.Add("X-MES-Webhook-Secret", "test-webhook-secret");
         var body = new
         {
             shopOrderNo = (string?)null,

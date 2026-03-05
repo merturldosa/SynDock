@@ -52,7 +52,8 @@
     "saving": "Đang lưu...",
     "items": "{count}",
     "noData": "Không có dữ liệu.",
-    "default": "Mặc định"
+    "default": "Mặc định",
+    "fetchError": "Không thể tải dữ liệu"
   },
   "header": {
     "logout": "Đăng xuất",
@@ -127,7 +128,11 @@
     "totalPrice": "Tổng cộng",
     "inStock": "Còn hàng",
     "lowStock": "Chỉ còn {count} sản phẩm",
-    "outOfStock": "Hết hàng"
+    "outOfStock": "Hết hàng",
+    "meta": {
+      "title": "Danh s\u00e1ch s\u1ea3n ph\u1ea9m",
+      "description": "Duy\u1ec7t qua nhi\u1ec1u s\u1ea3n ph\u1ea9m theo danh m\u1ee5c v\u00e0 t\u00ecm s\u1ea3n ph\u1ea9m b\u1ea1n c\u1ea7n."
+    }
   },
   "checkout": {
     "steps": {
@@ -196,6 +201,21 @@
       "processing": "Đang xử lý đăng nhập...",
       "loginFailedTitle": "Đăng nhập thất bại",
       "backToLogin": "Quay lại trang đăng nhập"
+    },
+    "forgotPassword": {
+      "title": "Quên mật khẩu",
+      "email": "Email đã đăng ký",
+      "submit": "Gửi liên kết đặt lại",
+      "success": "Liên kết đặt lại mật khẩu đã được gửi đến email của bạn.",
+      "backToLogin": "Quay lại đăng nhập"
+    },
+    "resetPassword": {
+      "title": "Đặt lại mật khẩu",
+      "newPassword": "Mật khẩu mới",
+      "confirmPassword": "Xác nhận mật khẩu",
+      "submit": "Đổi mật khẩu",
+      "success": "Mật khẩu đã được đổi. Vui lòng đăng nhập.",
+      "mismatch": "Mật khẩu không khớp."
     }
   },
   "error": {
@@ -383,6 +403,10 @@
       "answered": "Đã trả lời",
       "waiting": "Chờ trả lời",
       "deleteConfirm": "Xóa câu hỏi này?"
+    },
+    "meta": {
+      "title": "Trang c\u00e1 nh\u00e2n",
+      "description": "Xem v\u00e0 qu\u1ea3n l\u00fd \u0111\u01a1n h\u00e0ng, \u0111i\u1ec3m th\u01b0\u1edfng, phi\u1ebfu gi\u1ea3m gi\u00e1 v\u00e0 th\u00f4ng tin c\u00e1 nh\u00e2n."
     }
   },
   "order": {
@@ -614,7 +638,11 @@
   "search": {
     "title": "Tìm kiếm",
     "placeholder": "Tìm kiếm sản phẩm...",
-    "noResults": "Không tìm thấy kết quả."
+    "noResults": "Không tìm thấy kết quả.",
+    "meta": {
+      "title": "T\u00ecm ki\u1ebfm s\u1ea3n ph\u1ea9m",
+      "description": "T\u00ecm ki\u1ebfm s\u1ea3n ph\u1ea9m b\u1eb1ng t\u1eeb kh\u00f3a."
+    }
   },
   "chat": {
     "title": "Trò chuyện AI",

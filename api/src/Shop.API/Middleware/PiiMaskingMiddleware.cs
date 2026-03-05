@@ -28,6 +28,8 @@ public class PiiMaskingMiddleware
         _logger = logger;
     }
 
+    private const int MaxMaskableBodySize = 1_048_576; // 1MB
+
     public async Task InvokeAsync(HttpContext context)
     {
         // Only intercept JSON API responses
@@ -45,6 +47,16 @@ public class PiiMaskingMiddleware
         await _next(context);
 
         memoryStream.Seek(0, SeekOrigin.Begin);
+
+        // Skip PII masking for large responses to avoid memory spikes
+        if (memoryStream.Length > MaxMaskableBodySize)
+        {
+            context.Response.Body = originalBodyStream;
+            memoryStream.Seek(0, SeekOrigin.Begin);
+            await memoryStream.CopyToAsync(originalBodyStream);
+            return;
+        }
+
         var responseBody = await new StreamReader(memoryStream).ReadToEndAsync();
 
         // Only mask JSON responses with success status codes

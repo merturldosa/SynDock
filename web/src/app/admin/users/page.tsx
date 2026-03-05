@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { getAdminUsers, updateUser, type UserSummary } from "@/lib/adminApi";
+import toast from "react-hot-toast";
 import { formatDateShort } from "@/lib/format";
 
 export default function AdminUsersPage() {
@@ -15,7 +16,7 @@ export default function AdminUsersPage() {
     setLoading(true);
     getAdminUsers()
       .then(setUsers)
-      .catch(() => {})
+      .catch(() => toast.error(t("common.fetchError")))
       .finally(() => setLoading(false));
   };
 

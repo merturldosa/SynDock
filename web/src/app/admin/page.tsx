@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
+import toast from "react-hot-toast";
 import { Package, FolderTree, ShoppingCart, Users, TrendingUp, AlertTriangle, Warehouse, BarChart3 } from "lucide-react";
 import { getDashboardStats, getSalesAnalytics, type DashboardStats, type DailySales } from "@/lib/adminApi";
 import { useAdminDashboardStore } from "@/stores/adminDashboardStore";
@@ -30,12 +31,12 @@ export default function AdminDashboard() {
   };
 
   const loadStats = useCallback(() => {
-    getDashboardStats().then(setStats).catch(() => {});
+    getDashboardStats().then(setStats).catch(() => toast.error(t("common.fetchError")));
   }, []);
 
   useEffect(() => {
     loadStats();
-    getSalesAnalytics(7).then((d) => setTrend(d.dailySales || [])).catch(() => {});
+    getSalesAnalytics(7).then((d) => setTrend(d.dailySales || [])).catch(() => toast.error(t("common.fetchError")));
     setLoading(false);
 
     const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;

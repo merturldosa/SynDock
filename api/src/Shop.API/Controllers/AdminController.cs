@@ -17,12 +17,14 @@ public class AdminController : ControllerBase
     private readonly IMediator _mediator;
     private readonly IEmailService _emailService;
     private readonly IShopDbContext _db;
+    private readonly ILogger<AdminController> _logger;
 
-    public AdminController(IMediator mediator, IEmailService emailService, IShopDbContext db)
+    public AdminController(IMediator mediator, IEmailService emailService, IShopDbContext db, ILogger<AdminController> logger)
     {
         _mediator = mediator;
         _emailService = emailService;
         _db = db;
+        _logger = logger;
     }
 
     [HttpGet("stats")]
@@ -193,7 +195,7 @@ public class AdminController : ControllerBase
                 await _emailService.SendAsync(email, request.Title, htmlBody);
                 sentCount++;
             }
-            catch { /* skip failed emails */ }
+            catch (Exception ex) { _logger.LogWarning(ex, "Failed to send marketing email to {Email}", email); }
         }
 
         return Ok(new { sentCount });
