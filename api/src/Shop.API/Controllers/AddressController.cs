@@ -19,38 +19,38 @@ public class AddressController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll(CancellationToken ct)
     {
-        var result = await _mediator.Send(new GetAddressesQuery());
+        var result = await _mediator.Send(new GetAddressesQuery(), ct);
         return Ok(result);
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] CreateAddressRequest request)
+    public async Task<IActionResult> Create([FromBody] CreateAddressRequest request, CancellationToken ct)
     {
         var result = await _mediator.Send(new CreateAddressCommand(
             request.RecipientName, request.Phone, request.ZipCode,
-            request.Address1, request.Address2, request.IsDefault));
+            request.Address1, request.Address2, request.IsDefault), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(new { addressId = result.Data });
     }
 
     [HttpPut("{id:int}")]
-    public async Task<IActionResult> Update(int id, [FromBody] UpdateAddressRequest request)
+    public async Task<IActionResult> Update(int id, [FromBody] UpdateAddressRequest request, CancellationToken ct)
     {
         var result = await _mediator.Send(new UpdateAddressCommand(
             id, request.RecipientName, request.Phone, request.ZipCode,
-            request.Address1, request.Address2, request.IsDefault));
+            request.Address1, request.Address2, request.IsDefault), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(new { success = true });
     }
 
     [HttpDelete("{id:int}")]
-    public async Task<IActionResult> Delete(int id)
+    public async Task<IActionResult> Delete(int id, CancellationToken ct)
     {
-        var result = await _mediator.Send(new DeleteAddressCommand(id));
+        var result = await _mediator.Send(new DeleteAddressCommand(id), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(new { success = true });

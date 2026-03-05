@@ -27,14 +27,14 @@ public class UpdateCartItemCommandHandler : IRequestHandler<UpdateCartItemComman
     public async Task<Result<bool>> Handle(UpdateCartItemCommand request, CancellationToken cancellationToken)
     {
         if (_currentUser.UserId is null)
-            return Result<bool>.Failure("로그인이 필요합니다.");
+            return Result<bool>.Failure("Authentication required.");
 
         var cartItem = await _db.CartItems
             .Include(ci => ci.Cart)
             .FirstOrDefaultAsync(ci => ci.Id == request.CartItemId && ci.Cart.UserId == _currentUser.UserId.Value, cancellationToken);
 
         if (cartItem is null)
-            return Result<bool>.Failure("장바구니 항목을 찾을 수 없습니다.");
+            return Result<bool>.Failure("Cart item not found.");
 
         if (request.Quantity <= 0)
         {

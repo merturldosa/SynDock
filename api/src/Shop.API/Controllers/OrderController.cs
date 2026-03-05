@@ -25,25 +25,25 @@ public class OrderController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreateOrder([FromBody] CreateOrderRequest request)
+    public async Task<IActionResult> CreateOrder([FromBody] CreateOrderRequest request, CancellationToken ct)
     {
-        var result = await _mediator.Send(new CreateOrderCommand(request.ShippingAddressId, request.Note, request.CouponCode, request.PointsToUse));
+        var result = await _mediator.Send(new CreateOrderCommand(request.ShippingAddressId, request.Note, request.CouponCode, request.PointsToUse), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(new { orderId = result.Data!.OrderId, orderNumber = result.Data.OrderNumber });
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetOrders([FromQuery] string? status, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+    public async Task<IActionResult> GetOrders([FromQuery] string? status, [FromQuery] int page = 1, [FromQuery] int pageSize = 10, CancellationToken ct = default)
     {
-        var result = await _mediator.Send(new GetOrdersQuery(status, page, pageSize));
+        var result = await _mediator.Send(new GetOrdersQuery(status, page, pageSize), ct);
         return Ok(result);
     }
 
     [HttpGet("{id:int}")]
-    public async Task<IActionResult> GetOrder(int id)
+    public async Task<IActionResult> GetOrder(int id, CancellationToken ct)
     {
-        var result = await _mediator.Send(new GetOrderByIdQuery(id));
+        var result = await _mediator.Send(new GetOrderByIdQuery(id), ct);
         if (result is null)
             return NotFound(new { error = "주문을 찾을 수 없습니다." });
         return Ok(result);
@@ -51,9 +51,9 @@ public class OrderController : ControllerBase
 
     [HttpPut("{id:int}/status")]
     [Authorize(Roles = "TenantAdmin,Admin,PlatformAdmin")]
-    public async Task<IActionResult> UpdateOrderStatus(int id, [FromBody] UpdateOrderStatusRequest request)
+    public async Task<IActionResult> UpdateOrderStatus(int id, [FromBody] UpdateOrderStatusRequest request, CancellationToken ct)
     {
-        var result = await _mediator.Send(new UpdateOrderStatusCommand(id, request.Status, request.TrackingNumber, request.TrackingCarrier));
+        var result = await _mediator.Send(new UpdateOrderStatusCommand(id, request.Status, request.TrackingNumber, request.TrackingCarrier), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(new { success = true });
@@ -61,43 +61,43 @@ public class OrderController : ControllerBase
 
     [HttpPut("{id:int}/shipping")]
     [Authorize(Roles = "TenantAdmin,Admin,PlatformAdmin")]
-    public async Task<IActionResult> UpdateShippingInfo(int id, [FromBody] UpdateShippingRequest request)
+    public async Task<IActionResult> UpdateShippingInfo(int id, [FromBody] UpdateShippingRequest request, CancellationToken ct)
     {
-        var result = await _mediator.Send(new UpdateOrderStatusCommand(id, "Shipped", request.TrackingNumber, request.TrackingCarrier));
+        var result = await _mediator.Send(new UpdateOrderStatusCommand(id, "Shipped", request.TrackingNumber, request.TrackingCarrier), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(new { success = true });
     }
 
     [HttpGet("{id:int}/history")]
-    public async Task<IActionResult> GetOrderHistory(int id)
+    public async Task<IActionResult> GetOrderHistory(int id, CancellationToken ct)
     {
-        var result = await _mediator.Send(new GetOrderHistoryQuery(id));
+        var result = await _mediator.Send(new GetOrderHistoryQuery(id), ct);
         return Ok(result);
     }
 
     [HttpPost("{id:int}/cancel")]
-    public async Task<IActionResult> CancelOrder(int id)
+    public async Task<IActionResult> CancelOrder(int id, CancellationToken ct)
     {
-        var result = await _mediator.Send(new CancelOrderCommand(id));
+        var result = await _mediator.Send(new CancelOrderCommand(id), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(new { success = true });
     }
 
     [HttpGet("{id:int}/tracking")]
-    public async Task<IActionResult> GetShippingTracking(int id)
+    public async Task<IActionResult> GetShippingTracking(int id, CancellationToken ct)
     {
-        var result = await _mediator.Send(new GetShippingTrackingQuery(id));
+        var result = await _mediator.Send(new GetShippingTrackingQuery(id), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(result.Data);
     }
 
     [HttpGet("{id:int}/receipt")]
-    public async Task<IActionResult> DownloadReceipt(int id)
+    public async Task<IActionResult> DownloadReceipt(int id, CancellationToken ct)
     {
-        var order = await _mediator.Send(new GetOrderByIdQuery(id));
+        var order = await _mediator.Send(new GetOrderByIdQuery(id), ct);
         if (order is null)
             return NotFound(new { error = "주문을 찾을 수 없습니다." });
 

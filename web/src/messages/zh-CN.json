@@ -53,7 +53,12 @@
     "items": "{count}",
     "noData": "暂无数据。",
     "default": "默认",
-    "fetchError": "数据加载失败"
+    "fetchError": "数据加载失败",
+    "quantity": "{count}个",
+    "orderCount": "{count}单",
+    "itemSummary": "{items}个品目 / {qty}个",
+    "startDate": "开始日期",
+    "endDate": "结束日期"
   },
   "header": {
     "logout": "退出登录",
@@ -938,7 +943,12 @@
       "trackingLabel": "快递单号",
       "orderTimeline": "订单动态",
       "noTimeline": "暂无记录。",
-      "notFound": "未找到该订单。"
+      "notFound": "未找到该订单。",
+      "carrierCJ": "CJ大韩通运",
+      "carrierHanjin": "韩进快递",
+      "carrierLotte": "乐天快递",
+      "carrierLogen": "路建快递",
+      "carrierPost": "邮局快递"
     },
     "coupons": {
       "title": "优惠券管理",
@@ -1288,7 +1298,10 @@
       "noOrders": "没有采购订单。",
       "bulkCreatedMessage": "已创建 {count} 条规则。",
       "confirmDeleteRule": "确定要删除此规则吗？",
-      "confirmCancelOrder": "确定要取消此订单吗？"
+      "confirmCancelOrder": "确定要取消此订单吗？",
+      "autoPlaceholder": "0=自动",
+      "unlimitedPlaceholder": "0=无限制",
+      "auto": "自动"
     },
     "settings": {
       "title": "设置",

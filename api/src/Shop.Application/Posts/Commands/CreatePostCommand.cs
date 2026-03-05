@@ -32,10 +32,10 @@ public class CreatePostCommandHandler : IRequestHandler<CreatePostCommand, Resul
     public async Task<Result<int>> Handle(CreatePostCommand request, CancellationToken cancellationToken)
     {
         if (_currentUser.UserId is null)
-            return Result<int>.Failure("로그인이 필요합니다.");
+            return Result<int>.Failure("Authentication required.");
 
         if (string.IsNullOrWhiteSpace(request.Content))
-            return Result<int>.Failure("내용을 입력해 주세요.");
+            return Result<int>.Failure("Content is required.");
 
         var post = new Post
         {
@@ -64,23 +64,26 @@ public class CreatePostCommandHandler : IRequestHandler<CreatePostCommand, Resul
         await _db.Posts.AddAsync(post, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        // Process hashtags
+        // Process hashtags (batch-load existing to avoid N+1)
         if (request.Hashtags?.Count > 0)
         {
-            foreach (var tagText in request.Hashtags.Select(t => t.Trim().ToLowerInvariant()).Distinct())
-            {
-                if (string.IsNullOrEmpty(tagText)) continue;
+            var tags = request.Hashtags.Select(t => t.Trim().ToLowerInvariant()).Where(t => !string.IsNullOrEmpty(t)).Distinct().ToList();
+            var existingHashtags = await _db.Hashtags
+                .Where(h => tags.Contains(h.Tag))
+                .ToDictionaryAsync(h => h.Tag, cancellationToken);
 
-                var hashtag = await _db.Hashtags.FirstOrDefaultAsync(h => h.Tag == tagText, cancellationToken);
-                if (hashtag == null)
+            foreach (var tagText in tags)
+            {
+                Hashtag hashtag;
+                if (existingHashtags.TryGetValue(tagText, out var existing))
                 {
-                    hashtag = new Hashtag { Tag = tagText, PostCount = 1, CreatedBy = "system" };
-                    await _db.Hashtags.AddAsync(hashtag, cancellationToken);
-                    await _unitOfWork.SaveChangesAsync(cancellationToken);
+                    existing.PostCount++;
+                    hashtag = existing;
                 }
                 else
                 {
-                    hashtag.PostCount++;
+                    hashtag = new Hashtag { Tag = tagText, PostCount = 1, CreatedBy = "system" };
+                    await _db.Hashtags.AddAsync(hashtag, cancellationToken);
                 }
 
                 await _db.PostHashtags.AddAsync(new PostHashtag

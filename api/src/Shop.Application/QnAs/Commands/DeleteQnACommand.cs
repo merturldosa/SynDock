@@ -24,13 +24,13 @@ public class DeleteQnACommandHandler : IRequestHandler<DeleteQnACommand, Result<
     public async Task<Result<bool>> Handle(DeleteQnACommand request, CancellationToken cancellationToken)
     {
         if (_currentUser.UserId is null)
-            return Result<bool>.Failure("로그인이 필요합니다.");
+            return Result<bool>.Failure("Authentication required.");
 
         var qna = await _db.QnAs
             .FirstOrDefaultAsync(q => q.Id == request.QnAId && q.UserId == _currentUser.UserId.Value, cancellationToken);
 
         if (qna is null)
-            return Result<bool>.Failure("질문을 찾을 수 없습니다.");
+            return Result<bool>.Failure("Question not found.");
 
         _db.QnAs.Remove(qna);
         await _unitOfWork.SaveChangesAsync(cancellationToken);

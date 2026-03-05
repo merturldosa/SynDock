@@ -39,7 +39,7 @@ public class UpdateCouponCommandHandler : IRequestHandler<UpdateCouponCommand, R
             .FirstOrDefaultAsync(c => c.Id == request.Id, cancellationToken);
 
         if (coupon is null)
-            return Result<bool>.Failure("쿠폰을 찾을 수 없습니다.");
+            return Result<bool>.Failure("Coupon not found.");
 
         coupon.Name = request.Name;
         coupon.Description = request.Description;

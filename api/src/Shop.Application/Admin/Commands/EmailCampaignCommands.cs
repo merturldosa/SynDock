@@ -59,10 +59,10 @@ public class SendCampaignCommandHandler : IRequestHandler<SendCampaignCommand, R
             .FirstOrDefaultAsync(c => c.Id == request.CampaignId, cancellationToken);
 
         if (campaign is null)
-            return Result<int>.Failure("캠페인을 찾을 수 없습니다.");
+            return Result<int>.Failure("Campaign not found.");
 
         if (campaign.Status == "Sent")
-            return Result<int>.Failure("이미 발송된 캠페인입니다.");
+            return Result<int>.Failure("Campaign has already been sent.");
 
         campaign.Status = "Sending";
         await _db.SaveChangesAsync(cancellationToken);

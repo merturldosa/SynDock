@@ -17,42 +17,42 @@ public class ForecastController : ControllerBase
     }
 
     [HttpGet("products/{productId:int}")]
-    public async Task<IActionResult> GetProductForecast(int productId, [FromQuery] int days = 30)
+    public async Task<IActionResult> GetProductForecast(int productId, [FromQuery] int days = 30, CancellationToken ct = default)
     {
         var result = await _forecastService.ForecastAsync(productId, days);
         return Ok(result);
     }
 
     [HttpGet("low-stock")]
-    public async Task<IActionResult> GetLowStockForecasts([FromQuery] int daysThreshold = 14)
+    public async Task<IActionResult> GetLowStockForecasts([FromQuery] int daysThreshold = 14, CancellationToken ct = default)
     {
         var results = await _forecastService.GetLowStockForecastsAsync(daysThreshold);
         return Ok(results);
     }
 
     [HttpGet("products/{productId:int}/ai")]
-    public async Task<IActionResult> GetProductForecastWithAi(int productId, [FromQuery] int days = 30)
+    public async Task<IActionResult> GetProductForecastWithAi(int productId, [FromQuery] int days = 30, CancellationToken ct = default)
     {
         var result = await _forecastService.ForecastWithAiAsync(productId, days);
         return Ok(result);
     }
 
     [HttpGet("categories")]
-    public async Task<IActionResult> GetAllCategoryForecasts([FromQuery] int days = 30)
+    public async Task<IActionResult> GetAllCategoryForecasts([FromQuery] int days = 30, CancellationToken ct = default)
     {
         var results = await _forecastService.GetAllCategoryForecastsAsync(days);
         return Ok(results);
     }
 
     [HttpGet("categories/{categoryId:int}")]
-    public async Task<IActionResult> GetCategoryForecast(int categoryId, [FromQuery] int days = 30)
+    public async Task<IActionResult> GetCategoryForecast(int categoryId, [FromQuery] int days = 30, CancellationToken ct = default)
     {
         var result = await _forecastService.ForecastCategoryAsync(categoryId, days);
         return Ok(result);
     }
 
     [HttpGet("purchase-recommendations")]
-    public async Task<IActionResult> GetPurchaseRecommendations([FromQuery] int daysThreshold = 14)
+    public async Task<IActionResult> GetPurchaseRecommendations([FromQuery] int daysThreshold = 14, CancellationToken ct = default)
     {
         var results = await _forecastService.GetPurchaseRecommendationsAsync(daysThreshold);
         return Ok(results);
@@ -61,14 +61,14 @@ public class ForecastController : ControllerBase
     // Sprint 5: Holt-Winters & accuracy tracking
 
     [HttpGet("products/{productId:int}/holt-winters")]
-    public async Task<IActionResult> GetHoltWintersForecast(int productId, [FromQuery] int days = 30)
+    public async Task<IActionResult> GetHoltWintersForecast(int productId, [FromQuery] int days = 30, CancellationToken ct = default)
     {
         var result = await _forecastService.ForecastHoltWintersAsync(productId, days);
         return Ok(result);
     }
 
     [HttpGet("accuracy/{productId:int}")]
-    public async Task<IActionResult> GetProductAccuracy(int productId)
+    public async Task<IActionResult> GetProductAccuracy(int productId, CancellationToken ct)
     {
         var result = await _forecastService.GetAccuracyAsync(productId);
         if (result is null)
@@ -77,28 +77,28 @@ public class ForecastController : ControllerBase
     }
 
     [HttpGet("accuracy")]
-    public async Task<IActionResult> GetAllAccuracies()
+    public async Task<IActionResult> GetAllAccuracies(CancellationToken ct)
     {
         var results = await _forecastService.GetAllAccuraciesAsync();
         return Ok(results);
     }
 
     [HttpPost("accuracy/update")]
-    public async Task<IActionResult> UpdateAccuracy()
+    public async Task<IActionResult> UpdateAccuracy(CancellationToken ct)
     {
         await _forecastService.UpdateActualDemandAsync();
         return Ok(new { message = "정확도 데이터가 갱신되었습니다." });
     }
 
     [HttpPost("auto-purchase-order")]
-    public async Task<IActionResult> CreateAutoPurchaseOrder([FromBody] AutoPurchaseOrderRequest request)
+    public async Task<IActionResult> CreateAutoPurchaseOrder([FromBody] AutoPurchaseOrderRequest request, CancellationToken ct)
     {
         var result = await _forecastService.CreateAutoPurchaseOrderAsync(request.ProductIds);
         return result.Success ? Ok(result) : BadRequest(result);
     }
 
     [HttpGet("batch-ai-insights")]
-    public async Task<IActionResult> GetBatchAiInsights()
+    public async Task<IActionResult> GetBatchAiInsights(CancellationToken ct)
     {
         var result = await _forecastService.GetBatchAiInsightsAsync();
         return Ok(result);

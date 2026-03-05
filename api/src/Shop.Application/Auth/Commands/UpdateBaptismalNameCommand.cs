@@ -30,7 +30,7 @@ public class UpdateBaptismalNameCommandHandler : IRequestHandler<UpdateBaptismal
             .FirstOrDefaultAsync(u => u.Id == request.UserId, cancellationToken);
 
         if (user is null)
-            return Result<BaptismalNameDto>.Failure("사용자를 찾을 수 없습니다.");
+            return Result<BaptismalNameDto>.Failure("User not found.");
 
         // Find matching patron saint by Korean name
         var patronSaint = await _db.Saints

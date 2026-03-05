@@ -28,11 +28,11 @@ public class ToggleReactionCommandHandler : IRequestHandler<ToggleReactionComman
     public async Task<Result<bool>> Handle(ToggleReactionCommand request, CancellationToken cancellationToken)
     {
         if (_currentUser.UserId is null)
-            return Result<bool>.Failure("로그인이 필요합니다.");
+            return Result<bool>.Failure("Authentication required.");
 
         var post = await _db.Posts.FirstOrDefaultAsync(p => p.Id == request.PostId, cancellationToken);
         if (post == null)
-            return Result<bool>.Failure("게시글을 찾을 수 없습니다.");
+            return Result<bool>.Failure("Post not found.");
 
         var existing = await _db.PostReactions
             .FirstOrDefaultAsync(r => r.PostId == request.PostId

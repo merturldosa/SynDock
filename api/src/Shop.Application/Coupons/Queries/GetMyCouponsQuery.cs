@@ -23,7 +23,7 @@ public class GetMyCouponsQueryHandler : IRequestHandler<GetMyCouponsQuery, Resul
     public async Task<Result<IReadOnlyList<UserCouponDto>>> Handle(GetMyCouponsQuery request, CancellationToken cancellationToken)
     {
         if (_currentUser.UserId is null)
-            return Result<IReadOnlyList<UserCouponDto>>.Failure("로그인이 필요합니다.");
+            return Result<IReadOnlyList<UserCouponDto>>.Failure("Authentication required.");
 
         var userId = _currentUser.UserId.Value;
         var now = DateTime.UtcNow;

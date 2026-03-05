@@ -174,7 +174,7 @@ export default function SettlementsPage() {
                         <span className="font-medium text-gray-900">{item.tenantName}</span>
                       </div>
                     </td>
-                    <td className="px-6 py-3 text-right">{item.totalOrders}건</td>
+                    <td className="px-6 py-3 text-right">{t("common.orderCount", { count: item.totalOrders })}</td>
                     <td className="px-6 py-3 text-right">{formatPrice(item.totalOrderAmount)}</td>
                     <td className="px-6 py-3 text-right text-green-600 font-medium">{formatPrice(item.totalCommission)}</td>
                     <td className="px-6 py-3 text-right">{formatPrice(item.totalSettlementAmount)}</td>
@@ -217,10 +217,10 @@ export default function SettlementsPage() {
             <div className="px-6 py-4 bg-blue-50 border-b border-blue-200">
               <div className="flex items-center gap-3 flex-wrap">
                 <input type="date" value={periodStart} onChange={(e) => setPeriodStart(e.target.value)}
-                  className="px-3 py-2 border rounded-lg text-sm" placeholder="시작일" />
+                  className="px-3 py-2 border rounded-lg text-sm" placeholder={t("common.startDate")} />
                 <span className="text-gray-400">~</span>
                 <input type="date" value={periodEnd} onChange={(e) => setPeriodEnd(e.target.value)}
-                  className="px-3 py-2 border rounded-lg text-sm" placeholder="종료일" />
+                  className="px-3 py-2 border rounded-lg text-sm" placeholder={t("common.endDate")} />
                 <button onClick={handleCreate}
                   className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700">{t("common.create")}</button>
                 <button onClick={() => setShowCreate(false)}
@@ -257,7 +257,7 @@ export default function SettlementsPage() {
                         <td className="px-4 py-3 text-gray-700 whitespace-nowrap">
                           {s.periodStart.slice(0, 10)} ~ {s.periodEnd.slice(0, 10)}
                         </td>
-                        <td className="px-4 py-3 text-right">{s.orderCount}건</td>
+                        <td className="px-4 py-3 text-right">{t("common.orderCount", { count: s.orderCount })}</td>
                         <td className="px-4 py-3 text-right">{formatPrice(s.totalOrderAmount)}</td>
                         <td className="px-4 py-3 text-right text-green-600">{formatPrice(s.totalCommission)}</td>
                         <td className="px-4 py-3 text-right font-medium">{formatPrice(s.totalSettlementAmount)}</td>
@@ -296,7 +296,7 @@ export default function SettlementsPage() {
               type="text"
               value={transactionId}
               onChange={(e) => setTransactionId(e.target.value)}
-              placeholder="거래번호 (Transaction ID)"
+              placeholder={t("superadmin.settlements.transactionId")}
               className="w-full px-4 py-2 border rounded-lg text-sm mb-4"
             />
             <div className="flex gap-2 justify-end">

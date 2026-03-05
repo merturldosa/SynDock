@@ -29,14 +29,14 @@ public class AddCommentCommandHandler : IRequestHandler<AddCommentCommand, Resul
     public async Task<Result<int>> Handle(AddCommentCommand request, CancellationToken cancellationToken)
     {
         if (_currentUser.UserId is null)
-            return Result<int>.Failure("로그인이 필요합니다.");
+            return Result<int>.Failure("Authentication required.");
 
         if (string.IsNullOrWhiteSpace(request.Content))
-            return Result<int>.Failure("내용을 입력해 주세요.");
+            return Result<int>.Failure("Content is required.");
 
         var post = await _db.Posts.FirstOrDefaultAsync(p => p.Id == request.PostId, cancellationToken);
         if (post == null)
-            return Result<int>.Failure("게시글을 찾을 수 없습니다.");
+            return Result<int>.Failure("Post not found.");
 
         // Validate parent comment (2-depth only)
         if (request.ParentId.HasValue)
@@ -46,10 +46,10 @@ public class AddCommentCommandHandler : IRequestHandler<AddCommentCommand, Resul
                 .FirstOrDefaultAsync(c => c.Id == request.ParentId.Value && c.PostId == request.PostId, cancellationToken);
 
             if (parent == null)
-                return Result<int>.Failure("상위 댓글을 찾을 수 없습니다.");
+                return Result<int>.Failure("Parent comment not found.");
 
             if (parent.ParentId != null)
-                return Result<int>.Failure("대댓글에는 답글을 달 수 없습니다.");
+                return Result<int>.Failure("Cannot reply to a nested comment.");
         }
 
         var comment = new PostComment

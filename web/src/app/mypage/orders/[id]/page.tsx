@@ -303,7 +303,7 @@ export default function MypageOrderDetailPage() {
                   {item.productName}
                 </Link>
                 {item.variantName && <p className="text-xs text-gray-500">{item.variantName}</p>}
-                <p className="text-xs text-gray-400 mt-0.5">{formatPrice(item.unitPrice)} x {item.quantity}개</p>
+                <p className="text-xs text-gray-400 mt-0.5">{formatPrice(item.unitPrice)} x {t("common.quantity", { count: item.quantity })}</p>
               </div>
               <p className="text-sm font-bold text-[var(--color-secondary)] shrink-0">{formatPrice(item.totalPrice)}</p>
             </div>

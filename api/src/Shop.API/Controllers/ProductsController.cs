@@ -31,11 +31,12 @@ public class ProductsController : ControllerBase
         [FromQuery] decimal? maxPrice = null,
         [FromQuery] decimal? minRating = null,
         [FromQuery] bool? isFeatured = null,
-        [FromQuery] bool? isNew = null)
+        [FromQuery] bool? isNew = null,
+        CancellationToken ct = default)
     {
         var result = await _mediator.Send(new GetProductsQuery(
             category, search, sort, page, pageSize,
-            minPrice, maxPrice, minRating, isFeatured, isNew));
+            minPrice, maxPrice, minRating, isFeatured, isNew), ct);
         return Ok(new
         {
             items = result.Items,
@@ -49,23 +50,23 @@ public class ProductsController : ControllerBase
     }
 
     [HttpGet("slugs")]
-    public async Task<IActionResult> GetSlugs()
+    public async Task<IActionResult> GetSlugs(CancellationToken ct)
     {
-        var result = await _mediator.Send(new GetProductSlugsQuery());
+        var result = await _mediator.Send(new GetProductSlugsQuery(), ct);
         return Ok(result);
     }
 
     [HttpGet("suggestions")]
-    public async Task<IActionResult> GetSuggestions([FromQuery] string term)
+    public async Task<IActionResult> GetSuggestions([FromQuery] string term, CancellationToken ct)
     {
-        var result = await _mediator.Send(new GetSearchSuggestionsQuery(term));
+        var result = await _mediator.Send(new GetSearchSuggestionsQuery(term), ct);
         return Ok(result);
     }
 
     [HttpGet("{id:int}")]
-    public async Task<IActionResult> GetById(int id)
+    public async Task<IActionResult> GetById(int id, CancellationToken ct)
     {
-        var result = await _mediator.Send(new GetProductByIdQuery(id));
+        var result = await _mediator.Send(new GetProductByIdQuery(id), ct);
         if (result == null)
             return NotFound(new { error = "상품을 찾을 수 없습니다." });
         return Ok(result);
@@ -73,14 +74,14 @@ public class ProductsController : ControllerBase
 
     [HttpPost]
     [Authorize(Roles = "TenantAdmin,Admin,PlatformAdmin")]
-    public async Task<IActionResult> Create([FromBody] CreateProductRequest request)
+    public async Task<IActionResult> Create([FromBody] CreateProductRequest request, CancellationToken ct)
     {
         var result = await _mediator.Send(new CreateProductCommand(
             request.Name, request.Slug, request.Description,
             request.Price, request.SalePrice, request.PriceType,
             request.Specification, request.CategoryId,
             request.IsFeatured, request.IsNew, request.CustomFieldsJson,
-            request.Images, request.Variants));
+            request.Images, request.Variants), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(new { productId = result.Data });
@@ -88,14 +89,14 @@ public class ProductsController : ControllerBase
 
     [HttpPut("{id:int}")]
     [Authorize(Roles = "TenantAdmin,Admin,PlatformAdmin")]
-    public async Task<IActionResult> Update(int id, [FromBody] UpdateProductRequest request)
+    public async Task<IActionResult> Update(int id, [FromBody] UpdateProductRequest request, CancellationToken ct)
     {
         var result = await _mediator.Send(new UpdateProductCommand(
             id, request.Name, request.Slug, request.Description,
             request.Price, request.SalePrice, request.PriceType,
             request.Specification, request.CategoryId,
             request.IsActive, request.IsFeatured, request.IsNew,
-            request.CustomFieldsJson));
+            request.CustomFieldsJson), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(new { success = true });
@@ -103,28 +104,28 @@ public class ProductsController : ControllerBase
 
     [HttpDelete("{id:int}")]
     [Authorize(Roles = "TenantAdmin,Admin,PlatformAdmin")]
-    public async Task<IActionResult> Delete(int id)
+    public async Task<IActionResult> Delete(int id, CancellationToken ct)
     {
-        var result = await _mediator.Send(new DeleteProductCommand(id));
+        var result = await _mediator.Send(new DeleteProductCommand(id), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(new { success = true });
     }
 
     [HttpGet("{id:int}/variants")]
-    public async Task<IActionResult> GetVariants(int id)
+    public async Task<IActionResult> GetVariants(int id, CancellationToken ct)
     {
-        var result = await _mediator.Send(new GetProductVariantsQuery(id));
+        var result = await _mediator.Send(new GetProductVariantsQuery(id), ct);
         return Ok(result);
     }
 
     [HttpPut("{id:int}/variants")]
     [Authorize(Roles = "TenantAdmin,Admin,PlatformAdmin")]
-    public async Task<IActionResult> UpdateVariants(int id, [FromBody] UpdateProductVariantsRequest request)
+    public async Task<IActionResult> UpdateVariants(int id, [FromBody] UpdateProductVariantsRequest request, CancellationToken ct)
     {
         var variants = request.Variants.Select(v =>
             new VariantDto(v.Id, v.Name, v.Sku, v.Price, v.Stock, v.SortOrder, v.IsActive)).ToList();
-        var result = await _mediator.Send(new UpdateProductVariantsCommand(id, variants));
+        var result = await _mediator.Send(new UpdateProductVariantsCommand(id, variants), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(new { success = true });
@@ -132,9 +133,9 @@ public class ProductsController : ControllerBase
 
     [HttpPost("{id:int}/generate-content")]
     [Authorize(Roles = "TenantAdmin,Admin,PlatformAdmin")]
-    public async Task<IActionResult> GenerateContent(int id)
+    public async Task<IActionResult> GenerateContent(int id, CancellationToken ct)
     {
-        var result = await _mediator.Send(new GenerateProductContentCommand(id));
+        var result = await _mediator.Send(new GenerateProductContentCommand(id), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(result.Data);
@@ -142,9 +143,9 @@ public class ProductsController : ControllerBase
 
     [HttpPost("{id:int}/generate-image")]
     [Authorize(Roles = "TenantAdmin,Admin,PlatformAdmin")]
-    public async Task<IActionResult> GenerateImage(int id, [FromBody] GenerateImageRequest request)
+    public async Task<IActionResult> GenerateImage(int id, [FromBody] GenerateImageRequest request, CancellationToken ct)
     {
-        var product = await _mediator.Send(new GetProductByIdQuery(id));
+        var product = await _mediator.Send(new GetProductByIdQuery(id), ct);
         if (product == null)
             return NotFound(new { error = "상품을 찾을 수 없습니다." });
 
@@ -162,9 +163,9 @@ public class ProductsController : ControllerBase
 
     [HttpGet("export")]
     [Authorize(Roles = "TenantAdmin,Admin,PlatformAdmin")]
-    public async Task<IActionResult> Export()
+    public async Task<IActionResult> Export(CancellationToken ct)
     {
-        var result = await _mediator.Send(new ExportProductsCommand());
+        var result = await _mediator.Send(new ExportProductsCommand(), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return File(result.Data!, "text/csv", $"products_{DateTime.UtcNow:yyyyMMdd}.csv");
@@ -172,7 +173,7 @@ public class ProductsController : ControllerBase
 
     [HttpPost("import")]
     [Authorize(Roles = "TenantAdmin,Admin,PlatformAdmin")]
-    public async Task<IActionResult> Import(IFormFile file)
+    public async Task<IActionResult> Import(IFormFile file, CancellationToken ct)
     {
         if (file == null || file.Length == 0)
             return BadRequest(new { error = "CSV file is required" });
@@ -180,7 +181,7 @@ public class ProductsController : ControllerBase
         using var reader = new StreamReader(file.OpenReadStream());
         var csvContent = await reader.ReadToEndAsync();
 
-        var result = await _mediator.Send(new ImportProductsCommand(csvContent));
+        var result = await _mediator.Send(new ImportProductsCommand(csvContent), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(result.Data);

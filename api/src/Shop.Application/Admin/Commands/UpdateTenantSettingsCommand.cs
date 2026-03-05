@@ -32,12 +32,12 @@ public class UpdateTenantSettingsCommandHandler : IRequestHandler<UpdateTenantSe
     {
         var tenantId = _tenantContext.TenantId;
         if (tenantId == 0)
-            return Result<bool>.Failure("테넌트 정보를 찾을 수 없습니다.");
+            return Result<bool>.Failure("Tenant information not found.");
 
         var tenant = await _db.Tenants
             .FirstOrDefaultAsync(t => t.Id == tenantId, cancellationToken);
         if (tenant is null)
-            return Result<bool>.Failure("테넌트를 찾을 수 없습니다.");
+            return Result<bool>.Failure("Tenant not found.");
 
         var config = new JsonObject();
         if (!string.IsNullOrEmpty(tenant.ConfigJson))

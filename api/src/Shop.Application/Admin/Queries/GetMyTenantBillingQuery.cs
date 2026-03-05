@@ -35,13 +35,13 @@ public class GetMyTenantBillingQueryHandler : IRequestHandler<GetMyTenantBilling
     {
         var tenantId = _tenantContext.TenantId;
         if (tenantId == 0)
-            return Result<MyTenantBillingDto>.Failure("테넌트 정보를 찾을 수 없습니다.");
+            return Result<MyTenantBillingDto>.Failure("Tenant information not found.");
 
         var tenant = await _db.Tenants
             .AsNoTracking()
             .FirstOrDefaultAsync(t => t.Id == tenantId, cancellationToken);
         if (tenant is null)
-            return Result<MyTenantBillingDto>.Failure("테넌트를 찾을 수 없습니다.");
+            return Result<MyTenantBillingDto>.Failure("Tenant not found.");
 
         var plan = await _db.TenantPlans
             .AsNoTracking()

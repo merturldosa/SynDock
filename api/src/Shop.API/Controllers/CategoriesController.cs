@@ -18,26 +18,26 @@ public class CategoriesController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll(CancellationToken ct)
     {
-        var result = await _mediator.Send(new GetCategoriesQuery());
+        var result = await _mediator.Send(new GetCategoriesQuery(), ct);
         return Ok(result);
     }
 
     [HttpGet("slugs")]
-    public async Task<IActionResult> GetSlugs()
+    public async Task<IActionResult> GetSlugs(CancellationToken ct)
     {
-        var result = await _mediator.Send(new GetCategorySlugsQuery());
+        var result = await _mediator.Send(new GetCategorySlugsQuery(), ct);
         return Ok(result);
     }
 
     [HttpPost]
     [Authorize(Roles = "TenantAdmin,Admin,PlatformAdmin")]
-    public async Task<IActionResult> Create([FromBody] CreateCategoryRequest request)
+    public async Task<IActionResult> Create([FromBody] CreateCategoryRequest request, CancellationToken ct)
     {
         var result = await _mediator.Send(new CreateCategoryCommand(
             request.Name, request.Slug, request.Description,
-            request.Icon, request.ParentId, request.SortOrder));
+            request.Icon, request.ParentId, request.SortOrder), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(new { categoryId = result.Data });
@@ -45,11 +45,11 @@ public class CategoriesController : ControllerBase
 
     [HttpPut("{id:int}")]
     [Authorize(Roles = "TenantAdmin,Admin,PlatformAdmin")]
-    public async Task<IActionResult> Update(int id, [FromBody] UpdateCategoryRequest request)
+    public async Task<IActionResult> Update(int id, [FromBody] UpdateCategoryRequest request, CancellationToken ct)
     {
         var result = await _mediator.Send(new UpdateCategoryCommand(
             id, request.Name, request.Slug, request.Description,
-            request.Icon, request.ParentId, request.SortOrder, request.IsActive));
+            request.Icon, request.ParentId, request.SortOrder, request.IsActive), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(new { success = true });
@@ -57,9 +57,9 @@ public class CategoriesController : ControllerBase
 
     [HttpDelete("{id:int}")]
     [Authorize(Roles = "TenantAdmin,Admin,PlatformAdmin")]
-    public async Task<IActionResult> Delete(int id)
+    public async Task<IActionResult> Delete(int id, CancellationToken ct)
     {
-        var result = await _mediator.Send(new DeleteCategoryCommand(id));
+        var result = await _mediator.Send(new DeleteCategoryCommand(id), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(new { success = true });

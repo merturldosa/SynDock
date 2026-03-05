@@ -24,7 +24,7 @@ public class DeleteCategoryCommandHandler : IRequestHandler<DeleteCategoryComman
     public async Task<Result<bool>> Handle(DeleteCategoryCommand request, CancellationToken cancellationToken)
     {
         if (_currentUser.UserId is null)
-            return Result<bool>.Failure("로그인이 필요합니다.");
+            return Result<bool>.Failure("Authentication required.");
 
         var category = await _db.Categories
             .Include(c => c.Children)
@@ -32,13 +32,13 @@ public class DeleteCategoryCommandHandler : IRequestHandler<DeleteCategoryComman
             .FirstOrDefaultAsync(c => c.Id == request.CategoryId, cancellationToken);
 
         if (category is null)
-            return Result<bool>.Failure("카테고리를 찾을 수 없습니다.");
+            return Result<bool>.Failure("Category not found.");
 
         if (category.Children.Any(c => c.IsActive))
-            return Result<bool>.Failure("하위 카테고리가 있어 삭제할 수 없습니다.");
+            return Result<bool>.Failure("Cannot delete: category has active subcategories.");
 
         if (category.Products.Any(p => p.IsActive))
-            return Result<bool>.Failure("카테고리에 활성 상품이 있어 삭제할 수 없습니다.");
+            return Result<bool>.Failure("Cannot delete: category has active products.");
 
         // Soft delete
         category.IsActive = false;

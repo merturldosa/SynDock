@@ -22,16 +22,17 @@ public class PostController : ControllerBase
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
         [FromQuery] string? postType = null,
-        [FromQuery] int? userId = null)
+        [FromQuery] int? userId = null,
+        CancellationToken ct = default)
     {
-        var result = await _mediator.Send(new GetFeedQuery(page, pageSize, postType, userId));
+        var result = await _mediator.Send(new GetFeedQuery(page, pageSize, postType, userId), ct);
         return Ok(result);
     }
 
     [HttpGet("{id:int}")]
-    public async Task<IActionResult> GetById(int id)
+    public async Task<IActionResult> GetById(int id, CancellationToken ct)
     {
-        var result = await _mediator.Send(new GetPostByIdQuery(id));
+        var result = await _mediator.Send(new GetPostByIdQuery(id), ct);
         if (!result.IsSuccess)
             return NotFound(new { error = result.Error });
         return Ok(result.Data);
@@ -39,11 +40,11 @@ public class PostController : ControllerBase
 
     [HttpPost]
     [Authorize]
-    public async Task<IActionResult> Create([FromBody] CreatePostRequest request)
+    public async Task<IActionResult> Create([FromBody] CreatePostRequest request, CancellationToken ct)
     {
         var result = await _mediator.Send(new CreatePostCommand(
             request.Title, request.Content, request.PostType,
-            request.ProductId, request.ImageUrls, request.Hashtags));
+            request.ProductId, request.ImageUrls, request.Hashtags), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(new { postId = result.Data });
@@ -51,9 +52,9 @@ public class PostController : ControllerBase
 
     [HttpDelete("{id:int}")]
     [Authorize]
-    public async Task<IActionResult> Delete(int id)
+    public async Task<IActionResult> Delete(int id, CancellationToken ct)
     {
-        var result = await _mediator.Send(new DeletePostCommand(id));
+        var result = await _mediator.Send(new DeletePostCommand(id), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(new { success = true });
@@ -61,9 +62,9 @@ public class PostController : ControllerBase
 
     [HttpPost("{id:int}/comment")]
     [Authorize]
-    public async Task<IActionResult> AddComment(int id, [FromBody] AddCommentRequest request)
+    public async Task<IActionResult> AddComment(int id, [FromBody] AddCommentRequest request, CancellationToken ct)
     {
-        var result = await _mediator.Send(new AddCommentCommand(id, request.Content, request.ParentId));
+        var result = await _mediator.Send(new AddCommentCommand(id, request.Content, request.ParentId), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(new { commentId = result.Data });
@@ -71,9 +72,9 @@ public class PostController : ControllerBase
 
     [HttpPost("{id:int}/reaction")]
     [Authorize]
-    public async Task<IActionResult> ToggleReaction(int id, [FromBody] ToggleReactionRequest request)
+    public async Task<IActionResult> ToggleReaction(int id, [FromBody] ToggleReactionRequest request, CancellationToken ct)
     {
-        var result = await _mediator.Send(new ToggleReactionCommand(id, request.ReactionType));
+        var result = await _mediator.Send(new ToggleReactionCommand(id, request.ReactionType), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(new { isReacted = result.Data });

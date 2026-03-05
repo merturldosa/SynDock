@@ -19,43 +19,43 @@ public class CartController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetCart()
+    public async Task<IActionResult> GetCart(CancellationToken ct)
     {
-        var result = await _mediator.Send(new GetCartQuery());
+        var result = await _mediator.Send(new GetCartQuery(), ct);
         return Ok(result);
     }
 
     [HttpPost("items")]
-    public async Task<IActionResult> AddToCart([FromBody] AddToCartRequest request)
+    public async Task<IActionResult> AddToCart([FromBody] AddToCartRequest request, CancellationToken ct)
     {
-        var result = await _mediator.Send(new AddToCartCommand(request.ProductId, request.VariantId, request.Quantity));
+        var result = await _mediator.Send(new AddToCartCommand(request.ProductId, request.VariantId, request.Quantity), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(new { cartId = result.Data });
     }
 
     [HttpPut("items/{id:int}")]
-    public async Task<IActionResult> UpdateCartItem(int id, [FromBody] UpdateCartItemRequest request)
+    public async Task<IActionResult> UpdateCartItem(int id, [FromBody] UpdateCartItemRequest request, CancellationToken ct)
     {
-        var result = await _mediator.Send(new UpdateCartItemCommand(id, request.Quantity));
+        var result = await _mediator.Send(new UpdateCartItemCommand(id, request.Quantity), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(new { success = true });
     }
 
     [HttpDelete("items/{id:int}")]
-    public async Task<IActionResult> RemoveCartItem(int id)
+    public async Task<IActionResult> RemoveCartItem(int id, CancellationToken ct)
     {
-        var result = await _mediator.Send(new RemoveCartItemCommand(id));
+        var result = await _mediator.Send(new RemoveCartItemCommand(id), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(new { success = true });
     }
 
     [HttpDelete]
-    public async Task<IActionResult> ClearCart()
+    public async Task<IActionResult> ClearCart(CancellationToken ct)
     {
-        var result = await _mediator.Send(new ClearCartCommand());
+        var result = await _mediator.Send(new ClearCartCommand(), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(new { success = true });

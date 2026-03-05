@@ -15,7 +15,7 @@ public class CurrencyController : ControllerBase
     }
 
     [HttpGet("rates")]
-    public async Task<IActionResult> GetRates([FromQuery] string baseCurrency = "KRW")
+    public async Task<IActionResult> GetRates([FromQuery] string baseCurrency = "KRW", CancellationToken ct = default)
     {
         var rates = await _currencyService.GetRatesAsync(baseCurrency);
         return Ok(new
@@ -31,7 +31,8 @@ public class CurrencyController : ControllerBase
     public async Task<IActionResult> Convert(
         [FromQuery] decimal amount,
         [FromQuery] string from = "KRW",
-        [FromQuery] string to = "USD")
+        [FromQuery] string to = "USD",
+        CancellationToken ct = default)
     {
         var converted = await _currencyService.ConvertAsync(amount, from, to);
         return Ok(new

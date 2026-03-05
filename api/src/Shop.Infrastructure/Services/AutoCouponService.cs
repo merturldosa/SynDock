@@ -19,7 +19,7 @@ public class AutoCouponService : IAutoCouponService
         _logger = logger;
     }
 
-    private static AutoCouponConfig? GetAutoCouponConfig(string? configJson)
+    private AutoCouponConfig? GetAutoCouponConfig(string? configJson)
     {
         if (string.IsNullOrEmpty(configJson)) return null;
         try
@@ -27,7 +27,11 @@ public class AutoCouponService : IAutoCouponService
             var tc = JsonSerializer.Deserialize<TenantConfig>(configJson, JsonOptions);
             return tc?.AutoCoupon;
         }
-        catch { return null; }
+        catch (Exception ex)
+        {
+            _logger.LogDebug(ex, "Failed to parse auto coupon config from tenant ConfigJson");
+            return null;
+        }
     }
 
     public async Task IssueWelcomeCouponAsync(int tenantId, int userId, CancellationToken ct = default)

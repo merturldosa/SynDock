@@ -19,18 +19,18 @@ public class PointsController : ControllerBase
     }
 
     [HttpGet("balance")]
-    public async Task<IActionResult> GetBalance()
+    public async Task<IActionResult> GetBalance(CancellationToken ct)
     {
-        var result = await _mediator.Send(new GetPointBalanceQuery());
+        var result = await _mediator.Send(new GetPointBalanceQuery(), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(result.Data);
     }
 
     [HttpGet("history")]
-    public async Task<IActionResult> GetHistory([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
+    public async Task<IActionResult> GetHistory([FromQuery] int page = 1, [FromQuery] int pageSize = 20, CancellationToken ct = default)
     {
-        var result = await _mediator.Send(new GetPointHistoryQuery(page, pageSize));
+        var result = await _mediator.Send(new GetPointHistoryQuery(page, pageSize), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(result.Data);
@@ -40,9 +40,9 @@ public class PointsController : ControllerBase
 
     [Authorize(Roles = "TenantAdmin,Admin,PlatformAdmin")]
     [HttpPost("earn")]
-    public async Task<IActionResult> EarnPoints([FromBody] EarnPointsRequest request)
+    public async Task<IActionResult> EarnPoints([FromBody] EarnPointsRequest request, CancellationToken ct)
     {
-        var result = await _mediator.Send(new EarnPointsCommand(request.UserId, request.Amount, request.Description, request.OrderId));
+        var result = await _mediator.Send(new EarnPointsCommand(request.UserId, request.Amount, request.Description, request.OrderId), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(new { success = true });
@@ -50,9 +50,9 @@ public class PointsController : ControllerBase
 
     [Authorize(Roles = "TenantAdmin,Admin,PlatformAdmin")]
     [HttpPost("use")]
-    public async Task<IActionResult> UsePoints([FromBody] UsePointsRequest request)
+    public async Task<IActionResult> UsePoints([FromBody] UsePointsRequest request, CancellationToken ct)
     {
-        var result = await _mediator.Send(new UsePointsCommand(request.UserId, request.Amount, request.OrderId));
+        var result = await _mediator.Send(new UsePointsCommand(request.UserId, request.Amount, request.OrderId), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(new { success = true });
@@ -60,9 +60,9 @@ public class PointsController : ControllerBase
 
     [Authorize(Roles = "TenantAdmin,Admin,PlatformAdmin")]
     [HttpPost("refund")]
-    public async Task<IActionResult> RefundPoints([FromBody] RefundPointsRequest request)
+    public async Task<IActionResult> RefundPoints([FromBody] RefundPointsRequest request, CancellationToken ct)
     {
-        var result = await _mediator.Send(new RefundPointsCommand(request.UserId, request.Amount, request.OrderId));
+        var result = await _mediator.Send(new RefundPointsCommand(request.UserId, request.Amount, request.OrderId), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(new { success = true });

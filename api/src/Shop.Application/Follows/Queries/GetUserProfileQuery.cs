@@ -27,7 +27,7 @@ public class GetUserProfileQueryHandler : IRequestHandler<GetUserProfileQuery, R
             .FirstOrDefaultAsync(u => u.Id == request.UserId && u.IsActive, cancellationToken);
 
         if (user == null)
-            return Result<SocialProfileDto>.Failure("사용자를 찾을 수 없습니다.");
+            return Result<SocialProfileDto>.Failure("User not found.");
 
         var postCount = await _db.Posts.CountAsync(p => p.UserId == request.UserId && p.IsVisible, cancellationToken);
         var followerCount = await _db.Follows.CountAsync(f => f.FollowingId == request.UserId, cancellationToken);

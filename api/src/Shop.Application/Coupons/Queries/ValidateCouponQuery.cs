@@ -24,7 +24,7 @@ public class ValidateCouponQueryHandler : IRequestHandler<ValidateCouponQuery, R
     public async Task<Result<CouponValidationResult>> Handle(ValidateCouponQuery request, CancellationToken cancellationToken)
     {
         if (_currentUser.UserId is null)
-            return Result<CouponValidationResult>.Failure("로그인이 필요합니다.");
+            return Result<CouponValidationResult>.Failure("Authentication required.");
 
         var userId = _currentUser.UserId.Value;
         var now = DateTime.UtcNow;

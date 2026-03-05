@@ -23,13 +23,13 @@ public class UpdateProfileCommandHandler : IRequestHandler<UpdateProfileCommand,
     public async Task<Result<UserProfileDto>> Handle(UpdateProfileCommand request, CancellationToken cancellationToken)
     {
         if (_currentUser.UserId is null)
-            return Result<UserProfileDto>.Failure("로그인이 필요합니다.");
+            return Result<UserProfileDto>.Failure("Authentication required.");
 
         var user = await _db.Users
             .FirstOrDefaultAsync(u => u.Id == _currentUser.UserId.Value, cancellationToken);
 
         if (user is null)
-            return Result<UserProfileDto>.Failure("사용자를 찾을 수 없습니다.");
+            return Result<UserProfileDto>.Failure("User not found.");
 
         if (!string.IsNullOrWhiteSpace(request.Name))
             user.Name = request.Name;

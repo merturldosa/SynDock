@@ -25,7 +25,7 @@ public class DeleteCouponCommandHandler : IRequestHandler<DeleteCouponCommand, R
             .FirstOrDefaultAsync(c => c.Id == request.Id, cancellationToken);
 
         if (coupon is null)
-            return Result<bool>.Failure("쿠폰을 찾을 수 없습니다.");
+            return Result<bool>.Failure("Coupon not found.");
 
         _db.Coupons.Remove(coupon);
         await _unitOfWork.SaveChangesAsync(cancellationToken);

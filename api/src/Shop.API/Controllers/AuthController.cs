@@ -26,9 +26,9 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("register")]
-    public async Task<IActionResult> Register([FromBody] RegisterCommand command)
+    public async Task<IActionResult> Register([FromBody] RegisterCommand command, CancellationToken ct)
     {
-        var result = await _mediator.Send(command);
+        var result = await _mediator.Send(command, ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
 
@@ -36,9 +36,9 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] LoginCommand command)
+    public async Task<IActionResult> Login([FromBody] LoginCommand command, CancellationToken ct)
     {
-        var result = await _mediator.Send(command);
+        var result = await _mediator.Send(command, ct);
         if (!result.IsSuccess)
             return Unauthorized(new { error = result.Error });
 
@@ -46,9 +46,9 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("refresh")]
-    public async Task<IActionResult> Refresh([FromBody] RefreshTokenCommand command)
+    public async Task<IActionResult> Refresh([FromBody] RefreshTokenCommand command, CancellationToken ct)
     {
-        var result = await _mediator.Send(command);
+        var result = await _mediator.Send(command, ct);
         if (!result.IsSuccess)
             return Unauthorized(new { error = result.Error });
 
@@ -57,12 +57,12 @@ public class AuthController : ControllerBase
 
     [Authorize]
     [HttpGet("me")]
-    public async Task<IActionResult> GetMe()
+    public async Task<IActionResult> GetMe(CancellationToken ct)
     {
         if (_currentUser.UserId == null)
             return Unauthorized();
 
-        var result = await _mediator.Send(new GetMeQuery(_currentUser.UserId.Value));
+        var result = await _mediator.Send(new GetMeQuery(_currentUser.UserId.Value), ct);
         if (!result.IsSuccess)
             return NotFound(new { error = result.Error });
 
@@ -71,12 +71,12 @@ public class AuthController : ControllerBase
 
     [Authorize]
     [HttpPut("baptismal-name")]
-    public async Task<IActionResult> UpdateBaptismalName([FromBody] UpdateBaptismalNameRequest request)
+    public async Task<IActionResult> UpdateBaptismalName([FromBody] UpdateBaptismalNameRequest request, CancellationToken ct)
     {
         if (_currentUser.UserId == null)
             return Unauthorized();
 
-        var result = await _mediator.Send(new UpdateBaptismalNameCommand(_currentUser.UserId.Value, request.BaptismalName));
+        var result = await _mediator.Send(new UpdateBaptismalNameCommand(_currentUser.UserId.Value, request.BaptismalName), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
 
@@ -84,9 +84,9 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("oauth/{provider}")]
-    public async Task<IActionResult> OAuthLogin(string provider, [FromBody] OAuthLoginRequest request)
+    public async Task<IActionResult> OAuthLogin(string provider, [FromBody] OAuthLoginRequest request, CancellationToken ct)
     {
-        var result = await _mediator.Send(new OAuthLoginCommand(provider, request.Code, request.RedirectUri));
+        var result = await _mediator.Send(new OAuthLoginCommand(provider, request.Code, request.RedirectUri), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
 
@@ -96,9 +96,9 @@ public class AuthController : ControllerBase
     // ── Password Reset ──
 
     [HttpPost("forgot-password")]
-    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request)
+    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request, CancellationToken ct)
     {
-        var result = await _mediator.Send(new ForgotPasswordCommand(request.Email));
+        var result = await _mediator.Send(new ForgotPasswordCommand(request.Email), ct);
         if (!result.IsSuccess)
             _logger.LogWarning("ForgotPassword failed for {Email}: {Error}", request.Email, result.Error);
         // Always return 200 to prevent email enumeration
@@ -106,9 +106,9 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("reset-password")]
-    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request, CancellationToken ct)
     {
-        var result = await _mediator.Send(new ResetPasswordCommand(request.Email, request.Token, request.NewPassword));
+        var result = await _mediator.Send(new ResetPasswordCommand(request.Email, request.Token, request.NewPassword), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
 
@@ -119,9 +119,9 @@ public class AuthController : ControllerBase
 
     [Authorize]
     [HttpPost("send-verification")]
-    public async Task<IActionResult> SendVerificationEmail()
+    public async Task<IActionResult> SendVerificationEmail(CancellationToken ct)
     {
-        var result = await _mediator.Send(new SendVerificationEmailCommand());
+        var result = await _mediator.Send(new SendVerificationEmailCommand(), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
 
@@ -129,9 +129,9 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("verify-email")]
-    public async Task<IActionResult> VerifyEmail([FromBody] VerifyEmailRequest request)
+    public async Task<IActionResult> VerifyEmail([FromBody] VerifyEmailRequest request, CancellationToken ct)
     {
-        var result = await _mediator.Send(new VerifyEmailCommand(request.Email, request.Token));
+        var result = await _mediator.Send(new VerifyEmailCommand(request.Email, request.Token), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
 
@@ -142,9 +142,9 @@ public class AuthController : ControllerBase
 
     [Authorize]
     [HttpPut("profile")]
-    public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileRequest request)
+    public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileRequest request, CancellationToken ct)
     {
-        var result = await _mediator.Send(new UpdateProfileCommand(request.Name, request.Phone));
+        var result = await _mediator.Send(new UpdateProfileCommand(request.Name, request.Phone), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
 
@@ -153,9 +153,9 @@ public class AuthController : ControllerBase
 
     [Authorize]
     [HttpPost("change-password")]
-    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
+    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request, CancellationToken ct)
     {
-        var result = await _mediator.Send(new ChangePasswordCommand(request.CurrentPassword, request.NewPassword));
+        var result = await _mediator.Send(new ChangePasswordCommand(request.CurrentPassword, request.NewPassword), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
 
@@ -166,12 +166,12 @@ public class AuthController : ControllerBase
 
     [Authorize(Roles = "TenantAdmin,Admin,PlatformAdmin")]
     [HttpPost("2fa/enable")]
-    public async Task<IActionResult> EnableTwoFactor()
+    public async Task<IActionResult> EnableTwoFactor(CancellationToken ct)
     {
         if (_currentUser.UserId == null)
             return Unauthorized();
 
-        var result = await _mediator.Send(new EnableTwoFactorCommand(_currentUser.UserId.Value));
+        var result = await _mediator.Send(new EnableTwoFactorCommand(_currentUser.UserId.Value), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
 
@@ -180,12 +180,12 @@ public class AuthController : ControllerBase
 
     [Authorize(Roles = "TenantAdmin,Admin,PlatformAdmin")]
     [HttpPost("2fa/verify-setup")]
-    public async Task<IActionResult> VerifyTwoFactorSetup([FromBody] VerifyTwoFactorSetupRequest request)
+    public async Task<IActionResult> VerifyTwoFactorSetup([FromBody] VerifyTwoFactorSetupRequest request, CancellationToken ct)
     {
         if (_currentUser.UserId == null)
             return Unauthorized();
 
-        var result = await _mediator.Send(new VerifyTwoFactorSetupCommand(_currentUser.UserId.Value, request.Code));
+        var result = await _mediator.Send(new VerifyTwoFactorSetupCommand(_currentUser.UserId.Value, request.Code), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
 
@@ -194,12 +194,12 @@ public class AuthController : ControllerBase
 
     [Authorize(Roles = "TenantAdmin,Admin,PlatformAdmin")]
     [HttpPost("2fa/disable")]
-    public async Task<IActionResult> DisableTwoFactor([FromBody] DisableTwoFactorRequest request)
+    public async Task<IActionResult> DisableTwoFactor([FromBody] DisableTwoFactorRequest request, CancellationToken ct)
     {
         if (_currentUser.UserId == null)
             return Unauthorized();
 
-        var result = await _mediator.Send(new DisableTwoFactorCommand(_currentUser.UserId.Value, request.Code));
+        var result = await _mediator.Send(new DisableTwoFactorCommand(_currentUser.UserId.Value, request.Code), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
 
@@ -207,9 +207,9 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("2fa/verify")]
-    public async Task<IActionResult> VerifyTwoFactorLogin([FromBody] VerifyTwoFactorLoginRequest request)
+    public async Task<IActionResult> VerifyTwoFactorLogin([FromBody] VerifyTwoFactorLoginRequest request, CancellationToken ct)
     {
-        var result = await _mediator.Send(new VerifyTwoFactorLoginCommand(request.TwoFactorToken, request.Code));
+        var result = await _mediator.Send(new VerifyTwoFactorLoginCommand(request.TwoFactorToken, request.Code), ct);
         if (!result.IsSuccess)
             return Unauthorized(new { error = result.Error });
 

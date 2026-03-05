@@ -7,6 +7,7 @@ import {
   type SettlementDto, type CommissionDto, type CommissionSettingDto,
 } from "@/lib/adminApi";
 import { DollarSign, Clock, CheckCircle, FileText, Settings2, Receipt } from "lucide-react";
+import toast from "react-hot-toast";
 import { formatPrice, formatDateShort } from "@/lib/format";
 
 function StatusBadge({ status }: { status: string }) {
@@ -30,6 +31,7 @@ type TabType = "settlements" | "commissions" | "settings";
 
 export default function AdminSettlementsPage() {
   const t = useTranslations("admin.settlements");
+  const tc = useTranslations("common");
   const [activeTab, setActiveTab] = useState<TabType>("settlements");
   const [settlements, setSettlements] = useState<SettlementDto[]>([]);
   const [commissions, setCommissions] = useState<CommissionDto[]>([]);
@@ -46,13 +48,13 @@ export default function AdminSettlementsPage() {
       setLoading(true);
       getMySettlements(statusFilter || undefined)
         .then(setSettlements)
-        .catch(() => setSettlements([]))
+        .catch(() => { toast.error(tc("fetchError")); setSettlements([]); })
         .finally(() => setLoading(false));
     } else if (activeTab === "commissions") {
       setLoading(true);
       getMyCommissions(statusFilter || undefined)
         .then(setCommissions)
-        .catch(() => setCommissions([]))
+        .catch(() => { toast.error(tc("fetchError")); setCommissions([]); })
         .finally(() => setLoading(false));
     }
   }, [activeTab, statusFilter]);
@@ -68,7 +70,7 @@ export default function AdminSettlementsPage() {
       setCommissions(commData);
       setSettings(settingsData);
     } catch {
-      // fallback
+      toast.error(tc("fetchError"));
     }
     setLoading(false);
   };

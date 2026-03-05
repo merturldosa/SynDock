@@ -24,13 +24,13 @@ public class GenerateInvoiceCommandHandler : IRequestHandler<GenerateInvoiceComm
             .AnyAsync(i => i.TenantId == request.TenantId && i.BillingPeriod == request.BillingPeriod, cancellationToken);
 
         if (exists)
-            return Result<int>.Failure($"이미 {request.BillingPeriod} 기간의 인보이스가 존재합니다.");
+            return Result<int>.Failure($"Invoice already exists for period {request.BillingPeriod}.");
 
         var plan = await _db.TenantPlans.AsNoTracking()
             .FirstOrDefaultAsync(p => p.TenantId == request.TenantId, cancellationToken);
 
         if (plan is null || plan.MonthlyPrice <= 0)
-            return Result<int>.Failure("유료 플랜이 설정되지 않았습니다.");
+            return Result<int>.Failure("No paid plan configured.");
 
         var invoiceNumber = $"INV-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..8].ToUpper()}";
 
@@ -70,10 +70,10 @@ public class MarkInvoicePaidCommandHandler : IRequestHandler<MarkInvoicePaidComm
             .FirstOrDefaultAsync(i => i.Id == request.InvoiceId, cancellationToken);
 
         if (invoice is null)
-            return Result<bool>.Failure("인보이스를 찾을 수 없습니다.");
+            return Result<bool>.Failure("Invoice not found.");
 
         if (invoice.Status == "Paid")
-            return Result<bool>.Failure("이미 결제된 인보이스입니다.");
+            return Result<bool>.Failure("Invoice has already been paid.");
 
         invoice.Status = "Paid";
         invoice.PaidAt = DateTime.UtcNow;

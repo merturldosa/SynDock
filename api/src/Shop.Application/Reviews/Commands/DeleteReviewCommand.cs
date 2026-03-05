@@ -24,13 +24,13 @@ public class DeleteReviewCommandHandler : IRequestHandler<DeleteReviewCommand, R
     public async Task<Result<bool>> Handle(DeleteReviewCommand request, CancellationToken cancellationToken)
     {
         if (_currentUser.UserId is null)
-            return Result<bool>.Failure("로그인이 필요합니다.");
+            return Result<bool>.Failure("Authentication required.");
 
         var review = await _db.Reviews
             .FirstOrDefaultAsync(r => r.Id == request.ReviewId && r.UserId == _currentUser.UserId.Value, cancellationToken);
 
         if (review is null)
-            return Result<bool>.Failure("리뷰를 찾을 수 없습니다.");
+            return Result<bool>.Failure("Review not found.");
 
         _db.Reviews.Remove(review);
         await _unitOfWork.SaveChangesAsync(cancellationToken);

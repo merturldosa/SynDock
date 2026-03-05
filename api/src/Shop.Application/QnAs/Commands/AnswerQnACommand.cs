@@ -28,16 +28,16 @@ public class AnswerQnACommandHandler : IRequestHandler<AnswerQnACommand, Result<
     public async Task<Result<int>> Handle(AnswerQnACommand request, CancellationToken cancellationToken)
     {
         if (_currentUser.UserId is null)
-            return Result<int>.Failure("로그인이 필요합니다.");
+            return Result<int>.Failure("Authentication required.");
 
         var qna = await _db.QnAs
             .FirstOrDefaultAsync(q => q.Id == request.QnAId, cancellationToken);
 
         if (qna is null)
-            return Result<int>.Failure("질문을 찾을 수 없습니다.");
+            return Result<int>.Failure("Question not found.");
 
         if (qna.IsAnswered)
-            return Result<int>.Failure("이미 답변이 등록되어 있습니다.");
+            return Result<int>.Failure("This question has already been answered.");
 
         var reply = new QnAReply
         {

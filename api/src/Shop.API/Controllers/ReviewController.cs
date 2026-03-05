@@ -18,34 +18,34 @@ public class ReviewController : ControllerBase
     }
 
     [HttpGet("product/{productId:int}")]
-    public async Task<IActionResult> GetByProduct(int productId, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+    public async Task<IActionResult> GetByProduct(int productId, [FromQuery] int page = 1, [FromQuery] int pageSize = 10, CancellationToken ct = default)
     {
-        var result = await _mediator.Send(new GetProductReviewsQuery(productId, page, pageSize));
+        var result = await _mediator.Send(new GetProductReviewsQuery(productId, page, pageSize), ct);
         return Ok(result);
     }
 
     [HttpGet("my")]
     [Authorize]
-    public async Task<IActionResult> GetMyReviews([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+    public async Task<IActionResult> GetMyReviews([FromQuery] int page = 1, [FromQuery] int pageSize = 10, CancellationToken ct = default)
     {
-        var result = await _mediator.Send(new GetMyReviewsQuery(page, pageSize));
+        var result = await _mediator.Send(new GetMyReviewsQuery(page, pageSize), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(result.Data);
     }
 
     [HttpGet("photos")]
-    public async Task<IActionResult> GetPhotoReviews([FromQuery] int? productId, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+    public async Task<IActionResult> GetPhotoReviews([FromQuery] int? productId, [FromQuery] int page = 1, [FromQuery] int pageSize = 10, CancellationToken ct = default)
     {
-        var result = await _mediator.Send(new GetPhotoReviewsQuery(productId, page, pageSize));
+        var result = await _mediator.Send(new GetPhotoReviewsQuery(productId, page, pageSize), ct);
         return Ok(result);
     }
 
     [HttpPost]
     [Authorize]
-    public async Task<IActionResult> Create([FromBody] CreateReviewRequest request)
+    public async Task<IActionResult> Create([FromBody] CreateReviewRequest request, CancellationToken ct)
     {
-        var result = await _mediator.Send(new CreateReviewCommand(request.ProductId, request.Rating, request.Content, request.ImageUrl));
+        var result = await _mediator.Send(new CreateReviewCommand(request.ProductId, request.Rating, request.Content, request.ImageUrl), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(new { reviewId = result.Data });
@@ -53,9 +53,9 @@ public class ReviewController : ControllerBase
 
     [HttpDelete("{id:int}")]
     [Authorize]
-    public async Task<IActionResult> Delete(int id)
+    public async Task<IActionResult> Delete(int id, CancellationToken ct)
     {
-        var result = await _mediator.Send(new DeleteReviewCommand(id));
+        var result = await _mediator.Send(new DeleteReviewCommand(id), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(new { success = true });

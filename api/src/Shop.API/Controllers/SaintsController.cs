@@ -18,34 +18,34 @@ public class SaintsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetSaints([FromQuery] string? search, [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
+    public async Task<IActionResult> GetSaints([FromQuery] string? search, [FromQuery] int page = 1, [FromQuery] int pageSize = 20, CancellationToken ct = default)
     {
-        var result = await _mediator.Send(new GetSaintsQuery(search, page, pageSize));
+        var result = await _mediator.Send(new GetSaintsQuery(search, page, pageSize), ct);
         return Ok(result);
     }
 
     [HttpGet("{id:int}")]
-    public async Task<IActionResult> GetSaint(int id)
+    public async Task<IActionResult> GetSaint(int id, CancellationToken ct)
     {
-        var result = await _mediator.Send(new GetSaintByIdQuery(id));
+        var result = await _mediator.Send(new GetSaintByIdQuery(id), ct);
         if (!result.IsSuccess)
             return NotFound(new { error = result.Error });
         return Ok(result.Data);
     }
 
     [HttpGet("today")]
-    public async Task<IActionResult> GetTodaySaints()
+    public async Task<IActionResult> GetTodaySaints(CancellationToken ct)
     {
         var now = DateTime.UtcNow;
-        var result = await _mediator.Send(new GetSaintsByFeastDayQuery(now.Month, now.Day));
+        var result = await _mediator.Send(new GetSaintsByFeastDayQuery(now.Month, now.Day), ct);
         return Ok(result);
     }
 
     [Authorize]
     [HttpPost("seed")]
-    public async Task<IActionResult> SeedSaints()
+    public async Task<IActionResult> SeedSaints(CancellationToken ct)
     {
-        var result = await _mediator.Send(new SeedSaintsCommand());
+        var result = await _mediator.Send(new SeedSaintsCommand(), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(new { count = result.Data });

@@ -55,7 +55,7 @@ public class SeedTenantDataCommandHandler : IRequestHandler<SeedTenantDataComman
             .FirstOrDefaultAsync(t => t.Id == request.TenantId, cancellationToken);
 
         if (tenant is null)
-            return Result<SeedTenantResultDto>.Failure("테넌트를 찾을 수 없습니다.");
+            return Result<SeedTenantResultDto>.Failure("Tenant not found.");
 
         var categoriesCreated = 0;
         var productsCreated = 0;

@@ -26,7 +26,7 @@ public class CreateCollectionCommandHandler : IRequestHandler<CreateCollectionCo
     public async Task<Result<int>> Handle(CreateCollectionCommand request, CancellationToken cancellationToken)
     {
         if (_currentUser.UserId is null)
-            return Result<int>.Failure("로그인이 필요합니다.");
+            return Result<int>.Failure("Authentication required.");
 
         var collection = new Collection
         {
@@ -63,19 +63,19 @@ public class AddToCollectionCommandHandler : IRequestHandler<AddToCollectionComm
     public async Task<Result<bool>> Handle(AddToCollectionCommand request, CancellationToken cancellationToken)
     {
         if (_currentUser.UserId is null)
-            return Result<bool>.Failure("로그인이 필요합니다.");
+            return Result<bool>.Failure("Authentication required.");
 
         var collection = await _db.Collections
             .FirstOrDefaultAsync(c => c.Id == request.CollectionId && c.UserId == _currentUser.UserId.Value, cancellationToken);
 
         if (collection is null)
-            return Result<bool>.Failure("컬렉션을 찾을 수 없습니다.");
+            return Result<bool>.Failure("Collection not found.");
 
         var exists = await _db.CollectionItems
             .AnyAsync(ci => ci.CollectionId == request.CollectionId && ci.ProductId == request.ProductId, cancellationToken);
 
         if (exists)
-            return Result<bool>.Failure("이미 컬렉션에 추가된 상품입니다.");
+            return Result<bool>.Failure("Product is already in the collection.");
 
         var item = new CollectionItem
         {
@@ -112,7 +112,7 @@ public class RemoveFromCollectionCommandHandler : IRequestHandler<RemoveFromColl
     public async Task<Result<bool>> Handle(RemoveFromCollectionCommand request, CancellationToken cancellationToken)
     {
         if (_currentUser.UserId is null)
-            return Result<bool>.Failure("로그인이 필요합니다.");
+            return Result<bool>.Failure("Authentication required.");
 
         var item = await _db.CollectionItems
             .Include(ci => ci.Collection)
@@ -121,7 +121,7 @@ public class RemoveFromCollectionCommandHandler : IRequestHandler<RemoveFromColl
                 && ci.Collection.UserId == _currentUser.UserId.Value, cancellationToken);
 
         if (item is null)
-            return Result<bool>.Failure("아이템을 찾을 수 없습니다.");
+            return Result<bool>.Failure("Item not found.");
 
         _db.CollectionItems.Remove(item);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -149,13 +149,13 @@ public class DeleteCollectionCommandHandler : IRequestHandler<DeleteCollectionCo
     public async Task<Result<bool>> Handle(DeleteCollectionCommand request, CancellationToken cancellationToken)
     {
         if (_currentUser.UserId is null)
-            return Result<bool>.Failure("로그인이 필요합니다.");
+            return Result<bool>.Failure("Authentication required.");
 
         var collection = await _db.Collections
             .FirstOrDefaultAsync(c => c.Id == request.CollectionId && c.UserId == _currentUser.UserId.Value, cancellationToken);
 
         if (collection is null)
-            return Result<bool>.Failure("컬렉션을 찾을 수 없습니다.");
+            return Result<bool>.Failure("Collection not found.");
 
         _db.Collections.Remove(collection);
         await _unitOfWork.SaveChangesAsync(cancellationToken);

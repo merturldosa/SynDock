@@ -53,7 +53,12 @@
     "items": "{count}개",
     "noData": "데이터가 없습니다.",
     "default": "기본",
-    "fetchError": "데이터를 불러오는데 실패했습니다"
+    "fetchError": "데이터를 불러오는데 실패했습니다",
+    "quantity": "{count}개",
+    "orderCount": "{count}건",
+    "itemSummary": "{items}개 품목 / {qty}개",
+    "startDate": "시작일",
+    "endDate": "종료일"
   },
   "header": {
     "logout": "로그아웃",
@@ -938,7 +943,12 @@
       "trackingLabel": "운송장",
       "orderTimeline": "주문 타임라인",
       "noTimeline": "아직 이력이 없습니다.",
-      "notFound": "주문을 찾을 수 없습니다."
+      "notFound": "주문을 찾을 수 없습니다.",
+      "carrierCJ": "CJ대한통운",
+      "carrierHanjin": "한진택배",
+      "carrierLotte": "롯데택배",
+      "carrierLogen": "로젠택배",
+      "carrierPost": "우체국택배"
     },
     "coupons": {
       "title": "쿠폰 관리",
@@ -1288,7 +1298,10 @@
       "noOrders": "발주 이력이 없습니다.",
       "bulkCreatedMessage": "{count}개 규칙이 생성되었습니다.",
       "confirmDeleteRule": "이 규칙을 삭제하시겠습니까?",
-      "confirmCancelOrder": "이 발주를 취소하시겠습니까?"
+      "confirmCancelOrder": "이 발주를 취소하시겠습니까?",
+      "autoPlaceholder": "0=자동",
+      "unlimitedPlaceholder": "0=무제한",
+      "auto": "자동"
     },
     "settings": {
       "title": "설정",

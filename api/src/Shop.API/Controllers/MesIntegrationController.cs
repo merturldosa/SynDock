@@ -37,21 +37,21 @@ public class MesIntegrationController : ControllerBase
     }
 
     [HttpGet("status")]
-    public async Task<IActionResult> GetStatus()
+    public async Task<IActionResult> GetStatus(CancellationToken ct)
     {
         var status = await _mesClient.GetSyncStatusAsync();
         return Ok(status);
     }
 
     [HttpGet("inventory")]
-    public async Task<IActionResult> GetInventory()
+    public async Task<IActionResult> GetInventory(CancellationToken ct)
     {
         var inventory = await _mesClient.GetInventoryAsync();
         return Ok(inventory);
     }
 
     [HttpPost("sync")]
-    public async Task<IActionResult> TriggerSync()
+    public async Task<IActionResult> TriggerSync(CancellationToken ct)
     {
         var isAvailable = await _mesClient.IsAvailableAsync();
         if (!isAvailable)
@@ -64,7 +64,7 @@ public class MesIntegrationController : ControllerBase
     }
 
     [HttpGet("discrepancies")]
-    public async Task<IActionResult> GetDiscrepancies()
+    public async Task<IActionResult> GetDiscrepancies(CancellationToken ct)
     {
         var mesInventory = await _mesClient.GetInventoryAsync();
         var mappings = await _mapper.GetAllMappingsAsync();
@@ -105,7 +105,7 @@ public class MesIntegrationController : ControllerBase
     }
 
     [HttpGet("inventory-comparison")]
-    public async Task<IActionResult> GetInventoryComparison()
+    public async Task<IActionResult> GetInventoryComparison(CancellationToken ct)
     {
         var mesInventory = await _mesClient.GetInventoryAsync();
         var mappings = await _mapper.GetAllMappingsAsync();
@@ -163,7 +163,7 @@ public class MesIntegrationController : ControllerBase
     }
 
     [HttpPost("sync-product/{productId:int}")]
-    public async Task<IActionResult> SyncProduct(int productId)
+    public async Task<IActionResult> SyncProduct(int productId, CancellationToken ct)
     {
         var mesCode = await _mapper.GetMesProductCodeAsync(productId);
         if (mesCode is null)
@@ -192,7 +192,7 @@ public class MesIntegrationController : ControllerBase
     }
 
     [HttpGet("sync-history")]
-    public async Task<IActionResult> GetSyncHistory([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
+    public async Task<IActionResult> GetSyncHistory([FromQuery] int page = 1, [FromQuery] int pageSize = 20, CancellationToken ct = default)
     {
         var query = _db.MesSyncHistories.AsNoTracking()
             .OrderByDescending(h => h.StartedAt);
@@ -220,7 +220,7 @@ public class MesIntegrationController : ControllerBase
     }
 
     [HttpGet("sync-history/{id:int}")]
-    public async Task<IActionResult> GetSyncHistoryDetail(int id)
+    public async Task<IActionResult> GetSyncHistoryDetail(int id, CancellationToken ct)
     {
         var item = await _db.MesSyncHistories.AsNoTracking()
             .FirstOrDefaultAsync(h => h.Id == id);
@@ -232,7 +232,7 @@ public class MesIntegrationController : ControllerBase
     }
 
     [HttpPost("orders/{orderId:int}/forward")]
-    public async Task<IActionResult> ForwardOrder(int orderId)
+    public async Task<IActionResult> ForwardOrder(int orderId, CancellationToken ct)
     {
         var order = await _db.Orders.AsNoTracking()
             .FirstOrDefaultAsync(o => o.Id == orderId);
@@ -292,7 +292,7 @@ public class MesIntegrationController : ControllerBase
     // ── v2: Shop-MES Integration Bridge ──────────────────
 
     [HttpPost("inventory/reserve")]
-    public async Task<IActionResult> ReserveInventory([FromBody] ReserveRequest request)
+    public async Task<IActionResult> ReserveInventory([FromBody] ReserveRequest request, CancellationToken ct)
     {
         var items = request.Items.Select(i => new MesReservationItem(i.ProductCode, i.Quantity)).ToList();
         var mesRequest = new MesReservationRequest(request.ShopOrderNo, Guid.NewGuid().ToString(), items);
@@ -301,7 +301,7 @@ public class MesIntegrationController : ControllerBase
     }
 
     [HttpPost("inventory/release")]
-    public async Task<IActionResult> ReleaseInventory([FromBody] ReserveRequest request)
+    public async Task<IActionResult> ReleaseInventory([FromBody] ReserveRequest request, CancellationToken ct)
     {
         var items = request.Items.Select(i => new MesReservationItem(i.ProductCode, i.Quantity)).ToList();
         var mesRequest = new MesReservationRequest(request.ShopOrderNo, Guid.NewGuid().ToString(), items);
@@ -310,7 +310,7 @@ public class MesIntegrationController : ControllerBase
     }
 
     [HttpGet("orders/{orderId:int}/mes-status")]
-    public async Task<IActionResult> GetMesOrderStatus(int orderId)
+    public async Task<IActionResult> GetMesOrderStatus(int orderId, CancellationToken ct)
     {
         var order = await _db.Orders.AsNoTracking()
             .FirstOrDefaultAsync(o => o.Id == orderId);
@@ -326,7 +326,7 @@ public class MesIntegrationController : ControllerBase
     }
 
     [HttpGet("products")]
-    public async Task<IActionResult> GetMesProducts()
+    public async Task<IActionResult> GetMesProducts(CancellationToken ct)
     {
         var products = await _mesClient.GetMesProductsAsync();
         return Ok(products);
@@ -338,7 +338,8 @@ public class MesIntegrationController : ControllerBase
     [AllowAnonymous] // MES calls this via service-to-service auth
     public async Task<IActionResult> MesOrderStatusWebhook(
         [FromBody] MesOrderStatusWebhookPayload payload,
-        [FromHeader(Name = "X-MES-Webhook-Secret")] string? webhookSecret)
+        [FromHeader(Name = "X-MES-Webhook-Secret")] string? webhookSecret,
+        CancellationToken ct)
     {
         var expectedSecret = _configuration["Mes:WebhookSecret"];
         if (string.IsNullOrEmpty(expectedSecret))
@@ -369,14 +370,14 @@ public class MesIntegrationController : ControllerBase
     // ── L2: Production Plan Suggestions ────────────────────
 
     [HttpPost("production-plan/generate")]
-    public async Task<IActionResult> GenerateProductionPlan([FromServices] IProductionPlanService planService)
+    public async Task<IActionResult> GenerateProductionPlan([FromServices] IProductionPlanService planService, CancellationToken ct)
     {
         var suggestions = await planService.GenerateSuggestionsAsync();
         return Ok(suggestions);
     }
 
     [HttpGet("production-plan")]
-    public async Task<IActionResult> GetProductionPlanSuggestions([FromQuery] string? status = null)
+    public async Task<IActionResult> GetProductionPlanSuggestions([FromQuery] string? status = null, CancellationToken ct = default)
     {
         var query = _db.ProductionPlanSuggestions.AsNoTracking()
             .OrderByDescending(s => s.CreatedAt)
@@ -400,7 +401,7 @@ public class MesIntegrationController : ControllerBase
     }
 
     [HttpPut("production-plan/{id:int}/approve")]
-    public async Task<IActionResult> ApproveProductionPlan(int id, [FromServices] IProductionPlanService planService)
+    public async Task<IActionResult> ApproveProductionPlan(int id, [FromServices] IProductionPlanService planService, CancellationToken ct)
     {
         var result = await planService.ApproveSuggestionAsync(id, User.Identity?.Name ?? "Admin");
         if (result is null) return BadRequest(new { message = "승인할 수 없는 상태입니다." });
@@ -408,7 +409,7 @@ public class MesIntegrationController : ControllerBase
     }
 
     [HttpPut("production-plan/{id:int}/reject")]
-    public async Task<IActionResult> RejectProductionPlan(int id, [FromBody] RejectRequest request, [FromServices] IProductionPlanService planService)
+    public async Task<IActionResult> RejectProductionPlan(int id, [FromBody] RejectRequest request, [FromServices] IProductionPlanService planService, CancellationToken ct)
     {
         var success = await planService.RejectSuggestionAsync(id, request.Reason);
         if (!success) return BadRequest(new { message = "거절할 수 없는 상태입니다." });
@@ -416,7 +417,7 @@ public class MesIntegrationController : ControllerBase
     }
 
     [HttpPost("production-plan/{id:int}/forward-mes")]
-    public async Task<IActionResult> ForwardProductionPlanToMes(int id, [FromServices] IProductionPlanService planService)
+    public async Task<IActionResult> ForwardProductionPlanToMes(int id, [FromServices] IProductionPlanService planService, CancellationToken ct)
     {
         var mesOrderId = await planService.ForwardToMesAsync(id);
         if (mesOrderId is null) return BadRequest(new { message = "MES 전송에 실패했습니다." });
@@ -426,53 +427,53 @@ public class MesIntegrationController : ControllerBase
     // ── L3: Auto Reorder ────────────────────────────────
 
     [HttpGet("auto-reorder/stats")]
-    public async Task<IActionResult> GetAutoReorderStats()
+    public async Task<IActionResult> GetAutoReorderStats(CancellationToken ct)
     {
-        var result = await _mediator.Send(new GetAutoReorderStatsQuery());
+        var result = await _mediator.Send(new GetAutoReorderStatsQuery(), ct);
         if (!result.IsSuccess) return BadRequest(new { error = result.Error });
         return Ok(result.Data);
     }
 
     [HttpGet("auto-reorder/rules")]
-    public async Task<IActionResult> GetAutoReorderRules([FromQuery] bool? enabledOnly = null)
+    public async Task<IActionResult> GetAutoReorderRules([FromQuery] bool? enabledOnly = null, CancellationToken ct = default)
     {
-        var result = await _mediator.Send(new GetAutoReorderRulesQuery(enabledOnly));
+        var result = await _mediator.Send(new GetAutoReorderRulesQuery(enabledOnly), ct);
         if (!result.IsSuccess) return BadRequest(new { error = result.Error });
         return Ok(result.Data);
     }
 
     [HttpPost("auto-reorder/rules")]
-    public async Task<IActionResult> UpsertAutoReorderRule([FromBody] UpsertAutoReorderRuleRequest request)
+    public async Task<IActionResult> UpsertAutoReorderRule([FromBody] UpsertAutoReorderRuleRequest request, CancellationToken ct)
     {
         var result = await _mediator.Send(new UpsertAutoReorderRuleCommand(
             request.ProductId, request.ReorderThreshold, request.ReorderQuantity,
             request.MaxStockLevel, request.IsEnabled, request.AutoForwardToMes,
-            request.MinIntervalHours));
+            request.MinIntervalHours), ct);
         if (!result.IsSuccess) return BadRequest(new { error = result.Error });
         return Ok(new { ruleId = result.Data });
     }
 
     [HttpDelete("auto-reorder/rules/{id:int}")]
-    public async Task<IActionResult> DeleteAutoReorderRule(int id)
+    public async Task<IActionResult> DeleteAutoReorderRule(int id, CancellationToken ct)
     {
-        var result = await _mediator.Send(new DeleteAutoReorderRuleCommand(id));
+        var result = await _mediator.Send(new DeleteAutoReorderRuleCommand(id), ct);
         if (!result.IsSuccess) return BadRequest(new { error = result.Error });
         return Ok(new { success = true });
     }
 
     [HttpPut("auto-reorder/rules/{id:int}/toggle")]
-    public async Task<IActionResult> ToggleAutoReorderRule(int id, [FromBody] ToggleAutoReorderRequest request)
+    public async Task<IActionResult> ToggleAutoReorderRule(int id, [FromBody] ToggleAutoReorderRequest request, CancellationToken ct)
     {
-        var result = await _mediator.Send(new ToggleAutoReorderRuleCommand(id, request.IsEnabled));
+        var result = await _mediator.Send(new ToggleAutoReorderRuleCommand(id, request.IsEnabled), ct);
         if (!result.IsSuccess) return BadRequest(new { error = result.Error });
         return Ok(new { success = true });
     }
 
     [HttpPost("auto-reorder/rules/bulk")]
-    public async Task<IActionResult> BulkCreateAutoReorderRules([FromBody] BulkCreateAutoReorderRequest request)
+    public async Task<IActionResult> BulkCreateAutoReorderRules([FromBody] BulkCreateAutoReorderRequest request, CancellationToken ct)
     {
         var result = await _mediator.Send(new BulkCreateAutoReorderRulesCommand(
-            request.ReorderThreshold, request.MinIntervalHours, request.AutoForwardToMes));
+            request.ReorderThreshold, request.MinIntervalHours, request.AutoForwardToMes), ct);
         if (!result.IsSuccess) return BadRequest(new { error = result.Error });
         return Ok(new { createdCount = result.Data });
     }
@@ -481,15 +482,16 @@ public class MesIntegrationController : ControllerBase
     public async Task<IActionResult> GetPurchaseOrders(
         [FromQuery] string? status = null,
         [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 20)
+        [FromQuery] int pageSize = 20,
+        CancellationToken ct = default)
     {
-        var result = await _mediator.Send(new GetPurchaseOrdersQuery(status, page, pageSize));
+        var result = await _mediator.Send(new GetPurchaseOrdersQuery(status, page, pageSize), ct);
         if (!result.IsSuccess) return BadRequest(new { error = result.Error });
         return Ok(result.Data);
     }
 
     [HttpPost("purchase-orders/{id:int}/forward")]
-    public async Task<IActionResult> ForwardPurchaseOrder(int id)
+    public async Task<IActionResult> ForwardPurchaseOrder(int id, CancellationToken ct)
     {
         var po = await _db.PurchaseOrders
             .Include(p => p.Items)
@@ -533,9 +535,9 @@ public class MesIntegrationController : ControllerBase
     }
 
     [HttpPost("purchase-orders/{id:int}/cancel")]
-    public async Task<IActionResult> CancelPurchaseOrder(int id)
+    public async Task<IActionResult> CancelPurchaseOrder(int id, CancellationToken ct)
     {
-        var result = await _mediator.Send(new CancelPurchaseOrderCommand(id));
+        var result = await _mediator.Send(new CancelPurchaseOrderCommand(id), ct);
         if (!result.IsSuccess) return BadRequest(new { error = result.Error });
         return Ok(new { success = true });
     }

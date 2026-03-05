@@ -25,17 +25,17 @@ public class ToggleFollowCommandHandler : IRequestHandler<ToggleFollowCommand, R
     public async Task<Result<bool>> Handle(ToggleFollowCommand request, CancellationToken cancellationToken)
     {
         if (_currentUser.UserId is null)
-            return Result<bool>.Failure("로그인이 필요합니다.");
+            return Result<bool>.Failure("Authentication required.");
 
         if (_currentUser.UserId.Value == request.TargetUserId)
-            return Result<bool>.Failure("자기 자신을 팔로우할 수 없습니다.");
+            return Result<bool>.Failure("Cannot follow yourself.");
 
         var targetExists = await _db.Users
             .AsNoTracking()
             .AnyAsync(u => u.Id == request.TargetUserId && u.IsActive, cancellationToken);
 
         if (!targetExists)
-            return Result<bool>.Failure("사용자를 찾을 수 없습니다.");
+            return Result<bool>.Failure("User not found.");
 
         var existing = await _db.Follows
             .FirstOrDefaultAsync(f => f.FollowerId == _currentUser.UserId.Value

@@ -29,12 +29,12 @@ public class CreateProductDetailSectionCommandHandler : IRequestHandler<CreatePr
     public async Task<Result<int>> Handle(CreateProductDetailSectionCommand request, CancellationToken cancellationToken)
     {
         if (_currentUser.UserId is null)
-            return Result<int>.Failure("로그인이 필요합니다.");
+            return Result<int>.Failure("Authentication required.");
 
         var productExists = await _db.Products.AsNoTracking()
             .AnyAsync(p => p.Id == request.ProductId, cancellationToken);
         if (!productExists)
-            return Result<int>.Failure("상품을 찾을 수 없습니다.");
+            return Result<int>.Failure("Product not found.");
 
         var section = new ProductDetailSection
         {
@@ -77,12 +77,12 @@ public class UpdateProductDetailSectionCommandHandler : IRequestHandler<UpdatePr
     public async Task<Result<bool>> Handle(UpdateProductDetailSectionCommand request, CancellationToken cancellationToken)
     {
         if (_currentUser.UserId is null)
-            return Result<bool>.Failure("로그인이 필요합니다.");
+            return Result<bool>.Failure("Authentication required.");
 
         var section = await _db.ProductDetailSections
             .FirstOrDefaultAsync(s => s.Id == request.Id, cancellationToken);
         if (section is null)
-            return Result<bool>.Failure("섹션을 찾을 수 없습니다.");
+            return Result<bool>.Failure("Section not found.");
 
         if (request.Title is not null) section.Title = request.Title;
         if (request.Content is not null) section.Content = request.Content;
@@ -119,12 +119,12 @@ public class DeleteProductDetailSectionCommandHandler : IRequestHandler<DeletePr
     public async Task<Result<bool>> Handle(DeleteProductDetailSectionCommand request, CancellationToken cancellationToken)
     {
         if (_currentUser.UserId is null)
-            return Result<bool>.Failure("로그인이 필요합니다.");
+            return Result<bool>.Failure("Authentication required.");
 
         var section = await _db.ProductDetailSections
             .FirstOrDefaultAsync(s => s.Id == request.Id, cancellationToken);
         if (section is null)
-            return Result<bool>.Failure("섹션을 찾을 수 없습니다.");
+            return Result<bool>.Failure("Section not found.");
 
         _db.ProductDetailSections.Remove(section);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -151,7 +151,7 @@ public class ReorderProductDetailSectionsCommandHandler : IRequestHandler<Reorde
     public async Task<Result<bool>> Handle(ReorderProductDetailSectionsCommand request, CancellationToken cancellationToken)
     {
         if (_currentUser.UserId is null)
-            return Result<bool>.Failure("로그인이 필요합니다.");
+            return Result<bool>.Failure("Authentication required.");
 
         var sections = await _db.ProductDetailSections
             .Where(s => s.ProductId == request.ProductId)

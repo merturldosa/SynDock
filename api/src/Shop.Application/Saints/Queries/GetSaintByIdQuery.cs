@@ -28,7 +28,7 @@ public class GetSaintByIdQueryHandler : IRequestHandler<GetSaintByIdQuery, Resul
             .FirstOrDefaultAsync(cancellationToken);
 
         if (saint is null)
-            return Result<SaintDto>.Failure("성인을 찾을 수 없습니다.");
+            return Result<SaintDto>.Failure("Saint not found.");
 
         return Result<SaintDto>.Success(saint);
     }

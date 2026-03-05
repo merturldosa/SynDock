@@ -24,13 +24,13 @@ public class UpdateStockCommandHandler : IRequestHandler<UpdateStockCommand, Res
     public async Task<Result<bool>> Handle(UpdateStockCommand request, CancellationToken cancellationToken)
     {
         if (request.NewStock < 0)
-            return Result<bool>.Failure("재고 수량은 0 이상이어야 합니다.");
+            return Result<bool>.Failure("Stock quantity must be 0 or greater.");
 
         var variant = await _db.ProductVariants
             .FirstOrDefaultAsync(v => v.Id == request.VariantId, cancellationToken);
 
         if (variant is null)
-            return Result<bool>.Failure("상품 옵션을 찾을 수 없습니다.");
+            return Result<bool>.Failure("Product variant not found.");
 
         variant.Stock = request.NewStock;
         variant.UpdatedBy = _currentUser.Username;

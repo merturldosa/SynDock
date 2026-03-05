@@ -42,7 +42,7 @@ public class PlatformController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetTenants()
+    public async Task<IActionResult> GetTenants(CancellationToken ct)
     {
         var tenants = await _db.Tenants
             .AsNoTracking()
@@ -54,11 +54,11 @@ public class PlatformController : ControllerBase
     }
 
     [HttpGet("{slug}")]
-    public async Task<IActionResult> GetTenant(string slug)
+    public async Task<IActionResult> GetTenant(string slug, CancellationToken ct)
     {
         var tenant = await _db.Tenants
             .AsNoTracking()
-            .FirstOrDefaultAsync(t => t.Slug == slug);
+            .FirstOrDefaultAsync(t => t.Slug == slug, ct);
 
         if (tenant == null)
             return NotFound(new { error = "테넌트를 찾을 수 없습니다." });
@@ -67,7 +67,7 @@ public class PlatformController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreateTenant([FromBody] CreateTenantRequest request)
+    public async Task<IActionResult> CreateTenant([FromBody] CreateTenantRequest request, CancellationToken ct)
     {
         if (await _db.Tenants.AnyAsync(t => t.Slug == request.Slug))
             return BadRequest(new { error = "이미 존재하는 Slug입니다." });
@@ -117,7 +117,7 @@ public class PlatformController : ControllerBase
     }
 
     [HttpPut("{slug}")]
-    public async Task<IActionResult> UpdateTenant(string slug, [FromBody] UpdateTenantRequest request)
+    public async Task<IActionResult> UpdateTenant(string slug, [FromBody] UpdateTenantRequest request, CancellationToken ct)
     {
         var tenant = await _db.Tenants.FirstOrDefaultAsync(t => t.Slug == slug);
         if (tenant == null)
@@ -136,44 +136,44 @@ public class PlatformController : ControllerBase
         return Ok(new TenantDto(tenant.Id, tenant.Slug, tenant.Name, tenant.CustomDomain, tenant.Subdomain, tenant.IsActive, tenant.ConfigJson));
     }
     [HttpGet("billing")]
-    public async Task<IActionResult> GetAllBilling()
+    public async Task<IActionResult> GetAllBilling(CancellationToken ct)
     {
-        var result = await _mediator.Send(new GetTenantBillingQuery());
+        var result = await _mediator.Send(new GetTenantBillingQuery(), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(result.Data);
     }
 
     [HttpGet("{slug}/billing")]
-    public async Task<IActionResult> GetTenantBilling(string slug)
+    public async Task<IActionResult> GetTenantBilling(string slug, CancellationToken ct)
     {
-        var tenant = await _db.Tenants.AsNoTracking().FirstOrDefaultAsync(t => t.Slug == slug);
+        var tenant = await _db.Tenants.AsNoTracking().FirstOrDefaultAsync(t => t.Slug == slug, ct);
         if (tenant == null)
             return NotFound(new { error = "테넌트를 찾을 수 없습니다." });
 
-        var result = await _mediator.Send(new GetTenantBillingQuery(tenant.Id));
+        var result = await _mediator.Send(new GetTenantBillingQuery(tenant.Id), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(result.Data?.FirstOrDefault());
     }
 
     [HttpPut("{slug}/billing")]
-    public async Task<IActionResult> UpdateTenantBilling(string slug, [FromBody] UpdateBillingRequest request)
+    public async Task<IActionResult> UpdateTenantBilling(string slug, [FromBody] UpdateBillingRequest request, CancellationToken ct)
     {
-        var tenant = await _db.Tenants.AsNoTracking().FirstOrDefaultAsync(t => t.Slug == slug);
+        var tenant = await _db.Tenants.AsNoTracking().FirstOrDefaultAsync(t => t.Slug == slug, ct);
         if (tenant == null)
             return NotFound(new { error = "테넌트를 찾을 수 없습니다." });
 
         if (request.PlanType is not null)
         {
-            var planResult = await _mediator.Send(new UpdateTenantPlanCommand(tenant.Id, request.PlanType, request.MonthlyPrice ?? 0));
+            var planResult = await _mediator.Send(new UpdateTenantPlanCommand(tenant.Id, request.PlanType, request.MonthlyPrice ?? 0), ct);
             if (!planResult.IsSuccess)
                 return BadRequest(new { error = planResult.Error });
         }
 
         if (request.BillingStatus is not null)
         {
-            var statusResult = await _mediator.Send(new UpdateBillingStatusCommand(tenant.Id, request.BillingStatus));
+            var statusResult = await _mediator.Send(new UpdateBillingStatusCommand(tenant.Id, request.BillingStatus), ct);
             if (!statusResult.IsSuccess)
                 return BadRequest(new { error = statusResult.Error });
         }
@@ -183,85 +183,85 @@ public class PlatformController : ControllerBase
     // ── Invoices ──
 
     [HttpGet("invoices")]
-    public async Task<IActionResult> GetAllInvoices()
+    public async Task<IActionResult> GetAllInvoices(CancellationToken ct)
     {
-        var result = await _mediator.Send(new GetInvoicesQuery());
+        var result = await _mediator.Send(new GetInvoicesQuery(), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(result.Data);
     }
 
     [HttpGet("{slug}/invoices")]
-    public async Task<IActionResult> GetTenantInvoices(string slug)
+    public async Task<IActionResult> GetTenantInvoices(string slug, CancellationToken ct)
     {
-        var result = await _mediator.Send(new GetInvoicesQuery(slug));
+        var result = await _mediator.Send(new GetInvoicesQuery(slug), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(result.Data);
     }
 
     [HttpPost("{slug}/invoices")]
-    public async Task<IActionResult> GenerateInvoice(string slug, [FromBody] GenerateInvoiceRequest request)
+    public async Task<IActionResult> GenerateInvoice(string slug, [FromBody] GenerateInvoiceRequest request, CancellationToken ct)
     {
-        var tenant = await _db.Tenants.AsNoTracking().FirstOrDefaultAsync(t => t.Slug == slug);
+        var tenant = await _db.Tenants.AsNoTracking().FirstOrDefaultAsync(t => t.Slug == slug, ct);
         if (tenant == null)
             return NotFound(new { error = "테넌트를 찾을 수 없습니다." });
 
-        var result = await _mediator.Send(new GenerateInvoiceCommand(tenant.Id, request.BillingPeriod));
+        var result = await _mediator.Send(new GenerateInvoiceCommand(tenant.Id, request.BillingPeriod), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(new { invoiceId = result.Data });
     }
 
     [HttpPut("invoices/{id:int}/pay")]
-    public async Task<IActionResult> MarkInvoicePaid(int id, [FromBody] MarkInvoicePaidRequest request)
+    public async Task<IActionResult> MarkInvoicePaid(int id, [FromBody] MarkInvoicePaidRequest request, CancellationToken ct)
     {
-        var result = await _mediator.Send(new MarkInvoicePaidCommand(id, request.TransactionId, request.PaymentMethod));
+        var result = await _mediator.Send(new MarkInvoicePaidCommand(id, request.TransactionId, request.PaymentMethod), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(new { success = true });
     }
 
     [HttpGet("{slug}/usage")]
-    public async Task<IActionResult> GetTenantUsage(string slug)
+    public async Task<IActionResult> GetTenantUsage(string slug, CancellationToken ct)
     {
-        var result = await _mediator.Send(new GetTenantUsageQuery(slug));
+        var result = await _mediator.Send(new GetTenantUsageQuery(slug), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(result.Data);
     }
 
     [HttpGet("{slug}/domain")]
-    public async Task<IActionResult> GetTenantDomainConfig(string slug)
+    public async Task<IActionResult> GetTenantDomainConfig(string slug, CancellationToken ct)
     {
-        var result = await _mediator.Send(new Application.Platform.Queries.GetTenantDomainConfigQuery(slug));
+        var result = await _mediator.Send(new Application.Platform.Queries.GetTenantDomainConfigQuery(slug), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(result.Data);
     }
 
     [HttpPut("{slug}/domain")]
-    public async Task<IActionResult> UpdateTenantDomain(string slug, [FromBody] UpdateDomainRequest request)
+    public async Task<IActionResult> UpdateTenantDomain(string slug, [FromBody] UpdateDomainRequest request, CancellationToken ct)
     {
-        var tenant = await _db.Tenants.AsNoTracking().FirstOrDefaultAsync(t => t.Slug == slug);
+        var tenant = await _db.Tenants.AsNoTracking().FirstOrDefaultAsync(t => t.Slug == slug, ct);
         if (tenant == null)
             return NotFound(new { error = "테넌트를 찾을 수 없습니다." });
 
         var result = await _mediator.Send(new Application.Platform.Commands.UpdateTenantDomainCommand(
-            tenant.Id, request.CustomDomain, request.Subdomain));
+            tenant.Id, request.CustomDomain, request.Subdomain), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(result.Data);
     }
 
     [HttpPost("{slug}/domain/verify")]
-    public async Task<IActionResult> VerifyTenantDomain(string slug)
+    public async Task<IActionResult> VerifyTenantDomain(string slug, CancellationToken ct)
     {
-        var tenant = await _db.Tenants.AsNoTracking().FirstOrDefaultAsync(t => t.Slug == slug);
+        var tenant = await _db.Tenants.AsNoTracking().FirstOrDefaultAsync(t => t.Slug == slug, ct);
         if (tenant == null)
             return NotFound(new { error = "테넌트를 찾을 수 없습니다." });
 
-        var result = await _mediator.Send(new Application.Platform.Commands.VerifyTenantDomainCommand(tenant.Id));
+        var result = await _mediator.Send(new Application.Platform.Commands.VerifyTenantDomainCommand(tenant.Id), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(result.Data);
@@ -270,31 +270,31 @@ public class PlatformController : ControllerBase
     // ── Commissions / Settlements ──
 
     [HttpGet("commissions/summary")]
-    public async Task<IActionResult> GetCommissionSummary()
+    public async Task<IActionResult> GetCommissionSummary(CancellationToken ct)
     {
-        var result = await _mediator.Send(new GetCommissionSummaryQuery());
+        var result = await _mediator.Send(new GetCommissionSummaryQuery(), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(result.Data);
     }
 
     [HttpGet("{slug}/commissions/settings")]
-    public async Task<IActionResult> GetCommissionSettings(string slug)
+    public async Task<IActionResult> GetCommissionSettings(string slug, CancellationToken ct)
     {
-        var tenant = await _db.Tenants.AsNoTracking().FirstOrDefaultAsync(t => t.Slug == slug);
+        var tenant = await _db.Tenants.AsNoTracking().FirstOrDefaultAsync(t => t.Slug == slug, ct);
         if (tenant == null)
             return NotFound(new { error = "테넌트를 찾을 수 없습니다." });
 
-        var result = await _mediator.Send(new GetCommissionSettingsQuery(tenant.Id));
+        var result = await _mediator.Send(new GetCommissionSettingsQuery(tenant.Id), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(result.Data);
     }
 
     [HttpPut("{slug}/commissions/settings")]
-    public async Task<IActionResult> UpsertCommissionSetting(string slug, [FromBody] UpsertCommissionSettingRequest request)
+    public async Task<IActionResult> UpsertCommissionSetting(string slug, [FromBody] UpsertCommissionSettingRequest request, CancellationToken ct)
     {
-        var tenant = await _db.Tenants.AsNoTracking().FirstOrDefaultAsync(t => t.Slug == slug);
+        var tenant = await _db.Tenants.AsNoTracking().FirstOrDefaultAsync(t => t.Slug == slug, ct);
         if (tenant == null)
             return NotFound(new { error = "테넌트를 찾을 수 없습니다." });
 
@@ -302,7 +302,7 @@ public class PlatformController : ControllerBase
             tenant.Id, request.ProductId, request.CategoryId,
             request.CommissionRate, request.SettlementCycle ?? "Weekly",
             request.SettlementDayOfWeek ?? 1, request.MinSettlementAmount ?? 10000m,
-            request.BankName, request.BankAccount, request.BankHolder));
+            request.BankName, request.BankAccount, request.BankHolder), ct);
 
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
@@ -310,48 +310,48 @@ public class PlatformController : ControllerBase
     }
 
     [HttpGet("{slug}/commissions")]
-    public async Task<IActionResult> GetCommissions(string slug, [FromQuery] string? status = null)
+    public async Task<IActionResult> GetCommissions(string slug, [FromQuery] string? status = null, CancellationToken ct = default)
     {
-        var tenant = await _db.Tenants.AsNoTracking().FirstOrDefaultAsync(t => t.Slug == slug);
+        var tenant = await _db.Tenants.AsNoTracking().FirstOrDefaultAsync(t => t.Slug == slug, ct);
         if (tenant == null)
             return NotFound(new { error = "테넌트를 찾을 수 없습니다." });
 
-        var result = await _mediator.Send(new GetCommissionsQuery(tenant.Id, status));
+        var result = await _mediator.Send(new GetCommissionsQuery(tenant.Id, status), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(result.Data);
     }
 
     [HttpGet("{slug}/settlements")]
-    public async Task<IActionResult> GetSettlements(string slug, [FromQuery] string? status = null)
+    public async Task<IActionResult> GetSettlements(string slug, [FromQuery] string? status = null, CancellationToken ct = default)
     {
-        var tenant = await _db.Tenants.AsNoTracking().FirstOrDefaultAsync(t => t.Slug == slug);
+        var tenant = await _db.Tenants.AsNoTracking().FirstOrDefaultAsync(t => t.Slug == slug, ct);
         if (tenant == null)
             return NotFound(new { error = "테넌트를 찾을 수 없습니다." });
 
-        var result = await _mediator.Send(new GetSettlementsQuery(tenant.Id, status));
+        var result = await _mediator.Send(new GetSettlementsQuery(tenant.Id, status), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(result.Data);
     }
 
     [HttpPost("{slug}/settlements")]
-    public async Task<IActionResult> CreateSettlement(string slug, [FromBody] CreateSettlementRequest request)
+    public async Task<IActionResult> CreateSettlement(string slug, [FromBody] CreateSettlementRequest request, CancellationToken ct)
     {
-        var tenant = await _db.Tenants.AsNoTracking().FirstOrDefaultAsync(t => t.Slug == slug);
+        var tenant = await _db.Tenants.AsNoTracking().FirstOrDefaultAsync(t => t.Slug == slug, ct);
         if (tenant == null)
             return NotFound(new { error = "테넌트를 찾을 수 없습니다." });
 
-        var result = await _mediator.Send(new CreateSettlementCommand(tenant.Id, request.PeriodStart, request.PeriodEnd));
+        var result = await _mediator.Send(new CreateSettlementCommand(tenant.Id, request.PeriodStart, request.PeriodEnd), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(new { settlementId = result.Data });
     }
 
     [HttpPut("settlements/{id:int}/process")]
-    public async Task<IActionResult> ProcessSettlement(int id, [FromBody] ProcessSettlementRequest request)
+    public async Task<IActionResult> ProcessSettlement(int id, [FromBody] ProcessSettlementRequest request, CancellationToken ct)
     {
-        var result = await _mediator.Send(new ProcessSettlementCommand(id, request.TransactionId, request.SettledBy));
+        var result = await _mediator.Send(new ProcessSettlementCommand(id, request.TransactionId, request.SettledBy), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(new { success = true });
@@ -360,14 +360,14 @@ public class PlatformController : ControllerBase
     // ── Tenant Seed Data ──
 
     [HttpPost("{slug}/seed")]
-    public async Task<IActionResult> SeedTenantData(string slug, [FromBody] SeedTenantDataCommand command)
+    public async Task<IActionResult> SeedTenantData(string slug, [FromBody] SeedTenantDataCommand command, CancellationToken ct)
     {
-        var tenant = await _db.Tenants.AsNoTracking().FirstOrDefaultAsync(t => t.Slug == slug);
+        var tenant = await _db.Tenants.AsNoTracking().FirstOrDefaultAsync(t => t.Slug == slug, ct);
         if (tenant is null)
             return NotFound(new { error = "테넌트를 찾을 수 없습니다." });
 
         var cmd = command with { TenantId = tenant.Id };
-        var result = await _mediator.Send(cmd);
+        var result = await _mediator.Send(cmd, ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(result.Data);

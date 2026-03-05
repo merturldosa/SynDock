@@ -23,7 +23,7 @@ public class GetUnreadCountQueryHandler : IRequestHandler<GetUnreadCountQuery, R
     public async Task<Result<UnreadCountDto>> Handle(GetUnreadCountQuery request, CancellationToken cancellationToken)
     {
         if (_currentUser.UserId is null)
-            return Result<UnreadCountDto>.Failure("로그인이 필요합니다.");
+            return Result<UnreadCountDto>.Failure("Authentication required.");
 
         var count = await _db.Notifications
             .AsNoTracking()

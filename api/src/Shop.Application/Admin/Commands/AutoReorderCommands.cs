@@ -28,7 +28,7 @@ public class UpsertAutoReorderRuleHandler : IRequestHandler<UpsertAutoReorderRul
         var product = await _db.Products.AsNoTracking()
             .FirstOrDefaultAsync(p => p.Id == request.ProductId, cancellationToken);
         if (product is null)
-            return Result<int>.Failure("상품을 찾을 수 없습니다.");
+            return Result<int>.Failure("Product not found.");
 
         var rule = await _db.AutoReorderRules
             .FirstOrDefaultAsync(r => r.ProductId == request.ProductId, cancellationToken);
@@ -78,7 +78,7 @@ public class DeleteAutoReorderRuleHandler : IRequestHandler<DeleteAutoReorderRul
     {
         var rule = await _db.AutoReorderRules.FindAsync(new object[] { request.Id }, cancellationToken);
         if (rule is null)
-            return Result<bool>.Failure("규칙을 찾을 수 없습니다.");
+            return Result<bool>.Failure("Rule not found.");
 
         _db.AutoReorderRules.Remove(rule);
         await _db.SaveChangesAsync(cancellationToken);
@@ -100,7 +100,7 @@ public class ToggleAutoReorderRuleHandler : IRequestHandler<ToggleAutoReorderRul
     {
         var rule = await _db.AutoReorderRules.FindAsync(new object[] { request.Id }, cancellationToken);
         if (rule is null)
-            return Result<bool>.Failure("규칙을 찾을 수 없습니다.");
+            return Result<bool>.Failure("Rule not found.");
 
         rule.IsEnabled = request.IsEnabled;
         await _db.SaveChangesAsync(cancellationToken);
@@ -166,9 +166,9 @@ public class CancelPurchaseOrderHandler : IRequestHandler<CancelPurchaseOrderCom
     {
         var po = await _db.PurchaseOrders.FindAsync(new object[] { request.Id }, cancellationToken);
         if (po is null)
-            return Result<bool>.Failure("발주를 찾을 수 없습니다.");
+            return Result<bool>.Failure("Purchase order not found.");
         if (po.Status is "Received" or "Cancelled")
-            return Result<bool>.Failure("이미 완료되었거나 취소된 발주입니다.");
+            return Result<bool>.Failure("Purchase order is already completed or cancelled.");
 
         po.Status = "Cancelled";
         await _db.SaveChangesAsync(cancellationToken);

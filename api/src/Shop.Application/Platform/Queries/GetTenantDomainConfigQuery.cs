@@ -24,7 +24,7 @@ public class GetTenantDomainConfigQueryHandler : IRequestHandler<GetTenantDomain
             .AsNoTracking()
             .FirstOrDefaultAsync(t => t.Slug == request.Slug, cancellationToken);
         if (tenant is null)
-            return Result<DomainConfigDto>.Failure("테넌트를 찾을 수 없습니다.");
+            return Result<DomainConfigDto>.Failure("Tenant not found.");
 
         var config = new JsonObject();
         if (!string.IsNullOrEmpty(tenant.ConfigJson))

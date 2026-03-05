@@ -32,7 +32,7 @@ public class CreateCategoryCommandHandler : IRequestHandler<CreateCategoryComman
     public async Task<Result<int>> Handle(CreateCategoryCommand request, CancellationToken cancellationToken)
     {
         if (_currentUser.UserId is null)
-            return Result<int>.Failure("로그인이 필요합니다.");
+            return Result<int>.Failure("Authentication required.");
 
         // Validate parent if provided
         if (request.ParentId.HasValue)
@@ -42,7 +42,7 @@ public class CreateCategoryCommandHandler : IRequestHandler<CreateCategoryComman
                 .AnyAsync(c => c.Id == request.ParentId.Value, cancellationToken);
 
             if (!parentExists)
-                return Result<int>.Failure("상위 카테고리를 찾을 수 없습니다.");
+                return Result<int>.Failure("Parent category not found.");
         }
 
         // Check slug uniqueness
@@ -53,7 +53,7 @@ public class CreateCategoryCommandHandler : IRequestHandler<CreateCategoryComman
                 .AnyAsync(c => c.Slug == request.Slug, cancellationToken);
 
             if (slugExists)
-                return Result<int>.Failure($"이미 사용 중인 슬러그입니다: {request.Slug}");
+                return Result<int>.Failure($"Slug already in use: {request.Slug}");
         }
 
         var category = new Category

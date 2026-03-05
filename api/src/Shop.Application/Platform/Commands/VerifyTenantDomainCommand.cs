@@ -26,14 +26,14 @@ public class VerifyTenantDomainCommandHandler : IRequestHandler<VerifyTenantDoma
         var tenant = await _db.Tenants
             .FirstOrDefaultAsync(t => t.Id == request.TenantId, cancellationToken);
         if (tenant is null)
-            return Result<DomainVerificationResultDto>.Failure("테넌트를 찾을 수 없습니다.");
+            return Result<DomainVerificationResultDto>.Failure("Tenant not found.");
 
         if (string.IsNullOrEmpty(tenant.CustomDomain))
-            return Result<DomainVerificationResultDto>.Success(new DomainVerificationResultDto(false, "커스텀 도메인이 설정되지 않았습니다."));
+            return Result<DomainVerificationResultDto>.Success(new DomainVerificationResultDto(false, "Custom domain is not configured."));
 
         // DNS lookup
         var isVerified = false;
-        var message = "DNS 레코드를 확인할 수 없습니다. CNAME 설정을 확인해 주세요.";
+        var message = "DNS record not found. Please verify your CNAME configuration.";
 
         try
         {
@@ -41,7 +41,7 @@ public class VerifyTenantDomainCommandHandler : IRequestHandler<VerifyTenantDoma
             if (hostEntry.AddressList.Length > 0)
             {
                 isVerified = true;
-                message = "도메인이 성공적으로 확인되었습니다.";
+                message = "Domain verified successfully.";
             }
         }
         catch (Exception)

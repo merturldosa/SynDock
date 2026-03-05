@@ -33,17 +33,17 @@ public class UpdateCategoryCommandHandler : IRequestHandler<UpdateCategoryComman
     public async Task<Result<bool>> Handle(UpdateCategoryCommand request, CancellationToken cancellationToken)
     {
         if (_currentUser.UserId is null)
-            return Result<bool>.Failure("로그인이 필요합니다.");
+            return Result<bool>.Failure("Authentication required.");
 
         var category = await _db.Categories
             .FirstOrDefaultAsync(c => c.Id == request.CategoryId, cancellationToken);
 
         if (category is null)
-            return Result<bool>.Failure("카테고리를 찾을 수 없습니다.");
+            return Result<bool>.Failure("Category not found.");
 
         // Prevent circular parent reference
         if (request.ParentId == request.CategoryId)
-            return Result<bool>.Failure("자기 자신을 상위 카테고리로 설정할 수 없습니다.");
+            return Result<bool>.Failure("Cannot set a category as its own parent.");
 
         if (request.ParentId.HasValue)
         {
@@ -52,7 +52,7 @@ public class UpdateCategoryCommandHandler : IRequestHandler<UpdateCategoryComman
                 .AnyAsync(c => c.Id == request.ParentId.Value, cancellationToken);
 
             if (!parentExists)
-                return Result<bool>.Failure("상위 카테고리를 찾을 수 없습니다.");
+                return Result<bool>.Failure("Parent category not found.");
         }
 
         // Check slug uniqueness if changed
@@ -63,7 +63,7 @@ public class UpdateCategoryCommandHandler : IRequestHandler<UpdateCategoryComman
                 .AnyAsync(c => c.Slug == request.Slug && c.Id != request.CategoryId, cancellationToken);
 
             if (slugExists)
-                return Result<bool>.Failure($"이미 사용 중인 슬러그입니다: {request.Slug}");
+                return Result<bool>.Failure($"Slug already in use: {request.Slug}");
         }
 
         category.Name = request.Name;

@@ -46,7 +46,7 @@ public class ProductionPlanService : IProductionPlanService
 
             ForecastResult? forecastResult = null;
             try { forecastResult = await _forecast.ForecastWithAiAsync(rec.ProductId, 30, ct); }
-            catch { /* AI forecast may fail, continue without it */ }
+            catch (Exception ex) { _logger.LogWarning(ex, "AI forecast failed for ProductId={ProductId}, continuing without it", rec.ProductId); }
 
             var suggestion = new ProductionPlanSuggestion
             {
@@ -75,7 +75,7 @@ public class ProductionPlanService : IProductionPlanService
             await _db.SaveChangesAsync(ct);
         }
 
-        _logger.LogInformation("생산계획 제안 {Count}건 생성", suggestions.Count);
+        _logger.LogInformation("Generated {Count} production plan suggestions", suggestions.Count);
 
         return suggestions.Select(MapToDto).ToList();
     }
@@ -123,7 +123,7 @@ public class ProductionPlanService : IProductionPlanService
         var mesProductCode = await _productMapper.GetMesProductCodeAsync(suggestion.ProductId, ct);
         if (mesProductCode is null)
         {
-            _logger.LogWarning("MES 상품 매핑 없음: ProductId={ProductId}", suggestion.ProductId);
+            _logger.LogWarning("MES product mapping not found: ProductId={ProductId}", suggestion.ProductId);
             return null;
         }
 
@@ -149,17 +149,17 @@ public class ProductionPlanService : IProductionPlanService
                 suggestion.UpdatedAt = DateTime.UtcNow;
                 await _db.SaveChangesAsync(ct);
 
-                _logger.LogInformation("생산계획 MES 전송 성공: SuggestionId={Id}, MesOrderId={MesOrderId}",
+                _logger.LogInformation("Production plan forwarded to MES successfully: SuggestionId={Id}, MesOrderId={MesOrderId}",
                     suggestionId, result.MesOrderId);
                 return result.MesOrderId;
             }
 
-            _logger.LogWarning("MES 주문 생성 실패: {Error}", result.ErrorMessage);
+            _logger.LogWarning("MES order creation failed: {Error}", result.ErrorMessage);
             return null;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "MES 전송 예외: SuggestionId={Id}", suggestionId);
+            _logger.LogError(ex, "MES forwarding exception: SuggestionId={Id}", suggestionId);
             return null;
         }
     }

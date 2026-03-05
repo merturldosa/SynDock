@@ -27,7 +27,7 @@ public class GenerateProductContentCommandHandler : IRequestHandler<GenerateProd
             .FirstOrDefaultAsync(p => p.Id == request.ProductId, cancellationToken);
 
         if (product is null)
-            return Result<GeneratedContent>.Failure("상품을 찾을 수 없습니다.");
+            return Result<GeneratedContent>.Failure("Product not found.");
 
         var systemPrompt = @"당신은 전문 쇼핑몰 상세 페이지 콘텐츠 작성자입니다.
 주어진 상품 정보를 바탕으로 매력적인 상세 페이지 콘텐츠를 작성해주세요.
@@ -55,7 +55,7 @@ public class GenerateProductContentCommandHandler : IRequestHandler<GenerateProd
         var response = await _ai.ChatAsync(messages, systemPrompt, cancellationToken);
 
         if (response.Error is not null)
-            return Result<GeneratedContent>.Failure($"AI 콘텐츠 생성 실패: {response.Error}");
+            return Result<GeneratedContent>.Failure($"AI content generation failed: {response.Error}");
 
         var content = response.Content;
         var hero = ExtractSection(content, "HERO");

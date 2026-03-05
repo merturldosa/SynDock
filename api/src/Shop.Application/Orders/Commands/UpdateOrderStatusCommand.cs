@@ -40,31 +40,31 @@ public class UpdateOrderStatusCommandHandler : IRequestHandler<UpdateOrderStatus
     public async Task<Result<bool>> Handle(UpdateOrderStatusCommand request, CancellationToken cancellationToken)
     {
         if (_currentUser.UserId is null)
-            return Result<bool>.Failure("로그인이 필요합니다.");
+            return Result<bool>.Failure("Authentication required.");
 
         if (!Enum.TryParse<OrderStatus>(request.Status, out _))
-            return Result<bool>.Failure($"유효하지 않은 주문 상태입니다: {request.Status}");
+            return Result<bool>.Failure($"Invalid order status: {request.Status}");
 
         var order = await _db.Orders
             .FirstOrDefaultAsync(o => o.Id == request.OrderId, cancellationToken);
 
         if (order is null)
-            return Result<bool>.Failure("주문을 찾을 수 없습니다.");
+            return Result<bool>.Failure("Order not found.");
 
         // Role-based state transition enforcement
         var isAdmin = _currentUser.Role == "TenantAdmin" || _currentUser.Role == "Admin" || _currentUser.Role == "PlatformAdmin";
         var isOwner = order.UserId == _currentUser.UserId.Value;
 
         if (!isAdmin && !isOwner)
-            return Result<bool>.Failure("권한이 없습니다.");
+            return Result<bool>.Failure("Access denied.");
 
         // Members can only cancel their own pending orders
         if (!isAdmin)
         {
             if (request.Status != nameof(OrderStatus.Cancelled))
-                return Result<bool>.Failure("권한이 없습니다. 관리자만 주문 상태를 변경할 수 있습니다.");
+                return Result<bool>.Failure("Access denied. Only administrators can change order status.");
             if (order.Status != nameof(OrderStatus.Pending))
-                return Result<bool>.Failure("대기 중인 주문만 취소할 수 있습니다.");
+                return Result<bool>.Failure("Only pending orders can be cancelled.");
         }
 
         // Validate status transition

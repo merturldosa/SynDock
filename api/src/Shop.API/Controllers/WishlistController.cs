@@ -19,25 +19,25 @@ public class WishlistController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll(CancellationToken ct)
     {
-        var result = await _mediator.Send(new GetWishlistQuery());
+        var result = await _mediator.Send(new GetWishlistQuery(), ct);
         return Ok(result);
     }
 
     [HttpPost("toggle")]
-    public async Task<IActionResult> Toggle([FromBody] ToggleWishlistRequest request)
+    public async Task<IActionResult> Toggle([FromBody] ToggleWishlistRequest request, CancellationToken ct)
     {
-        var result = await _mediator.Send(new ToggleWishlistCommand(request.ProductId));
+        var result = await _mediator.Send(new ToggleWishlistCommand(request.ProductId), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(new { isWished = result.Data });
     }
 
     [HttpPost("check")]
-    public async Task<IActionResult> Check([FromBody] CheckWishlistRequest request)
+    public async Task<IActionResult> Check([FromBody] CheckWishlistRequest request, CancellationToken ct)
     {
-        var result = await _mediator.Send(new CheckWishlistQuery(request.ProductIds));
+        var result = await _mediator.Send(new CheckWishlistQuery(request.ProductIds), ct);
         return Ok(new { wishedProductIds = result });
     }
 }

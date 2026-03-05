@@ -46,10 +46,10 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, Result<Au
             return Result<AuthResponse>.Failure(limitCheck.Error!);
 
         if (await _db.Users.AnyAsync(u => u.Username == request.Username, cancellationToken))
-            return Result<AuthResponse>.Failure("이미 사용 중인 사용자명입니다.");
+            return Result<AuthResponse>.Failure("Username is already in use.");
 
         if (await _db.Users.AnyAsync(u => u.Email == request.Email, cancellationToken))
-            return Result<AuthResponse>.Failure("이미 사용 중인 이메일입니다.");
+            return Result<AuthResponse>.Failure("Email is already in use.");
 
         var user = new User
         {

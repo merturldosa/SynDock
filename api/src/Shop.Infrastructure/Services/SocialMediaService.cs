@@ -42,7 +42,7 @@ public class SocialMediaService : ISocialMediaService
     {
         if (string.IsNullOrEmpty(_instagramAccessToken))
         {
-            _logger.LogInformation("Instagram 미설정: 포스팅 스킵");
+            _logger.LogInformation("Instagram not configured: skipping post");
             return new SocialPostResult(false, null, null, "Instagram not configured");
         }
 
@@ -63,7 +63,7 @@ public class SocialMediaService : ISocialMediaService
 
             if (!createResponse.IsSuccessStatusCode)
             {
-                _logger.LogWarning("Instagram 미디어 생성 실패: {Body}", createBody);
+                _logger.LogWarning("Instagram media creation failed: {Body}", createBody);
                 return new SocialPostResult(false, null, null, createBody);
             }
 
@@ -84,7 +84,7 @@ public class SocialMediaService : ISocialMediaService
 
             if (!publishResponse.IsSuccessStatusCode)
             {
-                _logger.LogWarning("Instagram 발행 실패: {Body}", publishBody);
+                _logger.LogWarning("Instagram publish failed: {Body}", publishBody);
                 return new SocialPostResult(false, null, null, publishBody);
             }
 
@@ -92,12 +92,12 @@ public class SocialMediaService : ISocialMediaService
             var postId = publishResult.GetProperty("id").GetString();
             var postUrl = $"https://www.instagram.com/p/{postId}";
 
-            _logger.LogInformation("Instagram 포스팅 성공: PostId={PostId}", postId);
+            _logger.LogInformation("Instagram post successful: PostId={PostId}", postId);
             return new SocialPostResult(true, postId, postUrl, null);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Instagram 포스팅 예외");
+            _logger.LogError(ex, "Instagram post exception");
             return new SocialPostResult(false, null, null, ex.Message);
         }
     }
@@ -106,7 +106,7 @@ public class SocialMediaService : ISocialMediaService
     {
         if (string.IsNullOrEmpty(_facebookAccessToken))
         {
-            _logger.LogInformation("Facebook 미설정: 포스팅 스킵");
+            _logger.LogInformation("Facebook not configured: skipping post");
             return new SocialPostResult(false, null, null, "Facebook not configured");
         }
 
@@ -142,7 +142,7 @@ public class SocialMediaService : ISocialMediaService
 
             if (!response.IsSuccessStatusCode)
             {
-                _logger.LogWarning("Facebook 포스팅 실패: {Body}", body);
+                _logger.LogWarning("Facebook post failed: {Body}", body);
                 return new SocialPostResult(false, null, null, body);
             }
 
@@ -150,12 +150,12 @@ public class SocialMediaService : ISocialMediaService
             var postId = result.GetProperty("id").GetString();
             var postUrl = $"https://www.facebook.com/{postId}";
 
-            _logger.LogInformation("Facebook 포스팅 성공: PostId={PostId}", postId);
+            _logger.LogInformation("Facebook post successful: PostId={PostId}", postId);
             return new SocialPostResult(true, postId, postUrl, null);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Facebook 포스팅 예외");
+            _logger.LogError(ex, "Facebook post exception");
             return new SocialPostResult(false, null, null, ex.Message);
         }
     }

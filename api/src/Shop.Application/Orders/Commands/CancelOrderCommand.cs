@@ -26,17 +26,17 @@ public class CancelOrderCommandHandler : IRequestHandler<CancelOrderCommand, Res
     public async Task<Result<bool>> Handle(CancelOrderCommand request, CancellationToken cancellationToken)
     {
         if (_currentUser.UserId is null)
-            return Result<bool>.Failure("로그인이 필요합니다.");
+            return Result<bool>.Failure("Authentication required.");
 
         var order = await _db.Orders
             .Include(o => o.Items)
             .FirstOrDefaultAsync(o => o.Id == request.OrderId && o.UserId == _currentUser.UserId.Value, cancellationToken);
 
         if (order is null)
-            return Result<bool>.Failure("주문을 찾을 수 없습니다.");
+            return Result<bool>.Failure("Order not found.");
 
         if (order.Status != nameof(OrderStatus.Pending) && order.Status != nameof(OrderStatus.Confirmed))
-            return Result<bool>.Failure("취소할 수 없는 주문 상태입니다.");
+            return Result<bool>.Failure("Order cannot be cancelled in its current status.");
 
         order.Status = nameof(OrderStatus.Cancelled);
         order.UpdatedBy = _currentUser.Username;

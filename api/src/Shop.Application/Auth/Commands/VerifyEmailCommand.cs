@@ -25,10 +25,10 @@ public class VerifyEmailCommandHandler : IRequestHandler<VerifyEmailCommand, Res
                 && u.IsActive, cancellationToken);
 
         if (user is null)
-            return Result<bool>.Failure("유효하지 않은 인증 링크입니다.");
+            return Result<bool>.Failure("Invalid verification link.");
 
         if (user.EmailVerified)
-            return Result<bool>.Failure("이미 인증된 이메일입니다.");
+            return Result<bool>.Failure("Email is already verified.");
 
         user.EmailVerified = true;
         user.EmailVerificationToken = null;

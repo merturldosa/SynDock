@@ -31,7 +31,7 @@ public class IssueCouponCommandHandler : IRequestHandler<IssueCouponCommand, Res
             .FirstOrDefaultAsync(c => c.Id == request.CouponId, cancellationToken);
 
         if (coupon is null)
-            return Result<int>.Failure("쿠폰을 찾을 수 없습니다.");
+            return Result<int>.Failure("Coupon not found.");
 
         // Determine target users
         List<int> targetUserIds;

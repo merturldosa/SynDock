@@ -16,25 +16,25 @@ public class HashtagController : ControllerBase
     }
 
     [HttpGet("trending")]
-    public async Task<IActionResult> GetTrending([FromQuery] int limit = 20)
+    public async Task<IActionResult> GetTrending([FromQuery] int limit = 20, CancellationToken ct = default)
     {
-        var result = await _mediator.Send(new GetTrendingHashtagsQuery(limit));
+        var result = await _mediator.Send(new GetTrendingHashtagsQuery(limit), ct);
         return Ok(result);
     }
 
     [HttpGet("search")]
-    public async Task<IActionResult> Search([FromQuery] string keyword)
+    public async Task<IActionResult> Search([FromQuery] string keyword, CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(keyword))
             return Ok(Array.Empty<object>());
-        var result = await _mediator.Send(new SearchHashtagsQuery(keyword));
+        var result = await _mediator.Send(new SearchHashtagsQuery(keyword), ct);
         return Ok(result);
     }
 
     [HttpGet("{tag}/posts")]
-    public async Task<IActionResult> GetPostsByHashtag(string tag, [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
+    public async Task<IActionResult> GetPostsByHashtag(string tag, [FromQuery] int page = 1, [FromQuery] int pageSize = 20, CancellationToken ct = default)
     {
-        var result = await _mediator.Send(new GetPostsByHashtagQuery(tag, page, pageSize));
+        var result = await _mediator.Send(new GetPostsByHashtagQuery(tag, page, pageSize), ct);
         return Ok(result);
     }
 }

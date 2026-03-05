@@ -228,12 +228,12 @@ export default function AutoReorderPage() {
                   <div>
                     <label className="block text-sm font-medium mb-1">{t("admin.autoReorder.quantity")}</label>
                     <input type="number" value={ruleForm.reorderQuantity} onChange={(e) => setRuleForm({ ...ruleForm, reorderQuantity: +e.target.value })}
-                      className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="0=자동" />
+                      className="w-full border rounded-lg px-3 py-2 text-sm" placeholder={t("admin.autoReorder.autoPlaceholder")} />
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-1">{t("admin.autoReorder.maxStock")}</label>
                     <input type="number" value={ruleForm.maxStockLevel} onChange={(e) => setRuleForm({ ...ruleForm, maxStockLevel: +e.target.value })}
-                      className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="0=무제한" />
+                      className="w-full border rounded-lg px-3 py-2 text-sm" placeholder={t("admin.autoReorder.unlimitedPlaceholder")} />
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-1">{t("admin.autoReorder.minInterval")}</label>
@@ -311,7 +311,7 @@ export default function AutoReorderPage() {
                       </span>
                     </td>
                     <td className="text-center px-3 py-3">{rule.reorderThreshold}</td>
-                    <td className="text-center px-3 py-3">{rule.reorderQuantity || "자동"}</td>
+                    <td className="text-center px-3 py-3">{rule.reorderQuantity || t("admin.autoReorder.auto")}</td>
                     <td className="text-center px-3 py-3">
                       {rule.autoForwardToMes ? <CheckCircle size={16} className="text-green-500 mx-auto" /> : <X size={16} className="text-gray-400 mx-auto" />}
                     </td>
@@ -368,7 +368,7 @@ export default function AutoReorderPage() {
                     </div>
                     <div className="flex items-center gap-4">
                       <div className="text-right text-sm">
-                        <p>{po.itemCount}개 품목 / {po.totalQuantity}개</p>
+                        <p>{t("common.itemSummary", { items: po.itemCount, qty: po.totalQuantity })}</p>
                         {po.mesOrderId && <p className="text-xs text-gray-500">MES: {po.mesOrderId}</p>}
                       </div>
                       <div className="flex gap-1">

@@ -297,11 +297,11 @@ export default function AdminOrderDetailPage() {
                     className="w-full px-3 py-2 border rounded-lg text-sm"
                   >
                     <option value="">{t("admin.orders.selectCarrier")}</option>
-                    <option value="CJ대한통운">CJ대한통운</option>
-                    <option value="한진택배">한진택배</option>
-                    <option value="롯데택배">롯데택배</option>
-                    <option value="로젠택배">로젠택배</option>
-                    <option value="우체국택배">우체국택배</option>
+                    <option value="CJ대한통운">{t("admin.orders.carrierCJ")}</option>
+                    <option value="한진택배">{t("admin.orders.carrierHanjin")}</option>
+                    <option value="롯데택배">{t("admin.orders.carrierLotte")}</option>
+                    <option value="로젠택배">{t("admin.orders.carrierLogen")}</option>
+                    <option value="우체국택배">{t("admin.orders.carrierPost")}</option>
                   </select>
                 </div>
                 <div>

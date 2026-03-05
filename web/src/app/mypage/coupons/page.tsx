@@ -56,7 +56,7 @@ export default function MyCouponsPage() {
                   <p className="text-xl font-bold">
                     {coupon.discountType === "Percentage"
                       ? `${coupon.discountValue}%`
-                      : formatPrice(coupon.discountValue).replace("원", "")}
+                      : formatPrice(coupon.discountValue).replace(/[^0-9.,]/g, "")}
                   </p>
                   <p className="text-xs">
                     {coupon.discountType === "Percentage" ? t("mypage.coupons.discount") : t("mypage.coupons.wonDiscount")}

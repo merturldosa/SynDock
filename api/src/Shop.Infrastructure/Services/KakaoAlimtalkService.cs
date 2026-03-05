@@ -70,13 +70,13 @@ public class KakaoAlimtalkService : IKakaoAlimtalkService
     {
         if (!_enabled)
         {
-            _logger.LogInformation("카카오 알림톡 비활성: Template={Template}, Phone={Phone}", templateCode, MaskPhone(phoneNumber));
+            _logger.LogInformation("Kakao Alimtalk disabled: Template={Template}, Phone={Phone}", templateCode, MaskPhone(phoneNumber));
             return true;
         }
 
         if (string.IsNullOrEmpty(phoneNumber))
         {
-            _logger.LogWarning("알림톡 전송 실패: 전화번호 없음 (Template={Template})", templateCode);
+            _logger.LogWarning("Alimtalk send failed: phone number missing (Template={Template})", templateCode);
             return false;
         }
 
@@ -105,17 +105,17 @@ public class KakaoAlimtalkService : IKakaoAlimtalkService
 
             if (response.IsSuccessStatusCode)
             {
-                _logger.LogInformation("알림톡 전송 성공: Template={Template}, Phone={Phone}", templateCode, MaskPhone(phoneNumber));
+                _logger.LogInformation("Alimtalk sent successfully: Template={Template}, Phone={Phone}", templateCode, MaskPhone(phoneNumber));
                 return true;
             }
 
             var errorBody = await response.Content.ReadAsStringAsync(ct);
-            _logger.LogWarning("알림톡 전송 실패: Status={Status}, Body={Body}", response.StatusCode, errorBody);
+            _logger.LogWarning("Alimtalk send failed: Status={Status}, Body={Body}", response.StatusCode, errorBody);
             return false;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "알림톡 전송 예외: Template={Template}", templateCode);
+            _logger.LogError(ex, "Alimtalk send exception: Template={Template}", templateCode);
             return false;
         }
     }

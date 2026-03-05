@@ -23,7 +23,7 @@ public class GetPointBalanceQueryHandler : IRequestHandler<GetPointBalanceQuery,
     public async Task<Result<PointBalanceDto>> Handle(GetPointBalanceQuery request, CancellationToken cancellationToken)
     {
         if (_currentUser.UserId is null)
-            return Result<PointBalanceDto>.Failure("로그인이 필요합니다.");
+            return Result<PointBalanceDto>.Failure("Authentication required.");
 
         var userPoint = await _db.UserPoints
             .AsNoTracking()

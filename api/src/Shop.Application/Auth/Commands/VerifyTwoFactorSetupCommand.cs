@@ -34,17 +34,17 @@ public class VerifyTwoFactorSetupCommandHandler : IRequestHandler<VerifyTwoFacto
             .FirstOrDefaultAsync(u => u.Id == request.UserId && u.IsActive, cancellationToken);
 
         if (user is null)
-            return Result<TwoFactorVerifySetupResponse>.Failure("사용자를 찾을 수 없습니다.");
+            return Result<TwoFactorVerifySetupResponse>.Failure("User not found.");
 
         if (user.TwoFactorEnabled)
-            return Result<TwoFactorVerifySetupResponse>.Failure("이미 2단계 인증이 활성화되어 있습니다.");
+            return Result<TwoFactorVerifySetupResponse>.Failure("Two-factor authentication is already enabled.");
 
         if (string.IsNullOrEmpty(user.TwoFactorSecret))
-            return Result<TwoFactorVerifySetupResponse>.Failure("먼저 2단계 인증 설정을 시작해주세요.");
+            return Result<TwoFactorVerifySetupResponse>.Failure("Please start two-factor authentication setup first.");
 
         // Validate the TOTP code against the stored secret
         if (!_totpService.ValidateCode(user.TwoFactorSecret, request.Code))
-            return Result<TwoFactorVerifySetupResponse>.Failure("인증 코드가 올바르지 않습니다.");
+            return Result<TwoFactorVerifySetupResponse>.Failure("Invalid verification code.");
 
         // Activate 2FA
         user.TwoFactorEnabled = true;

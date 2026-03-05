@@ -24,7 +24,7 @@ public class MarkAllAsReadCommandHandler : IRequestHandler<MarkAllAsReadCommand,
     public async Task<Result<int>> Handle(MarkAllAsReadCommand request, CancellationToken cancellationToken)
     {
         if (_currentUser.UserId is null)
-            return Result<int>.Failure("로그인이 필요합니다.");
+            return Result<int>.Failure("Authentication required.");
 
         var userId = _currentUser.UserId.Value;
         var now = DateTime.UtcNow;

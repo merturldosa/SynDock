@@ -31,7 +31,7 @@ public class AutoPostProductCommandHandler : IRequestHandler<AutoPostProductComm
             .FirstOrDefaultAsync(p => p.Id == request.ProductId, cancellationToken);
 
         if (product is null)
-            return Result<List<SocialPostResultDto>>.Failure("상품을 찾을 수 없습니다.");
+            return Result<List<SocialPostResultDto>>.Failure("Product not found.");
 
         var imageUrl = product.Images?.OrderBy(i => i.SortOrder).FirstOrDefault()?.Url;
         var caption = BuildCaption(product);

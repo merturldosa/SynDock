@@ -40,7 +40,7 @@ public class GetTenantUsageQueryHandler : IRequestHandler<GetTenantUsageQuery, R
             .FirstOrDefaultAsync(t => t.Slug == request.Slug, cancellationToken);
 
         if (tenant is null)
-            return Result<TenantUsageDto>.Failure("테넌트를 찾을 수 없습니다.");
+            return Result<TenantUsageDto>.Failure("Tenant not found.");
 
         await _planEnforcer.EnsureUsageTracked(tenant.Id, cancellationToken);
 

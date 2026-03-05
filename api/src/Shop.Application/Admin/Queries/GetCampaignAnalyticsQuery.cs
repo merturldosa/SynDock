@@ -55,7 +55,7 @@ public class GetCampaignAnalyticsQueryHandler : IRequestHandler<GetCampaignAnaly
             .FirstOrDefaultAsync(c => c.Id == request.CampaignId, cancellationToken);
 
         if (campaign is null)
-            return Result<CampaignAnalyticsDto>.Failure("캠페인을 찾을 수 없습니다.");
+            return Result<CampaignAnalyticsDto>.Failure("Campaign not found.");
 
         List<CampaignVariantDto>? variants = null;
 

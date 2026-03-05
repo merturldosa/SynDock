@@ -22,7 +22,7 @@ public class UploadController : ControllerBase
     }
 
     [HttpPost("image")]
-    public async Task<IActionResult> UploadImage(IFormFile file, [FromQuery] string folder = "general")
+    public async Task<IActionResult> UploadImage(IFormFile file, [FromQuery] string folder = "general", CancellationToken ct = default)
     {
         if (file == null || file.Length == 0)
             return BadRequest(new { error = "파일을 선택해 주세요." });
@@ -39,7 +39,7 @@ public class UploadController : ControllerBase
     }
 
     [HttpPost("images")]
-    public async Task<IActionResult> UploadImages(List<IFormFile> files, [FromQuery] string folder = "general")
+    public async Task<IActionResult> UploadImages(List<IFormFile> files, [FromQuery] string folder = "general", CancellationToken ct = default)
     {
         if (files == null || files.Count == 0)
             return BadRequest(new { error = "파일을 선택해 주세요." });

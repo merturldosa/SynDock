@@ -24,16 +24,16 @@ public class SendVerificationEmailCommandHandler : IRequestHandler<SendVerificat
     public async Task<Result<bool>> Handle(SendVerificationEmailCommand request, CancellationToken cancellationToken)
     {
         if (_currentUser.UserId is null)
-            return Result<bool>.Failure("로그인이 필요합니다.");
+            return Result<bool>.Failure("Authentication required.");
 
         var user = await _db.Users
             .FirstOrDefaultAsync(u => u.Id == _currentUser.UserId.Value, cancellationToken);
 
         if (user is null)
-            return Result<bool>.Failure("사용자를 찾을 수 없습니다.");
+            return Result<bool>.Failure("User not found.");
 
         if (user.EmailVerified)
-            return Result<bool>.Failure("이미 인증된 이메일입니다.");
+            return Result<bool>.Failure("Email is already verified.");
 
         var token = Guid.NewGuid().ToString("N");
         user.EmailVerificationToken = token;

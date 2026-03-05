@@ -18,17 +18,17 @@ public class QnAController : ControllerBase
     }
 
     [HttpGet("product/{productId:int}")]
-    public async Task<IActionResult> GetByProduct(int productId, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+    public async Task<IActionResult> GetByProduct(int productId, [FromQuery] int page = 1, [FromQuery] int pageSize = 10, CancellationToken ct = default)
     {
-        var result = await _mediator.Send(new GetProductQnAsQuery(productId, page, pageSize));
+        var result = await _mediator.Send(new GetProductQnAsQuery(productId, page, pageSize), ct);
         return Ok(result);
     }
 
     [HttpGet("my")]
     [Authorize]
-    public async Task<IActionResult> GetMyQnAs([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+    public async Task<IActionResult> GetMyQnAs([FromQuery] int page = 1, [FromQuery] int pageSize = 10, CancellationToken ct = default)
     {
-        var result = await _mediator.Send(new GetMyQnAsQuery(page, pageSize));
+        var result = await _mediator.Send(new GetMyQnAsQuery(page, pageSize), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(result.Data);
@@ -36,9 +36,9 @@ public class QnAController : ControllerBase
 
     [HttpPost]
     [Authorize]
-    public async Task<IActionResult> CreateQuestion([FromBody] CreateQnARequest request)
+    public async Task<IActionResult> CreateQuestion([FromBody] CreateQnARequest request, CancellationToken ct)
     {
-        var result = await _mediator.Send(new CreateQnACommand(request.ProductId, request.Title, request.Content, request.IsSecret));
+        var result = await _mediator.Send(new CreateQnACommand(request.ProductId, request.Title, request.Content, request.IsSecret), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(new { qnaId = result.Data });
@@ -46,9 +46,9 @@ public class QnAController : ControllerBase
 
     [HttpPost("{id:int}/answer")]
     [Authorize(Roles = "TenantAdmin,Admin,PlatformAdmin")]
-    public async Task<IActionResult> Answer(int id, [FromBody] AnswerQnARequest request)
+    public async Task<IActionResult> Answer(int id, [FromBody] AnswerQnARequest request, CancellationToken ct)
     {
-        var result = await _mediator.Send(new AnswerQnACommand(id, request.Content));
+        var result = await _mediator.Send(new AnswerQnACommand(id, request.Content), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(new { replyId = result.Data });
@@ -56,9 +56,9 @@ public class QnAController : ControllerBase
 
     [HttpDelete("{id:int}")]
     [Authorize]
-    public async Task<IActionResult> Delete(int id)
+    public async Task<IActionResult> Delete(int id, CancellationToken ct)
     {
-        var result = await _mediator.Send(new DeleteQnACommand(id));
+        var result = await _mediator.Send(new DeleteQnACommand(id), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(new { success = true });

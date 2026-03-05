@@ -24,17 +24,17 @@ public class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand, Resul
     public async Task<Result<bool>> Handle(UpdateUserCommand request, CancellationToken cancellationToken)
     {
         if (_currentUser.UserId is null)
-            return Result<bool>.Failure("로그인이 필요합니다.");
+            return Result<bool>.Failure("Authentication required.");
 
         // Cannot change own role
         if (_currentUser.UserId.Value == request.UserId)
-            return Result<bool>.Failure("본인의 역할은 변경할 수 없습니다.");
+            return Result<bool>.Failure("Cannot change your own role.");
 
         var user = await _db.Users
             .FirstOrDefaultAsync(u => u.Id == request.UserId, cancellationToken);
 
         if (user is null)
-            return Result<bool>.Failure("사용자를 찾을 수 없습니다.");
+            return Result<bool>.Failure("User not found.");
 
         // Only PlatformAdmin can modify PlatformAdmin users
         var currentUserEntity = await _db.Users
@@ -42,27 +42,27 @@ public class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand, Resul
             .FirstOrDefaultAsync(u => u.Id == _currentUser.UserId.Value, cancellationToken);
 
         if (user.Role == "PlatformAdmin" && currentUserEntity?.Role != "PlatformAdmin")
-            return Result<bool>.Failure("PlatformAdmin 변경은 PlatformAdmin만 가능합니다.");
+            return Result<bool>.Failure("Only PlatformAdmin can modify PlatformAdmin users.");
 
         var validRoles = new[] { "Member", "TenantAdmin", "Admin", "PlatformAdmin" };
         if (!validRoles.Contains(request.Role))
-            return Result<bool>.Failure("유효하지 않은 역할입니다.");
+            return Result<bool>.Failure("Invalid role.");
 
         // Only PlatformAdmin can assign PlatformAdmin role
         if (request.Role == "PlatformAdmin" && currentUserEntity?.Role != "PlatformAdmin")
-            return Result<bool>.Failure("PlatformAdmin 역할 부여는 PlatformAdmin만 가능합니다.");
+            return Result<bool>.Failure("Only PlatformAdmin can assign PlatformAdmin role.");
 
         // Only PlatformAdmin/Admin can assign TenantAdmin role
         if (request.Role == "TenantAdmin" && currentUserEntity?.Role is not ("PlatformAdmin" or "Admin"))
-            return Result<bool>.Failure("TenantAdmin 역할 부여는 Admin 이상만 가능합니다.");
+            return Result<bool>.Failure("Only Admin or above can assign TenantAdmin role.");
 
         // Only Admin/PlatformAdmin can assign Admin role
         if (request.Role == "Admin" && currentUserEntity?.Role is not ("PlatformAdmin" or "Admin"))
-            return Result<bool>.Failure("Admin 역할 부여는 Admin 이상만 가능합니다.");
+            return Result<bool>.Failure("Only Admin or above can assign Admin role.");
 
         // TenantAdmin can only assign Member role (cannot escalate to TenantAdmin/Admin/PlatformAdmin)
         if (currentUserEntity?.Role == "TenantAdmin" && request.Role != "Member")
-            return Result<bool>.Failure("TenantAdmin은 Member 역할만 부여할 수 있습니다.");
+            return Result<bool>.Failure("TenantAdmin can only assign Member role.");
 
         user.Role = request.Role;
         user.IsActive = request.IsActive;

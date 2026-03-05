@@ -32,7 +32,7 @@ public class UpdateAddressCommandHandler : IRequestHandler<UpdateAddressCommand,
     public async Task<Result<bool>> Handle(UpdateAddressCommand request, CancellationToken cancellationToken)
     {
         if (_currentUser.UserId is null)
-            return Result<bool>.Failure("로그인이 필요합니다.");
+            return Result<bool>.Failure("Authentication required.");
 
         var userId = _currentUser.UserId.Value;
 
@@ -40,7 +40,7 @@ public class UpdateAddressCommandHandler : IRequestHandler<UpdateAddressCommand,
             .FirstOrDefaultAsync(a => a.Id == request.AddressId && a.UserId == userId, cancellationToken);
 
         if (address is null)
-            return Result<bool>.Failure("배송지를 찾을 수 없습니다.");
+            return Result<bool>.Failure("Shipping address not found.");
 
         // If setting as default, clear existing defaults
         if (request.IsDefault && !address.IsDefault)

@@ -71,6 +71,7 @@ public class ForecastAccuracyUpdateJob : BackgroundService
 
         // 2. Record new forecasts for active products with stock
         var productIds = await db.ProductVariants.AsNoTracking()
+            .IgnoreQueryFilters()
             .Where(v => v.IsActive && v.Stock > 0)
             .Select(v => v.ProductId)
             .Distinct()

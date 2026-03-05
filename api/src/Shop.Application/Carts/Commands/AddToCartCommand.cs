@@ -29,7 +29,7 @@ public class AddToCartCommandHandler : IRequestHandler<AddToCartCommand, Result<
     public async Task<Result<int>> Handle(AddToCartCommand request, CancellationToken cancellationToken)
     {
         if (_currentUser.UserId is null)
-            return Result<int>.Failure("로그인이 필요합니다.");
+            return Result<int>.Failure("Authentication required.");
 
         var userId = _currentUser.UserId.Value;
 
@@ -39,7 +39,7 @@ public class AddToCartCommandHandler : IRequestHandler<AddToCartCommand, Result<
             .FirstOrDefaultAsync(p => p.Id == request.ProductId && p.IsActive, cancellationToken);
 
         if (product is null)
-            return Result<int>.Failure("상품을 찾을 수 없습니다.");
+            return Result<int>.Failure("Product not found.");
 
         // Validate variant if specified
         if (request.VariantId.HasValue)
@@ -49,7 +49,7 @@ public class AddToCartCommandHandler : IRequestHandler<AddToCartCommand, Result<
                 .FirstOrDefaultAsync(v => v.Id == request.VariantId.Value && v.ProductId == request.ProductId && v.IsActive, cancellationToken);
 
             if (variant is null)
-                return Result<int>.Failure("상품 옵션을 찾을 수 없습니다.");
+                return Result<int>.Failure("Product variant not found.");
         }
 
         // Get or create cart

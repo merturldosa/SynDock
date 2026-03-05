@@ -18,13 +18,13 @@ public class ChatController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Chat([FromBody] ChatRequest request)
+    public async Task<IActionResult> Chat([FromBody] ChatRequest request, CancellationToken ct)
     {
         var messages = request.Messages
             .Select(m => new ChatMessageRequest(m.Role, m.Content))
             .ToList();
 
-        var result = await _mediator.Send(new SendChatCommand(messages));
+        var result = await _mediator.Send(new SendChatCommand(messages), ct);
 
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });

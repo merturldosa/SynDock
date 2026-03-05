@@ -32,7 +32,7 @@ public class CreateAddressCommandHandler : IRequestHandler<CreateAddressCommand,
     public async Task<Result<int>> Handle(CreateAddressCommand request, CancellationToken cancellationToken)
     {
         if (_currentUser.UserId is null)
-            return Result<int>.Failure("로그인이 필요합니다.");
+            return Result<int>.Failure("Authentication required.");
 
         var userId = _currentUser.UserId.Value;
 

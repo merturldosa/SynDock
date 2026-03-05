@@ -42,7 +42,7 @@ public class PushSubscriptionController : ControllerBase
     }
 
     [HttpPost("subscribe")]
-    public async Task<IActionResult> Subscribe([FromBody] PushSubscribeRequest request)
+    public async Task<IActionResult> Subscribe([FromBody] PushSubscribeRequest request, CancellationToken ct)
     {
         if (_currentUser.UserId is null)
             return Unauthorized(new { error = "User not authenticated" });
@@ -80,7 +80,7 @@ public class PushSubscriptionController : ControllerBase
     }
 
     [HttpPost("unsubscribe")]
-    public async Task<IActionResult> Unsubscribe([FromBody] PushUnsubscribeRequest request)
+    public async Task<IActionResult> Unsubscribe([FromBody] PushUnsubscribeRequest request, CancellationToken ct)
     {
         if (_currentUser.UserId is null)
             return Unauthorized(new { error = "User not authenticated" });

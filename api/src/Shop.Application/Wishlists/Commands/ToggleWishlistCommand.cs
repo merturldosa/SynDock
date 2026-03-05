@@ -25,7 +25,7 @@ public class ToggleWishlistCommandHandler : IRequestHandler<ToggleWishlistComman
     public async Task<Result<bool>> Handle(ToggleWishlistCommand request, CancellationToken cancellationToken)
     {
         if (_currentUser.UserId is null)
-            return Result<bool>.Failure("로그인이 필요합니다.");
+            return Result<bool>.Failure("Authentication required.");
 
         var userId = _currentUser.UserId.Value;
 
@@ -44,7 +44,7 @@ public class ToggleWishlistCommandHandler : IRequestHandler<ToggleWishlistComman
             .AnyAsync(p => p.Id == request.ProductId && p.IsActive, cancellationToken);
 
         if (!productExists)
-            return Result<bool>.Failure("상품을 찾을 수 없습니다.");
+            return Result<bool>.Failure("Product not found.");
 
         var wishlist = new Wishlist
         {

@@ -33,7 +33,7 @@ public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, R
             .FirstOrDefaultAsync(t => t.Token == request.RefreshToken && !t.IsRevoked, cancellationToken);
 
         if (token == null || token.ExpiresAt < DateTime.UtcNow)
-            return Result<AuthResponse>.Failure("유효하지 않거나 만료된 토큰입니다.");
+            return Result<AuthResponse>.Failure("Invalid or expired token.");
 
         token.IsRevoked = true;
         token.RevokedAt = DateTime.UtcNow;

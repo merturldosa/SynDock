@@ -24,7 +24,7 @@ public class GetMySettlementsQueryHandler : IRequestHandler<GetMySettlementsQuer
     {
         var tenantId = _tenantContext.TenantId;
         if (tenantId == 0)
-            return Result<List<SettlementDto>>.Failure("테넌트 정보를 찾을 수 없습니다.");
+            return Result<List<SettlementDto>>.Failure("Tenant information not found.");
 
         var query = _db.Settlements.AsNoTracking()
             .Where(s => s.TenantId == tenantId);
@@ -63,7 +63,7 @@ public class GetMyCommissionsQueryHandler : IRequestHandler<GetMyCommissionsQuer
     {
         var tenantId = _tenantContext.TenantId;
         if (tenantId == 0)
-            return Result<List<CommissionDto>>.Failure("테넌트 정보를 찾을 수 없습니다.");
+            return Result<List<CommissionDto>>.Failure("Tenant information not found.");
 
         var query = _db.Commissions.AsNoTracking()
             .Where(c => c.TenantId == tenantId);
@@ -101,7 +101,7 @@ public class GetMyCommissionSettingsQueryHandler : IRequestHandler<GetMyCommissi
     {
         var tenantId = _tenantContext.TenantId;
         if (tenantId == 0)
-            return Result<List<CommissionSettingDto>>.Failure("테넌트 정보를 찾을 수 없습니다.");
+            return Result<List<CommissionSettingDto>>.Failure("Tenant information not found.");
 
         var settings = await _db.CommissionSettings
             .AsNoTracking()

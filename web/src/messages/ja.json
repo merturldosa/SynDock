@@ -53,7 +53,12 @@
     "items": "{count}件",
     "noData": "データがありません。",
     "default": "デフォルト",
-    "fetchError": "データの読み込みに失敗しました"
+    "fetchError": "データの読み込みに失敗しました",
+    "quantity": "{count}個",
+    "orderCount": "{count}件",
+    "itemSummary": "{items}品目 / {qty}個",
+    "startDate": "開始日",
+    "endDate": "終了日"
   },
   "header": {
     "logout": "ログアウト",
@@ -939,7 +944,12 @@
       "trackingLabel": "追跡番号",
       "orderTimeline": "注文タイムライン",
       "noTimeline": "まだ履歴がありません。",
-      "notFound": "注文が見つかりません。"
+      "notFound": "注文が見つかりません。",
+      "carrierCJ": "CJ大韓通運",
+      "carrierHanjin": "韓進宅配",
+      "carrierLotte": "ロッテ宅配",
+      "carrierLogen": "ロジェン宅配",
+      "carrierPost": "郵便局宅配"
     },
     "coupons": {
       "title": "クーポン管理",
@@ -1289,7 +1299,10 @@
       "noOrders": "発注履歴がありません。",
       "bulkCreatedMessage": "{count}件のルールが作成されました。",
       "confirmDeleteRule": "このルールを削除しますか？",
-      "confirmCancelOrder": "この発注をキャンセルしますか？"
+      "confirmCancelOrder": "この発注をキャンセルしますか？",
+      "autoPlaceholder": "0=自動",
+      "unlimitedPlaceholder": "0=無制限",
+      "auto": "自動"
     },
     "settings": {
       "title": "設定",

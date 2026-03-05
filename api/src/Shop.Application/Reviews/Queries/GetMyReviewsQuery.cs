@@ -38,7 +38,7 @@ public class GetMyReviewsQueryHandler : IRequestHandler<GetMyReviewsQuery, Resul
     public async Task<Result<MyReviewsResult>> Handle(GetMyReviewsQuery request, CancellationToken cancellationToken)
     {
         if (_currentUser.UserId is null)
-            return Result<MyReviewsResult>.Failure("로그인이 필요합니다.");
+            return Result<MyReviewsResult>.Failure("Authentication required.");
 
         var userId = _currentUser.UserId.Value;
 

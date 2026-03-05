@@ -32,7 +32,7 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<LoginRes
             .FirstOrDefaultAsync(u => u.Email == request.Email && u.IsActive, cancellationToken);
 
         if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
-            return Result<LoginResponse>.Failure("이메일 또는 비밀번호가 올바르지 않습니다.");
+            return Result<LoginResponse>.Failure("Invalid email or password.");
 
         // If 2FA is enabled, return partial response with temporary token
         if (user.TwoFactorEnabled)

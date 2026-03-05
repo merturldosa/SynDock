@@ -93,13 +93,13 @@ public class CalculateOrderCommissionCommandHandler : IRequestHandler<CalculateO
             .FirstOrDefaultAsync(o => o.Id == request.OrderId, cancellationToken);
 
         if (order is null)
-            return Result<int>.Failure("주문을 찾을 수 없습니다.");
+            return Result<int>.Failure("Order not found.");
 
         // 이미 수수료가 계산된 주문인지 확인
         var exists = await _db.Commissions
             .AnyAsync(c => c.OrderId == request.OrderId, cancellationToken);
         if (exists)
-            return Result<int>.Failure("이미 수수료가 계산된 주문입니다.");
+            return Result<int>.Failure("Commission has already been calculated for this order.");
 
         // 수수료율 결정: 상품별 → 카테고리별 → 테넌트 기본
         var rate = await ResolveCommissionRate(order.TenantId, cancellationToken);
@@ -164,7 +164,7 @@ public class CreateSettlementCommandHandler : IRequestHandler<CreateSettlementCo
             .ToListAsync(cancellationToken);
 
         if (pendingCommissions.Count == 0)
-            return Result<int>.Failure("정산할 수수료 내역이 없습니다.");
+            return Result<int>.Failure("No pending commissions to settle.");
 
         var totalOrderAmount = pendingCommissions.Sum(c => c.OrderAmount);
         var totalCommission = pendingCommissions.Sum(c => c.CommissionAmount);
@@ -179,7 +179,7 @@ public class CreateSettlementCommandHandler : IRequestHandler<CreateSettlementCo
                 && cs.CategoryId == null, cancellationToken);
 
         if (setting is not null && totalSettlement < setting.MinSettlementAmount)
-            return Result<int>.Failure($"최소 정산 금액({setting.MinSettlementAmount:N0}원) 미달. 현재: {totalSettlement:N0}원");
+            return Result<int>.Failure($"Below minimum settlement amount ({setting.MinSettlementAmount:N0}). Current: {totalSettlement:N0}");
 
         var settlement = new Settlement
         {
@@ -235,10 +235,10 @@ public class ProcessSettlementCommandHandler : IRequestHandler<ProcessSettlement
             .FirstOrDefaultAsync(s => s.Id == request.SettlementId, cancellationToken);
 
         if (settlement is null)
-            return Result<bool>.Failure("정산 배치를 찾을 수 없습니다.");
+            return Result<bool>.Failure("Settlement batch not found.");
 
         if (settlement.Status == "Completed")
-            return Result<bool>.Failure("이미 처리 완료된 정산입니다.");
+            return Result<bool>.Failure("Settlement has already been completed.");
 
         // 이체 요청 (ITransferService 통해 은행 API 호출)
         var transactionId = request.TransactionId;

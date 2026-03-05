@@ -10,7 +10,7 @@ import { getLocale, getMessages } from "next-intl/server";
 import { generateOrganizationJsonLd } from "@/lib/seo";
 
 const TENANT_NAME = process.env.NEXT_PUBLIC_TENANT_NAME || "SynDock Shop";
-const TENANT_DESC = process.env.NEXT_PUBLIC_TENANT_DESC || "멀티테넌트 쇼핑몰 플랫폼";
+const TENANT_DESC = process.env.NEXT_PUBLIC_TENANT_DESC || "Multi-tenant Shopping Mall Platform";
 
 export const metadata: Metadata = {
   title: {

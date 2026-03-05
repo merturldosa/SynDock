@@ -53,7 +53,12 @@
     "items": "{count}",
     "noData": "Không có dữ liệu.",
     "default": "Mặc định",
-    "fetchError": "Không thể tải dữ liệu"
+    "fetchError": "Không thể tải dữ liệu",
+    "quantity": "{count}",
+    "orderCount": "{count} đơn",
+    "itemSummary": "{items} mặt hàng / {qty} đơn vị",
+    "startDate": "Ngày bắt đầu",
+    "endDate": "Ngày kết thúc"
   },
   "header": {
     "logout": "Đăng xuất",
@@ -938,7 +943,12 @@
       "trackingLabel": "Mã vận đơn",
       "orderTimeline": "Tiến trình đơn hàng",
       "noTimeline": "Chưa có lịch sử.",
-      "notFound": "Không tìm thấy đơn hàng."
+      "notFound": "Không tìm thấy đơn hàng.",
+      "carrierCJ": "CJ Logistics",
+      "carrierHanjin": "Hanjin Express",
+      "carrierLotte": "Lotte Delivery",
+      "carrierLogen": "Logen Logistics",
+      "carrierPost": "Korea Post"
     },
     "coupons": {
       "title": "Quản lý phiếu giảm giá",
@@ -1288,7 +1298,10 @@
       "noOrders": "Không có đơn đặt hàng.",
       "bulkCreatedMessage": "Đã tạo {count} quy tắc.",
       "confirmDeleteRule": "Bạn có chắc chắn muốn xóa quy tắc này không?",
-      "confirmCancelOrder": "Bạn có chắc chắn muốn hủy đơn đặt hàng này không?"
+      "confirmCancelOrder": "Bạn có chắc chắn muốn hủy đơn đặt hàng này không?",
+      "autoPlaceholder": "0=Tự động",
+      "unlimitedPlaceholder": "0=Không giới hạn",
+      "auto": "Tự động"
     },
     "settings": {
       "title": "Cài đặt",

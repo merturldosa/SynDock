@@ -21,7 +21,7 @@ public class SeedSaintsCommandHandler : IRequestHandler<SeedSaintsCommand, Resul
     {
         var existingCount = await _db.Saints.CountAsync(cancellationToken);
         if (existingCount > 0)
-            return Result<int>.Failure("이미 성인 데이터가 존재합니다.");
+            return Result<int>.Failure("Saints data already exists.");
 
         var saints = GetSeedSaints();
         await _db.Saints.AddRangeAsync(saints, cancellationToken);

@@ -39,16 +39,16 @@ public class VerifyTwoFactorLoginCommandHandler : IRequestHandler<VerifyTwoFacto
         // Validate the temporary 2FA token
         var userId = _tokenService.ValidateTwoFactorToken(request.TwoFactorToken);
         if (userId is null)
-            return Result<AuthResponse>.Failure("2단계 인증 토큰이 유효하지 않거나 만료되었습니다.");
+            return Result<AuthResponse>.Failure("Two-factor authentication token is invalid or expired.");
 
         var user = await _db.Users
             .FirstOrDefaultAsync(u => u.Id == userId.Value && u.IsActive, cancellationToken);
 
         if (user is null)
-            return Result<AuthResponse>.Failure("사용자를 찾을 수 없습니다.");
+            return Result<AuthResponse>.Failure("User not found.");
 
         if (!user.TwoFactorEnabled || string.IsNullOrEmpty(user.TwoFactorSecret))
-            return Result<AuthResponse>.Failure("2단계 인증이 설정되어 있지 않습니다.");
+            return Result<AuthResponse>.Failure("Two-factor authentication is not configured.");
 
         // Try TOTP code first
         var isValidTotp = _totpService.ValidateCode(user.TwoFactorSecret, request.Code);
@@ -58,7 +58,7 @@ public class VerifyTwoFactorLoginCommandHandler : IRequestHandler<VerifyTwoFacto
         {
             var backupUsed = TryUseBackupCode(user, request.Code);
             if (!backupUsed)
-                return Result<AuthResponse>.Failure("인증 코드가 올바르지 않습니다.");
+                return Result<AuthResponse>.Failure("Invalid verification code.");
         }
 
         // Complete login - same as normal login flow

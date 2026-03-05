@@ -30,7 +30,7 @@ public class UpdateProductVariantsCommandHandler : IRequestHandler<UpdateProduct
             .FirstOrDefaultAsync(p => p.Id == request.ProductId, cancellationToken);
 
         if (product is null)
-            return Result<bool>.Failure("상품을 찾을 수 없습니다.");
+            return Result<bool>.Failure("Product not found.");
 
         var existing = await _db.ProductVariants
             .Where(v => v.ProductId == request.ProductId)

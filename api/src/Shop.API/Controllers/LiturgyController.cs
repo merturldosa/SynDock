@@ -16,17 +16,17 @@ public class LiturgyController : ControllerBase
     }
 
     [HttpGet("today")]
-    public async Task<IActionResult> GetTodayLiturgy()
+    public async Task<IActionResult> GetTodayLiturgy(CancellationToken ct)
     {
-        var result = await _mediator.Send(new GetCurrentLiturgyQuery());
+        var result = await _mediator.Send(new GetCurrentLiturgyQuery(), ct);
         return Ok(result);
     }
 
     [HttpGet("seasons")]
-    public async Task<IActionResult> GetSeasons([FromQuery] int? year)
+    public async Task<IActionResult> GetSeasons([FromQuery] int? year, CancellationToken ct)
     {
         var targetYear = year ?? DateTime.UtcNow.Year;
-        var result = await _mediator.Send(new GetLiturgicalSeasonsQuery(targetYear));
+        var result = await _mediator.Send(new GetLiturgicalSeasonsQuery(targetYear), ct);
         return Ok(result);
     }
 }

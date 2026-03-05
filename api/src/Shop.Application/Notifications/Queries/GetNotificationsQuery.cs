@@ -23,7 +23,7 @@ public class GetNotificationsQueryHandler : IRequestHandler<GetNotificationsQuer
     public async Task<Result<PagedNotifications>> Handle(GetNotificationsQuery request, CancellationToken cancellationToken)
     {
         if (_currentUser.UserId is null)
-            return Result<PagedNotifications>.Failure("로그인이 필요합니다.");
+            return Result<PagedNotifications>.Failure("Authentication required.");
 
         var userId = _currentUser.UserId.Value;
 

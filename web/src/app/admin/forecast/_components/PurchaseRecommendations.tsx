@@ -120,7 +120,7 @@ export default function PurchaseRecommendations() {
       {orderResult && (
         <div
           className={`rounded-lg p-3 text-sm ${
-            orderResult.includes("성공") || orderResult.includes("Success")
+            orderResult.includes("success") || orderResult.includes("성공") || orderResult.includes("Success")
               ? "bg-green-50 text-green-700"
               : "bg-red-50 text-red-700"
           }`}

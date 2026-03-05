@@ -285,7 +285,7 @@ export default function OrderPage() {
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-[var(--color-secondary)] line-clamp-1">{item.productName}</p>
                 {item.variantName && <p className="text-xs text-gray-500">{item.variantName}</p>}
-                <p className="text-xs text-gray-400 mt-0.5">{item.quantity}개</p>
+                <p className="text-xs text-gray-400 mt-0.5">{t("common.quantity", { count: item.quantity })}</p>
               </div>
               <p className="text-sm font-bold text-[var(--color-secondary)] shrink-0">{formatPrice(item.subTotal)}</p>
             </div>

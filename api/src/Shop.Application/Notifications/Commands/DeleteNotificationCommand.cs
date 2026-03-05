@@ -24,13 +24,13 @@ public class DeleteNotificationCommandHandler : IRequestHandler<DeleteNotificati
     public async Task<Result<bool>> Handle(DeleteNotificationCommand request, CancellationToken cancellationToken)
     {
         if (_currentUser.UserId is null)
-            return Result<bool>.Failure("로그인이 필요합니다.");
+            return Result<bool>.Failure("Authentication required.");
 
         var notification = await _db.Notifications
             .FirstOrDefaultAsync(n => n.Id == request.Id && n.UserId == _currentUser.UserId.Value, cancellationToken);
 
         if (notification is null)
-            return Result<bool>.Failure("알림을 찾을 수 없습니다.");
+            return Result<bool>.Failure("Notification not found.");
 
         _db.Notifications.Remove(notification);
         await _unitOfWork.SaveChangesAsync(cancellationToken);

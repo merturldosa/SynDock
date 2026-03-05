@@ -35,7 +35,7 @@ public class RefundPaymentCommandHandler : IRequestHandler<RefundPaymentCommand,
     public async Task<Result<bool>> Handle(RefundPaymentCommand request, CancellationToken cancellationToken)
     {
         if (_currentUser.UserId is null)
-            return Result<bool>.Failure("로그인이 필요합니다.");
+            return Result<bool>.Failure("Authentication required.");
 
         var order = await _db.Orders
             .Include(o => o.Items)
@@ -43,13 +43,13 @@ public class RefundPaymentCommandHandler : IRequestHandler<RefundPaymentCommand,
             .FirstOrDefaultAsync(o => o.Id == request.OrderId, cancellationToken);
 
         if (order is null)
-            return Result<bool>.Failure("주문을 찾을 수 없습니다.");
+            return Result<bool>.Failure("Order not found.");
 
         if (order.Status == nameof(OrderStatus.Refunded))
-            return Result<bool>.Failure("이미 환불된 주문입니다.");
+            return Result<bool>.Failure("Order has already been refunded.");
 
         if (order.Status == nameof(OrderStatus.Cancelled))
-            return Result<bool>.Failure("취소된 주문은 환불할 수 없습니다.");
+            return Result<bool>.Failure("Cancelled orders cannot be refunded.");
 
         // Find the completed payment
         var payment = await _db.Payments

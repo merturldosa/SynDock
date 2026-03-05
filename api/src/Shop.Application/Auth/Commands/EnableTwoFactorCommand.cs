@@ -34,10 +34,10 @@ public class EnableTwoFactorCommandHandler : IRequestHandler<EnableTwoFactorComm
             .FirstOrDefaultAsync(u => u.Id == request.UserId && u.IsActive, cancellationToken);
 
         if (user is null)
-            return Result<TwoFactorSetupResponse>.Failure("사용자를 찾을 수 없습니다.");
+            return Result<TwoFactorSetupResponse>.Failure("User not found.");
 
         if (user.TwoFactorEnabled)
-            return Result<TwoFactorSetupResponse>.Failure("이미 2단계 인증이 활성화되어 있습니다.");
+            return Result<TwoFactorSetupResponse>.Failure("Two-factor authentication is already enabled.");
 
         // Generate secret and backup codes
         var secret = _totpService.GenerateSecret();

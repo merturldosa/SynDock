@@ -24,7 +24,7 @@ public class ClearCartCommandHandler : IRequestHandler<ClearCartCommand, Result<
     public async Task<Result<bool>> Handle(ClearCartCommand request, CancellationToken cancellationToken)
     {
         if (_currentUser.UserId is null)
-            return Result<bool>.Failure("로그인이 필요합니다.");
+            return Result<bool>.Failure("Authentication required.");
 
         var cart = await _db.Carts
             .Include(c => c.Items)

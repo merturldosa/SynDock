@@ -17,24 +17,24 @@ public class RecommendationsController : ControllerBase
     }
 
     [HttpGet("product/{productId:int}")]
-    public async Task<IActionResult> GetProductRecommendations(int productId, [FromQuery] int count = 6)
+    public async Task<IActionResult> GetProductRecommendations(int productId, [FromQuery] int count = 6, CancellationToken ct = default)
     {
-        var result = await _mediator.Send(new GetProductRecommendationsQuery(productId, count));
+        var result = await _mediator.Send(new GetProductRecommendationsQuery(productId, count), ct);
         return result.IsSuccess ? Ok(result.Data) : BadRequest(new { error = result.Error });
     }
 
     [HttpGet("user")]
     [Authorize]
-    public async Task<IActionResult> GetUserRecommendations([FromQuery] int count = 6)
+    public async Task<IActionResult> GetUserRecommendations([FromQuery] int count = 6, CancellationToken ct = default)
     {
-        var result = await _mediator.Send(new GetUserRecommendationsQuery(count));
+        var result = await _mediator.Send(new GetUserRecommendationsQuery(count), ct);
         return result.IsSuccess ? Ok(result.Data) : BadRequest(new { error = result.Error });
     }
 
     [HttpGet("popular")]
-    public async Task<IActionResult> GetPopularProducts([FromQuery] int count = 6)
+    public async Task<IActionResult> GetPopularProducts([FromQuery] int count = 6, CancellationToken ct = default)
     {
-        var result = await _mediator.Send(new GetPopularProductsQuery(count));
+        var result = await _mediator.Send(new GetPopularProductsQuery(count), ct);
         return result.IsSuccess ? Ok(result.Data) : BadRequest(new { error = result.Error });
     }
 }

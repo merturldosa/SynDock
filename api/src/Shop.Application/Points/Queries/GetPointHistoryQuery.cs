@@ -23,7 +23,7 @@ public class GetPointHistoryQueryHandler : IRequestHandler<GetPointHistoryQuery,
     public async Task<Result<PagedPointHistory>> Handle(GetPointHistoryQuery request, CancellationToken cancellationToken)
     {
         if (_currentUser.UserId is null)
-            return Result<PagedPointHistory>.Failure("로그인이 필요합니다.");
+            return Result<PagedPointHistory>.Failure("Authentication required.");
 
         var userId = _currentUser.UserId.Value;
 

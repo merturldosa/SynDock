@@ -19,45 +19,45 @@ public class NotificationsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetNotifications([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
+    public async Task<IActionResult> GetNotifications([FromQuery] int page = 1, [FromQuery] int pageSize = 20, CancellationToken ct = default)
     {
-        var result = await _mediator.Send(new GetNotificationsQuery(page, pageSize));
+        var result = await _mediator.Send(new GetNotificationsQuery(page, pageSize), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(result.Data);
     }
 
     [HttpGet("unread-count")]
-    public async Task<IActionResult> GetUnreadCount()
+    public async Task<IActionResult> GetUnreadCount(CancellationToken ct)
     {
-        var result = await _mediator.Send(new GetUnreadCountQuery());
+        var result = await _mediator.Send(new GetUnreadCountQuery(), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(result.Data);
     }
 
     [HttpPut("{id:int}/read")]
-    public async Task<IActionResult> MarkAsRead(int id)
+    public async Task<IActionResult> MarkAsRead(int id, CancellationToken ct)
     {
-        var result = await _mediator.Send(new MarkAsReadCommand(id));
+        var result = await _mediator.Send(new MarkAsReadCommand(id), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(new { success = true });
     }
 
     [HttpPut("read-all")]
-    public async Task<IActionResult> MarkAllAsRead()
+    public async Task<IActionResult> MarkAllAsRead(CancellationToken ct)
     {
-        var result = await _mediator.Send(new MarkAllAsReadCommand());
+        var result = await _mediator.Send(new MarkAllAsReadCommand(), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(new { markedCount = result.Data });
     }
 
     [HttpDelete("{id:int}")]
-    public async Task<IActionResult> DeleteNotification(int id)
+    public async Task<IActionResult> DeleteNotification(int id, CancellationToken ct)
     {
-        var result = await _mediator.Send(new DeleteNotificationCommand(id));
+        var result = await _mediator.Send(new DeleteNotificationCommand(id), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(new { success = true });

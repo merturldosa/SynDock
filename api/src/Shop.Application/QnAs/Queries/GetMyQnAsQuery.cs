@@ -39,7 +39,7 @@ public class GetMyQnAsQueryHandler : IRequestHandler<GetMyQnAsQuery, Result<MyQn
     public async Task<Result<MyQnAsResult>> Handle(GetMyQnAsQuery request, CancellationToken cancellationToken)
     {
         if (_currentUser.UserId is null)
-            return Result<MyQnAsResult>.Failure("로그인이 필요합니다.");
+            return Result<MyQnAsResult>.Failure("Authentication required.");
 
         var userId = _currentUser.UserId.Value;
 

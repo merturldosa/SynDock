@@ -31,7 +31,7 @@ public class UpdateTenantDomainCommandHandler : IRequestHandler<UpdateTenantDoma
         var tenant = await _db.Tenants
             .FirstOrDefaultAsync(t => t.Id == request.TenantId, cancellationToken);
         if (tenant is null)
-            return Result<DomainConfigDto>.Failure("테넌트를 찾을 수 없습니다.");
+            return Result<DomainConfigDto>.Failure("Tenant not found.");
 
         if (request.CustomDomain is not null)
             tenant.CustomDomain = string.IsNullOrWhiteSpace(request.CustomDomain) ? null : request.CustomDomain;

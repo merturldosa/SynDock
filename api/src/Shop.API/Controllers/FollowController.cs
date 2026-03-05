@@ -19,32 +19,32 @@ public class FollowController : ControllerBase
 
     [HttpPost("toggle")]
     [Authorize]
-    public async Task<IActionResult> Toggle([FromBody] ToggleFollowRequest request)
+    public async Task<IActionResult> Toggle([FromBody] ToggleFollowRequest request, CancellationToken ct)
     {
-        var result = await _mediator.Send(new ToggleFollowCommand(request.TargetUserId));
+        var result = await _mediator.Send(new ToggleFollowCommand(request.TargetUserId), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(new { isFollowing = result.Data });
     }
 
     [HttpGet("followers/{userId:int}")]
-    public async Task<IActionResult> GetFollowers(int userId)
+    public async Task<IActionResult> GetFollowers(int userId, CancellationToken ct)
     {
-        var result = await _mediator.Send(new GetFollowersQuery(userId));
+        var result = await _mediator.Send(new GetFollowersQuery(userId), ct);
         return Ok(result);
     }
 
     [HttpGet("following/{userId:int}")]
-    public async Task<IActionResult> GetFollowing(int userId)
+    public async Task<IActionResult> GetFollowing(int userId, CancellationToken ct)
     {
-        var result = await _mediator.Send(new GetFollowingQuery(userId));
+        var result = await _mediator.Send(new GetFollowingQuery(userId), ct);
         return Ok(result);
     }
 
     [HttpGet("profile/{userId:int}")]
-    public async Task<IActionResult> GetProfile(int userId)
+    public async Task<IActionResult> GetProfile(int userId, CancellationToken ct)
     {
-        var result = await _mediator.Send(new GetUserProfileQuery(userId));
+        var result = await _mediator.Send(new GetUserProfileQuery(userId), ct);
         if (!result.IsSuccess)
             return NotFound(new { error = result.Error });
         return Ok(result.Data);

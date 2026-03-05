@@ -39,13 +39,13 @@ public class UpdateProductCommandHandler : IRequestHandler<UpdateProductCommand,
     public async Task<Result<bool>> Handle(UpdateProductCommand request, CancellationToken cancellationToken)
     {
         if (_currentUser.UserId is null)
-            return Result<bool>.Failure("로그인이 필요합니다.");
+            return Result<bool>.Failure("Authentication required.");
 
         var product = await _db.Products
             .FirstOrDefaultAsync(p => p.Id == request.ProductId, cancellationToken);
 
         if (product is null)
-            return Result<bool>.Failure("상품을 찾을 수 없습니다.");
+            return Result<bool>.Failure("Product not found.");
 
         // Validate category
         var categoryExists = await _db.Categories
@@ -53,7 +53,7 @@ public class UpdateProductCommandHandler : IRequestHandler<UpdateProductCommand,
             .AnyAsync(c => c.Id == request.CategoryId && c.IsActive, cancellationToken);
 
         if (!categoryExists)
-            return Result<bool>.Failure("카테고리를 찾을 수 없습니다.");
+            return Result<bool>.Failure("Category not found.");
 
         // Check slug uniqueness if changed
         if (!string.IsNullOrEmpty(request.Slug) && request.Slug != product.Slug)
@@ -63,7 +63,7 @@ public class UpdateProductCommandHandler : IRequestHandler<UpdateProductCommand,
                 .AnyAsync(p => p.Slug == request.Slug && p.Id != request.ProductId, cancellationToken);
 
             if (slugExists)
-                return Result<bool>.Failure($"이미 사용 중인 슬러그입니다: {request.Slug}");
+                return Result<bool>.Failure($"Slug already in use: {request.Slug}");
         }
 
         product.Name = request.Name;

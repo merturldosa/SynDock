@@ -21,18 +21,18 @@ public class PaymentController : ControllerBase
     }
 
     [HttpPost("confirm")]
-    public async Task<IActionResult> ConfirmPayment([FromBody] ConfirmPaymentRequest request)
+    public async Task<IActionResult> ConfirmPayment([FromBody] ConfirmPaymentRequest request, CancellationToken ct)
     {
-        var result = await _mediator.Send(new ConfirmPaymentCommand(request.PaymentKey, request.OrderId, request.Amount));
+        var result = await _mediator.Send(new ConfirmPaymentCommand(request.PaymentKey, request.OrderId, request.Amount), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(new { orderId = result.Data, success = true });
     }
 
     [HttpPost("{orderId:int}/refund")]
-    public async Task<IActionResult> RefundPayment(int orderId, [FromBody] RefundPaymentRequest request)
+    public async Task<IActionResult> RefundPayment(int orderId, [FromBody] RefundPaymentRequest request, CancellationToken ct)
     {
-        var result = await _mediator.Send(new RefundPaymentCommand(orderId, request.Reason));
+        var result = await _mediator.Send(new RefundPaymentCommand(orderId, request.Reason), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(new { success = true });

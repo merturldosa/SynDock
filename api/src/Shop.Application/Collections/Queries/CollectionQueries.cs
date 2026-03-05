@@ -30,7 +30,7 @@ public class GetMyCollectionsQueryHandler : IRequestHandler<GetMyCollectionsQuer
     public async Task<Result<List<CollectionDto>>> Handle(GetMyCollectionsQuery request, CancellationToken cancellationToken)
     {
         if (_currentUser.UserId is null)
-            return Result<List<CollectionDto>>.Failure("로그인이 필요합니다.");
+            return Result<List<CollectionDto>>.Failure("Authentication required.");
 
         var collections = await _db.Collections
             .AsNoTracking()
@@ -66,7 +66,7 @@ public class GetCollectionDetailQueryHandler : IRequestHandler<GetCollectionDeta
     public async Task<Result<CollectionDetailDto>> Handle(GetCollectionDetailQuery request, CancellationToken cancellationToken)
     {
         if (_currentUser.UserId is null)
-            return Result<CollectionDetailDto>.Failure("로그인이 필요합니다.");
+            return Result<CollectionDetailDto>.Failure("Authentication required.");
 
         var collection = await _db.Collections
             .AsNoTracking()
@@ -89,7 +89,7 @@ public class GetCollectionDetailQueryHandler : IRequestHandler<GetCollectionDeta
             .FirstOrDefaultAsync(cancellationToken);
 
         if (collection is null)
-            return Result<CollectionDetailDto>.Failure("컬렉션을 찾을 수 없습니다.");
+            return Result<CollectionDetailDto>.Failure("Collection not found.");
 
         return Result<CollectionDetailDto>.Success(collection);
     }

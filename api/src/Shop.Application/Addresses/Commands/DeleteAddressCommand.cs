@@ -24,13 +24,13 @@ public class DeleteAddressCommandHandler : IRequestHandler<DeleteAddressCommand,
     public async Task<Result<bool>> Handle(DeleteAddressCommand request, CancellationToken cancellationToken)
     {
         if (_currentUser.UserId is null)
-            return Result<bool>.Failure("로그인이 필요합니다.");
+            return Result<bool>.Failure("Authentication required.");
 
         var address = await _db.Addresses
             .FirstOrDefaultAsync(a => a.Id == request.AddressId && a.UserId == _currentUser.UserId.Value, cancellationToken);
 
         if (address is null)
-            return Result<bool>.Failure("배송지를 찾을 수 없습니다.");
+            return Result<bool>.Failure("Shipping address not found.");
 
         _db.Addresses.Remove(address);
         await _unitOfWork.SaveChangesAsync(cancellationToken);

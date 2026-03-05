@@ -24,13 +24,13 @@ public class DeleteProductCommandHandler : IRequestHandler<DeleteProductCommand,
     public async Task<Result<bool>> Handle(DeleteProductCommand request, CancellationToken cancellationToken)
     {
         if (_currentUser.UserId is null)
-            return Result<bool>.Failure("로그인이 필요합니다.");
+            return Result<bool>.Failure("Authentication required.");
 
         var product = await _db.Products
             .FirstOrDefaultAsync(p => p.Id == request.ProductId, cancellationToken);
 
         if (product is null)
-            return Result<bool>.Failure("상품을 찾을 수 없습니다.");
+            return Result<bool>.Failure("Product not found.");
 
         // Soft delete - set IsActive to false
         product.IsActive = false;

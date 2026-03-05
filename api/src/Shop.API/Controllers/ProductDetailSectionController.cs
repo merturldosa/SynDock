@@ -18,9 +18,9 @@ public class ProductDetailSectionController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetSections(int productId)
+    public async Task<IActionResult> GetSections(int productId, CancellationToken ct)
     {
-        var result = await _mediator.Send(new GetProductDetailSectionsQuery(productId));
+        var result = await _mediator.Send(new GetProductDetailSectionsQuery(productId), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(result.Data);
@@ -28,11 +28,11 @@ public class ProductDetailSectionController : ControllerBase
 
     [HttpPost]
     [Authorize]
-    public async Task<IActionResult> Create(int productId, [FromBody] CreateSectionRequest request)
+    public async Task<IActionResult> Create(int productId, [FromBody] CreateSectionRequest request, CancellationToken ct)
     {
         var result = await _mediator.Send(new CreateProductDetailSectionCommand(
             productId, request.Title, request.Content, request.ImageUrl,
-            request.ImageAltText, request.SectionType, request.SortOrder));
+            request.ImageAltText, request.SectionType, request.SortOrder), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(new { sectionId = result.Data });
@@ -40,11 +40,11 @@ public class ProductDetailSectionController : ControllerBase
 
     [HttpPut("{id:int}")]
     [Authorize]
-    public async Task<IActionResult> Update(int productId, int id, [FromBody] UpdateSectionRequest request)
+    public async Task<IActionResult> Update(int productId, int id, [FromBody] UpdateSectionRequest request, CancellationToken ct)
     {
         var result = await _mediator.Send(new UpdateProductDetailSectionCommand(
             id, request.Title, request.Content, request.ImageUrl,
-            request.ImageAltText, request.SectionType, request.SortOrder, request.IsActive));
+            request.ImageAltText, request.SectionType, request.SortOrder, request.IsActive), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(new { success = true });
@@ -52,9 +52,9 @@ public class ProductDetailSectionController : ControllerBase
 
     [HttpDelete("{id:int}")]
     [Authorize]
-    public async Task<IActionResult> Delete(int productId, int id)
+    public async Task<IActionResult> Delete(int productId, int id, CancellationToken ct)
     {
-        var result = await _mediator.Send(new DeleteProductDetailSectionCommand(id));
+        var result = await _mediator.Send(new DeleteProductDetailSectionCommand(id), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(new { success = true });
@@ -62,9 +62,9 @@ public class ProductDetailSectionController : ControllerBase
 
     [HttpPut("reorder")]
     [Authorize]
-    public async Task<IActionResult> Reorder(int productId, [FromBody] ReorderRequest request)
+    public async Task<IActionResult> Reorder(int productId, [FromBody] ReorderRequest request, CancellationToken ct)
     {
-        var result = await _mediator.Send(new ReorderProductDetailSectionsCommand(productId, request.SectionIds));
+        var result = await _mediator.Send(new ReorderProductDetailSectionsCommand(productId, request.SectionIds), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(new { success = true });

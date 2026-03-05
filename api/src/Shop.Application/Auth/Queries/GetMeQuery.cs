@@ -24,7 +24,7 @@ public class GetMeQueryHandler : IRequestHandler<GetMeQuery, Result<UserProfileD
             .FirstOrDefaultAsync(u => u.Id == request.UserId, cancellationToken);
 
         if (user == null)
-            return Result<UserProfileDto>.Failure("사용자를 찾을 수 없습니다.");
+            return Result<UserProfileDto>.Failure("User not found.");
 
         return Result<UserProfileDto>.Success(new UserProfileDto(
             user.Id, user.Username, user.Email, user.Name, user.Phone,

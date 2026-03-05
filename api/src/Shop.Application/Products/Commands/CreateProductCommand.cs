@@ -44,7 +44,7 @@ public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand,
     public async Task<Result<int>> Handle(CreateProductCommand request, CancellationToken cancellationToken)
     {
         if (_currentUser.UserId is null)
-            return Result<int>.Failure("로그인이 필요합니다.");
+            return Result<int>.Failure("Authentication required.");
 
         // Plan limit check
         var user = await _db.Users.AsNoTracking().FirstAsync(u => u.Id == _currentUser.UserId.Value, cancellationToken);
@@ -58,7 +58,7 @@ public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand,
             .AnyAsync(c => c.Id == request.CategoryId && c.IsActive, cancellationToken);
 
         if (!categoryExists)
-            return Result<int>.Failure("카테고리를 찾을 수 없습니다.");
+            return Result<int>.Failure("Category not found.");
 
         // Check slug uniqueness if provided
         if (!string.IsNullOrEmpty(request.Slug))
@@ -68,7 +68,7 @@ public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand,
                 .AnyAsync(p => p.Slug == request.Slug, cancellationToken);
 
             if (slugExists)
-                return Result<int>.Failure($"이미 사용 중인 슬러그입니다: {request.Slug}");
+                return Result<int>.Failure($"Slug already in use: {request.Slug}");
         }
 
         var product = new Product

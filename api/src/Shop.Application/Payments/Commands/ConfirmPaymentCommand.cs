@@ -44,7 +44,7 @@ public class ConfirmPaymentCommandHandler : IRequestHandler<ConfirmPaymentComman
     public async Task<Result<int>> Handle(ConfirmPaymentCommand request, CancellationToken cancellationToken)
     {
         if (_currentUser.UserId is null)
-            return Result<int>.Failure("로그인이 필요합니다.");
+            return Result<int>.Failure("Authentication required.");
 
         var userId = _currentUser.UserId.Value;
 
@@ -53,14 +53,14 @@ public class ConfirmPaymentCommandHandler : IRequestHandler<ConfirmPaymentComman
             .FirstOrDefaultAsync(o => o.OrderNumber == request.OrderId && o.UserId == userId, cancellationToken);
 
         if (order is null)
-            return Result<int>.Failure("주문을 찾을 수 없습니다.");
+            return Result<int>.Failure("Order not found.");
 
         if (order.Status != nameof(OrderStatus.Pending))
-            return Result<int>.Failure("결제 대기 상태의 주문만 결제할 수 있습니다.");
+            return Result<int>.Failure("Only orders with Pending status can be paid.");
 
         // Verify amount matches
         if (order.TotalAmount != request.Amount)
-            return Result<int>.Failure("결제 금액이 일치하지 않습니다.");
+            return Result<int>.Failure("Payment amount does not match.");
 
         // Call payment provider to verify/confirm
         var verifyResult = await _paymentProvider.VerifyPayment(
@@ -82,7 +82,7 @@ public class ConfirmPaymentCommandHandler : IRequestHandler<ConfirmPaymentComman
             }, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            return Result<int>.Failure(verifyResult.Error ?? "결제 승인에 실패했습니다.");
+            return Result<int>.Failure(verifyResult.Error ?? "Payment verification failed.");
         }
 
         // Create successful payment record
@@ -135,7 +135,7 @@ public class ConfirmPaymentCommandHandler : IRequestHandler<ConfirmPaymentComman
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "자동 수수료 계산 실패 (OrderId: {OrderId}). 수동 처리 필요.", order.Id);
+            _logger.LogWarning(ex, "Auto commission calculation failed (OrderId: {OrderId}). Manual processing required.", order.Id);
         }
 
         return Result<int>.Success(order.Id);

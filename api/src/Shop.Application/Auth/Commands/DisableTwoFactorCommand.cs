@@ -33,17 +33,17 @@ public class DisableTwoFactorCommandHandler : IRequestHandler<DisableTwoFactorCo
             .FirstOrDefaultAsync(u => u.Id == request.UserId && u.IsActive, cancellationToken);
 
         if (user is null)
-            return Result<bool>.Failure("사용자를 찾을 수 없습니다.");
+            return Result<bool>.Failure("User not found.");
 
         if (!user.TwoFactorEnabled)
-            return Result<bool>.Failure("2단계 인증이 활성화되어 있지 않습니다.");
+            return Result<bool>.Failure("Two-factor authentication is not enabled.");
 
         if (string.IsNullOrEmpty(user.TwoFactorSecret))
-            return Result<bool>.Failure("2단계 인증 설정을 찾을 수 없습니다.");
+            return Result<bool>.Failure("Two-factor authentication setup not found.");
 
         // Validate the TOTP code before disabling
         if (!_totpService.ValidateCode(user.TwoFactorSecret, request.Code))
-            return Result<bool>.Failure("인증 코드가 올바르지 않습니다.");
+            return Result<bool>.Failure("Invalid verification code.");
 
         // Disable 2FA and clear secrets
         user.TwoFactorEnabled = false;

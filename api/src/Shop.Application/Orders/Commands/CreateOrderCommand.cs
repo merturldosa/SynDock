@@ -40,7 +40,7 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Res
     public async Task<Result<CreateOrderResult>> Handle(CreateOrderCommand request, CancellationToken cancellationToken)
     {
         if (_currentUser.UserId is null)
-            return Result<CreateOrderResult>.Failure("로그인이 필요합니다.");
+            return Result<CreateOrderResult>.Failure("Authentication required.");
 
         var userId = _currentUser.UserId.Value;
 
@@ -59,7 +59,7 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Res
             .FirstOrDefaultAsync(c => c.UserId == userId, cancellationToken);
 
         if (cart is null || !cart.Items.Any())
-            return Result<CreateOrderResult>.Failure("장바구니가 비어있습니다.");
+            return Result<CreateOrderResult>.Failure("Cart is empty.");
 
         // Validate shipping address if provided
         if (request.ShippingAddressId.HasValue)
@@ -69,7 +69,7 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Res
                 .FirstOrDefaultAsync(a => a.Id == request.ShippingAddressId.Value && a.UserId == userId, cancellationToken);
 
             if (address is null)
-                return Result<CreateOrderResult>.Failure("배송지를 찾을 수 없습니다.");
+                return Result<CreateOrderResult>.Failure("Shipping address not found.");
         }
 
         // Generate order number

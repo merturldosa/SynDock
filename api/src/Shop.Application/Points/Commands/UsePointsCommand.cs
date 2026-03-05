@@ -31,7 +31,7 @@ public class UsePointsCommandHandler : IRequestHandler<UsePointsCommand, Result<
             .FirstOrDefaultAsync(up => up.UserId == request.UserId, cancellationToken);
 
         if (userPoint is null || userPoint.Balance < request.Amount)
-            return Result<bool>.Failure("포인트가 부족합니다.");
+            return Result<bool>.Failure("Insufficient points.");
 
         userPoint.Balance -= request.Amount;
 

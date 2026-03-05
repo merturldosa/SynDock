@@ -28,25 +28,25 @@ public class AdminController : ControllerBase
     }
 
     [HttpGet("stats")]
-    public async Task<IActionResult> GetDashboardStats()
+    public async Task<IActionResult> GetDashboardStats(CancellationToken ct)
     {
-        var result = await _mediator.Send(new GetDashboardStatsQuery());
+        var result = await _mediator.Send(new GetDashboardStatsQuery(), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(result.Data);
     }
 
     [HttpGet("users")]
-    public async Task<IActionResult> GetUsers()
+    public async Task<IActionResult> GetUsers(CancellationToken ct)
     {
-        var result = await _mediator.Send(new GetUsersQuery());
+        var result = await _mediator.Send(new GetUsersQuery(), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(result.Data);
     }
 
     [HttpPut("users/{id:int}")]
-    public async Task<IActionResult> UpdateUser(int id, [FromBody] UpdateUserRequest request)
+    public async Task<IActionResult> UpdateUser(int id, [FromBody] UpdateUserRequest request, CancellationToken ct)
     {
         // Role escalation prevention
         var currentRole = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
@@ -55,7 +55,7 @@ public class AdminController : ControllerBase
         if (currentRole == "Admin" && request.Role == "PlatformAdmin")
             return Forbid();
 
-        var result = await _mediator.Send(new UpdateUserCommand(id, request.Role, request.IsActive));
+        var result = await _mediator.Send(new UpdateUserCommand(id, request.Role, request.IsActive), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(new { success = true });
@@ -66,18 +66,19 @@ public class AdminController : ControllerBase
         [FromQuery] int days = 30,
         [FromQuery] DateTime? startDate = null,
         [FromQuery] DateTime? endDate = null,
-        [FromQuery] bool includeComparison = false)
+        [FromQuery] bool includeComparison = false,
+        CancellationToken ct = default)
     {
-        var result = await _mediator.Send(new GetSalesAnalyticsQuery(days, startDate, endDate, includeComparison));
+        var result = await _mediator.Send(new GetSalesAnalyticsQuery(days, startDate, endDate, includeComparison), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(result.Data);
     }
 
     [HttpGet("analytics/customers")]
-    public async Task<IActionResult> GetCustomerAnalytics()
+    public async Task<IActionResult> GetCustomerAnalytics(CancellationToken ct)
     {
-        var result = await _mediator.Send(new GetCustomerAnalyticsQuery());
+        var result = await _mediator.Send(new GetCustomerAnalyticsQuery(), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(result.Data);
@@ -87,9 +88,10 @@ public class AdminController : ControllerBase
     public async Task<IActionResult> GetProductPerformance(
         [FromQuery] string? sort = "revenue",
         [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 20)
+        [FromQuery] int pageSize = 20,
+        CancellationToken ct = default)
     {
-        var result = await _mediator.Send(new GetProductPerformanceQuery(sort, page, pageSize));
+        var result = await _mediator.Send(new GetProductPerformanceQuery(sort, page, pageSize), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(result.Data);
@@ -100,9 +102,10 @@ public class AdminController : ControllerBase
         [FromQuery] string? status,
         [FromQuery] string? search,
         [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 20)
+        [FromQuery] int pageSize = 20,
+        CancellationToken ct = default)
     {
-        var result = await _mediator.Send(new GetAdminOrdersQuery(status, search, page, pageSize));
+        var result = await _mediator.Send(new GetAdminOrdersQuery(status, search, page, pageSize), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(result.Data);
@@ -111,9 +114,10 @@ public class AdminController : ControllerBase
     [HttpGet("export/sales")]
     public async Task<IActionResult> ExportSalesReport(
         [FromQuery] DateTime startDate,
-        [FromQuery] DateTime endDate)
+        [FromQuery] DateTime endDate,
+        CancellationToken ct = default)
     {
-        var result = await _mediator.Send(new GetSalesReportQuery(startDate, endDate));
+        var result = await _mediator.Send(new GetSalesReportQuery(startDate, endDate), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         var bytes = System.Text.Encoding.UTF8.GetPreamble().Concat(System.Text.Encoding.UTF8.GetBytes(result.Data!)).ToArray();
@@ -125,9 +129,10 @@ public class AdminController : ControllerBase
         [FromQuery] string? status,
         [FromQuery] DateTime? startDate,
         [FromQuery] DateTime? endDate,
-        [FromQuery] string? search)
+        [FromQuery] string? search,
+        CancellationToken ct = default)
     {
-        var result = await _mediator.Send(new GetOrderExportQuery(status, startDate, endDate, search));
+        var result = await _mediator.Send(new GetOrderExportQuery(status, startDate, endDate, search), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         var bytes = System.Text.Encoding.UTF8.GetPreamble().Concat(System.Text.Encoding.UTF8.GetBytes(result.Data!)).ToArray();
@@ -135,41 +140,41 @@ public class AdminController : ControllerBase
     }
 
     [HttpGet("low-stock")]
-    public async Task<IActionResult> GetLowStock([FromQuery] int threshold = 10)
+    public async Task<IActionResult> GetLowStock([FromQuery] int threshold = 10, CancellationToken ct = default)
     {
-        var result = await _mediator.Send(new GetLowStockQuery(threshold));
+        var result = await _mediator.Send(new GetLowStockQuery(threshold), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(result.Data);
     }
 
     [HttpPut("stock")]
-    public async Task<IActionResult> UpdateStock([FromBody] UpdateStockRequest request)
+    public async Task<IActionResult> UpdateStock([FromBody] UpdateStockRequest request, CancellationToken ct)
     {
-        var result = await _mediator.Send(new UpdateStockCommand(request.VariantId, request.NewStock));
+        var result = await _mediator.Send(new UpdateStockCommand(request.VariantId, request.NewStock), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(new { success = true });
     }
 
     [HttpPut("orders/bulk-status")]
-    public async Task<IActionResult> BulkUpdateOrderStatus([FromBody] BulkUpdateOrderStatusRequest request)
+    public async Task<IActionResult> BulkUpdateOrderStatus([FromBody] BulkUpdateOrderStatusRequest request, CancellationToken ct)
     {
-        var result = await _mediator.Send(new BulkUpdateOrderStatusCommand(request.OrderIds, request.Status));
+        var result = await _mediator.Send(new BulkUpdateOrderStatusCommand(request.OrderIds, request.Status), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(result.Data);
     }
     [HttpPost("notifications/broadcast")]
-    public async Task<IActionResult> BroadcastNotification([FromBody] BroadcastNotificationRequest request)
+    public async Task<IActionResult> BroadcastNotification([FromBody] BroadcastNotificationRequest request, CancellationToken ct)
     {
-        var result = await _mediator.Send(new BroadcastNotificationCommand(request.Title, request.Message, request.Type));
+        var result = await _mediator.Send(new BroadcastNotificationCommand(request.Title, request.Message, request.Type), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(new { sentCount = result.Data });
     }
     [HttpPost("email/broadcast")]
-    public async Task<IActionResult> SendMarketingEmail([FromBody] MarketingEmailRequest request)
+    public async Task<IActionResult> SendMarketingEmail([FromBody] MarketingEmailRequest request, CancellationToken ct)
     {
         var usersQuery = _db.Users.AsNoTracking()
             .Where(u => u.IsActive && !string.IsNullOrEmpty(u.Email));
@@ -204,59 +209,59 @@ public class AdminController : ControllerBase
     // ── Email Campaigns ──
 
     [HttpGet("campaigns")]
-    public async Task<IActionResult> GetCampaigns()
+    public async Task<IActionResult> GetCampaigns(CancellationToken ct)
     {
-        var result = await _mediator.Send(new Application.Admin.Queries.GetCampaignsQuery());
+        var result = await _mediator.Send(new Application.Admin.Queries.GetCampaignsQuery(), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(result.Data);
     }
 
     [HttpPost("campaigns")]
-    public async Task<IActionResult> CreateCampaign([FromBody] CreateCampaignRequest request)
+    public async Task<IActionResult> CreateCampaign([FromBody] CreateCampaignRequest request, CancellationToken ct)
     {
         var result = await _mediator.Send(new Application.Admin.Commands.CreateCampaignCommand(
-            request.Title, request.Content, request.Target, request.ScheduledAt));
+            request.Title, request.Content, request.Target, request.ScheduledAt), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(new { campaignId = result.Data });
     }
 
     [HttpPost("campaigns/{id:int}/send")]
-    public async Task<IActionResult> SendCampaign(int id)
+    public async Task<IActionResult> SendCampaign(int id, CancellationToken ct)
     {
-        var result = await _mediator.Send(new Application.Admin.Commands.SendCampaignCommand(id));
+        var result = await _mediator.Send(new Application.Admin.Commands.SendCampaignCommand(id), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(new { sentCount = result.Data });
     }
 
     [HttpPost("campaigns/ab-test")]
-    public async Task<IActionResult> CreateAbTestCampaign([FromBody] CreateAbTestCampaignRequest request)
+    public async Task<IActionResult> CreateAbTestCampaign([FromBody] CreateAbTestCampaignRequest request, CancellationToken ct)
     {
         var result = await _mediator.Send(new Application.Admin.Commands.CreateAbTestCampaignCommand(
             request.Title, request.Target, request.ScheduledAt,
             request.SubjectLineA, request.ContentA,
             request.SubjectLineB, request.ContentB,
-            request.TrafficPercentA));
+            request.TrafficPercentA), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(new { campaignId = result.Data });
     }
 
     [HttpGet("campaigns/{id:int}/analytics")]
-    public async Task<IActionResult> GetCampaignAnalytics(int id)
+    public async Task<IActionResult> GetCampaignAnalytics(int id, CancellationToken ct)
     {
-        var result = await _mediator.Send(new Application.Admin.Queries.GetCampaignAnalyticsQuery(id));
+        var result = await _mediator.Send(new Application.Admin.Queries.GetCampaignAnalyticsQuery(id), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(result.Data);
     }
 
     [HttpGet("campaigns/summary")]
-    public async Task<IActionResult> GetCampaignSummary()
+    public async Task<IActionResult> GetCampaignSummary(CancellationToken ct)
     {
-        var result = await _mediator.Send(new Application.Admin.Queries.GetCampaignSummaryQuery());
+        var result = await _mediator.Send(new Application.Admin.Queries.GetCampaignSummaryQuery(), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(result.Data);
@@ -264,10 +269,10 @@ public class AdminController : ControllerBase
 
     [HttpPost("campaigns/{id:int}/track")]
     [AllowAnonymous]
-    public async Task<IActionResult> TrackCampaignEvent(int id, [FromBody] TrackCampaignEventRequest request)
+    public async Task<IActionResult> TrackCampaignEvent(int id, [FromBody] TrackCampaignEventRequest request, CancellationToken ct)
     {
         var result = await _mediator.Send(new Application.Admin.Commands.RecordCampaignEventCommand(
-            id, request.VariantId, request.UserId, request.EventType, request.LinkUrl));
+            id, request.VariantId, request.UserId, request.EventType, request.LinkUrl), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(new { success = true });
@@ -275,27 +280,27 @@ public class AdminController : ControllerBase
     // ── SNS Auto-Posting ──
 
     [HttpPost("social/post/{productId:int}")]
-    public async Task<IActionResult> AutoPostToSocial(int productId)
+    public async Task<IActionResult> AutoPostToSocial(int productId, CancellationToken ct)
     {
-        var result = await _mediator.Send(new Application.Admin.Commands.AutoPostProductCommand(productId));
+        var result = await _mediator.Send(new Application.Admin.Commands.AutoPostProductCommand(productId), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(result.Data);
     }
 
     [HttpGet("social/posts")]
-    public async Task<IActionResult> GetSocialPosts([FromQuery] int? productId = null, [FromQuery] string? platform = null)
+    public async Task<IActionResult> GetSocialPosts([FromQuery] int? productId = null, [FromQuery] string? platform = null, CancellationToken ct = default)
     {
-        var result = await _mediator.Send(new Application.Admin.Commands.GetSocialPostsQuery(productId, platform));
+        var result = await _mediator.Send(new Application.Admin.Commands.GetSocialPostsQuery(productId, platform), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(result.Data);
     }
 
     [HttpGet("billing")]
-    public async Task<IActionResult> GetMyBilling()
+    public async Task<IActionResult> GetMyBilling(CancellationToken ct)
     {
-        var result = await _mediator.Send(new Application.Admin.Queries.GetMyTenantBillingQuery());
+        var result = await _mediator.Send(new Application.Admin.Queries.GetMyTenantBillingQuery(), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(result.Data);
@@ -304,43 +309,43 @@ public class AdminController : ControllerBase
     // ── Settlements / Commissions (TenantAdmin) ──
 
     [HttpGet("settlements")]
-    public async Task<IActionResult> GetMySettlements([FromQuery] string? status = null)
+    public async Task<IActionResult> GetMySettlements([FromQuery] string? status = null, CancellationToken ct = default)
     {
-        var result = await _mediator.Send(new Application.Admin.Queries.GetMySettlementsQuery(status));
+        var result = await _mediator.Send(new Application.Admin.Queries.GetMySettlementsQuery(status), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(result.Data);
     }
 
     [HttpGet("commissions")]
-    public async Task<IActionResult> GetMyCommissions([FromQuery] string? status = null)
+    public async Task<IActionResult> GetMyCommissions([FromQuery] string? status = null, CancellationToken ct = default)
     {
-        var result = await _mediator.Send(new Application.Admin.Queries.GetMyCommissionsQuery(status));
+        var result = await _mediator.Send(new Application.Admin.Queries.GetMyCommissionsQuery(status), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(result.Data);
     }
 
     [HttpGet("commissions/settings")]
-    public async Task<IActionResult> GetMyCommissionSettings()
+    public async Task<IActionResult> GetMyCommissionSettings(CancellationToken ct)
     {
-        var result = await _mediator.Send(new Application.Admin.Queries.GetMyCommissionSettingsQuery());
+        var result = await _mediator.Send(new Application.Admin.Queries.GetMyCommissionSettingsQuery(), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(result.Data);
     }
 
     [HttpGet("settings")]
-    public async Task<IActionResult> GetTenantSettings()
+    public async Task<IActionResult> GetTenantSettings(CancellationToken ct)
     {
-        var result = await _mediator.Send(new Application.Admin.Queries.GetTenantSettingsQuery());
+        var result = await _mediator.Send(new Application.Admin.Queries.GetTenantSettingsQuery(), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(result.Data);
     }
 
     [HttpPut("settings")]
-    public async Task<IActionResult> UpdateTenantSettings([FromBody] UpdateTenantSettingsRequest request)
+    public async Task<IActionResult> UpdateTenantSettings([FromBody] UpdateTenantSettingsRequest request, CancellationToken ct)
     {
         var result = await _mediator.Send(new Application.Admin.Commands.UpdateTenantSettingsCommand(
             request.CompanyName, request.CompanyAddress, request.BusinessNumber,
@@ -349,7 +354,7 @@ public class AdminController : ControllerBase
             request.Theme != null ? new Application.Admin.Commands.TenantThemeDto(
                 request.Theme.Primary, request.Theme.PrimaryLight,
                 request.Theme.Secondary, request.Theme.SecondaryLight, request.Theme.Background) : null,
-            request.LogoUrl, request.FaviconUrl));
+            request.LogoUrl, request.FaviconUrl), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(new { success = true });

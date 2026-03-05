@@ -65,7 +65,7 @@ public class UpdateBillingStatusCommandHandler : IRequestHandler<UpdateBillingSt
             .FirstOrDefaultAsync(p => p.TenantId == request.TenantId, cancellationToken);
 
         if (plan is null)
-            return Result<bool>.Failure("빌링 정보를 찾을 수 없습니다.");
+            return Result<bool>.Failure("Billing information not found.");
 
         plan.BillingStatus = request.BillingStatus;
         plan.UpdatedBy = "PlatformAdmin";

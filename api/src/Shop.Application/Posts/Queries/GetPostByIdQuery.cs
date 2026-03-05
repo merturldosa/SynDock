@@ -36,7 +36,7 @@ public class GetPostByIdQueryHandler : IRequestHandler<GetPostByIdQuery, Result<
             .FirstOrDefaultAsync(p => p.Id == request.PostId && p.IsVisible, cancellationToken);
 
         if (post == null)
-            return Result<PostDto>.Failure("게시글을 찾을 수 없습니다.");
+            return Result<PostDto>.Failure("Post not found.");
 
         // Get user's reaction
         string? myReaction = null;

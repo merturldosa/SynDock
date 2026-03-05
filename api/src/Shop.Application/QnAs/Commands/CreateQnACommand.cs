@@ -30,14 +30,14 @@ public class CreateQnACommandHandler : IRequestHandler<CreateQnACommand, Result<
     public async Task<Result<int>> Handle(CreateQnACommand request, CancellationToken cancellationToken)
     {
         if (_currentUser.UserId is null)
-            return Result<int>.Failure("로그인이 필요합니다.");
+            return Result<int>.Failure("Authentication required.");
 
         var productExists = await _db.Products
             .AsNoTracking()
             .AnyAsync(p => p.Id == request.ProductId && p.IsActive, cancellationToken);
 
         if (!productExists)
-            return Result<int>.Failure("상품을 찾을 수 없습니다.");
+            return Result<int>.Failure("Product not found.");
 
         var qna = new QnA
         {
