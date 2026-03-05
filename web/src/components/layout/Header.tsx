@@ -7,6 +7,7 @@ import { useCartStore } from "@/stores/cartStore";
 import { useTenantStore } from "@/stores/tenantStore";
 import { useEffect, useState } from "react";
 import { Menu, X, ShoppingCart, User, Search, Bell, MessageCircle } from "lucide-react";
+import toast from "react-hot-toast";
 import { getCategories } from "@/lib/productApi";
 import { getUnreadCount } from "@/lib/notificationApi";
 import { useNotificationStore } from "@/stores/notificationStore";
@@ -31,7 +32,7 @@ export function Header() {
   useEffect(() => {
     if (isAuthenticated) {
       fetchCart();
-      getUnreadCount().then(r => setUnreadCount(r.count)).catch(() => {});
+      getUnreadCount().then(r => setUnreadCount(r.count)).catch(() => toast.error(t("common.fetchError")));
       const token = localStorage.getItem("accessToken");
       if (token) connect(token);
     } else {
@@ -40,7 +41,7 @@ export function Header() {
   }, [isAuthenticated, fetchCart, connect, disconnect, setUnreadCount]);
 
   useEffect(() => {
-    getCategories().then(setCategories).catch(() => {});
+    getCategories().then(setCategories).catch(() => toast.error(t("common.fetchError")));
   }, []);
 
   const handleLogout = () => {

@@ -7,6 +7,7 @@ import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { ChevronLeft, Truck, Clock, Package, RotateCcw, Download } from "lucide-react";
 import api from "@/lib/api";
+import toast from "react-hot-toast";
 import { updateOrderStatus, updateShippingInfo, refundOrder } from "@/lib/adminApi";
 import { downloadOrderReceipt } from "@/lib/orderApi";
 
@@ -96,7 +97,7 @@ export default function AdminOrderDetailPage() {
         if (data.trackingNumber) setTrackingNumber(data.trackingNumber);
         if (data.trackingCarrier) setTrackingCarrier(data.trackingCarrier);
       })
-      .catch(() => {})
+      .catch(() => { toast.error(t("common.fetchError")); })
       .finally(() => setLoading(false));
   }, [id]);
 
@@ -107,13 +108,13 @@ export default function AdminOrderDetailPage() {
       const { data } = await api.get(`/order/${id}`);
       setOrder(data);
     } catch {
-      alert(t("admin.orders.updateFailed"));
+      toast.error(t("admin.orders.updateFailed"));
     }
   };
 
   const handleShippingSave = async () => {
     if (!trackingNumber.trim()) {
-      alert(t("admin.orders.trackingNumberRequired"));
+      toast.error(t("admin.orders.trackingNumberRequired"));
       return;
     }
     setShippingSaving(true);
@@ -122,14 +123,14 @@ export default function AdminOrderDetailPage() {
       const { data } = await api.get(`/order/${id}`);
       setOrder(data);
     } catch {
-      alert(t("admin.orders.shippingSaveFailed"));
+      toast.error(t("admin.orders.shippingSaveFailed"));
     }
     setShippingSaving(false);
   };
 
   const handleRefund = async () => {
     if (!refundReason.trim()) {
-      alert(t("admin.orders.refundReasonRequired"));
+      toast.error(t("admin.orders.refundReasonRequired"));
       return;
     }
     setRefunding(true);
@@ -140,7 +141,7 @@ export default function AdminOrderDetailPage() {
       setShowRefundModal(false);
       setRefundReason("");
     } catch {
-      alert(t("admin.orders.refundFailed"));
+      toast.error(t("admin.orders.refundFailed"));
     }
     setRefunding(false);
   };

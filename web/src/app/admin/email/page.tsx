@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Send, Eye, Plus, BarChart3, FlaskConical } from "lucide-react";
 import { useTranslations } from "next-intl";
+import toast from "react-hot-toast";
 import { formatDate, formatPrice, formatDateShort } from "@/lib/format";
 import {
   sendMarketingEmail,
@@ -68,7 +69,7 @@ export default function AdminEmailPage() {
     setCampaignsLoading(true);
     getCampaigns()
       .then(setCampaigns)
-      .catch(() => {})
+      .catch(() => { toast.error(t("common.fetchError")); })
       .finally(() => setCampaignsLoading(false));
   };
 
@@ -76,7 +77,7 @@ export default function AdminEmailPage() {
     setAnalyticsLoading(true);
     getCampaignSummary()
       .then(setSummary)
-      .catch(() => {})
+      .catch(() => { toast.error(t("common.fetchError")); })
       .finally(() => setAnalyticsLoading(false));
   };
 
@@ -90,7 +91,7 @@ export default function AdminEmailPage() {
 
   const handleSend = async () => {
     if (!title.trim() || !content.trim()) {
-      alert(t("admin.email.titleContentRequired"));
+      toast.error(t("admin.email.titleContentRequired"));
       return;
     }
     const targetLabel = TARGETS.find((tgt) => tgt.value === target)?.label || target;
@@ -99,29 +100,29 @@ export default function AdminEmailPage() {
     setSending(true);
     try {
       const { sentCount } = await sendMarketingEmail(title, content, target);
-      alert(t("admin.email.sentCountMsg", { count: sentCount }));
+      toast.success(t("admin.email.sentCountMsg", { count: sentCount }));
       setTitle("");
       setContent("");
     } catch {
-      alert(t("admin.email.sendFailed"));
+      toast.error(t("admin.email.sendFailed"));
     }
     setSending(false);
   };
 
   const handleSaveCampaign = async () => {
     if (!title.trim() || !content.trim()) {
-      alert(t("admin.email.titleContentRequired"));
+      toast.error(t("admin.email.titleContentRequired"));
       return;
     }
     try {
       await createCampaign(title, content, target, scheduleDate || undefined);
-      alert(scheduleDate ? t("admin.email.campaignScheduled") : t("admin.email.campaignSaved"));
+      toast.success(scheduleDate ? t("admin.email.campaignScheduled") : t("admin.email.campaignSaved"));
       setTitle("");
       setContent("");
       setScheduleDate("");
       setTab("campaigns");
     } catch {
-      alert(t("admin.email.campaignSaveFailed"));
+      toast.error(t("admin.email.campaignSaveFailed"));
     }
   };
 
@@ -129,16 +130,16 @@ export default function AdminEmailPage() {
     if (!confirm(t("admin.email.sendCampaignConfirm"))) return;
     try {
       const { sentCount } = await sendCampaign(id);
-      alert(t("admin.email.sentComplete", { count: sentCount }));
+      toast.success(t("admin.email.sentComplete", { count: sentCount }));
       loadCampaigns();
     } catch {
-      alert(t("admin.email.sendFailed"));
+      toast.error(t("admin.email.sendFailed"));
     }
   };
 
   const handleCreateAbTest = async () => {
     if (!abTitle.trim() || !subjectA.trim() || !contentA.trim() || !subjectB.trim() || !contentB.trim()) {
-      alert(t("admin.email.abTestRequired"));
+      toast.error(t("admin.email.abTestRequired"));
       return;
     }
     try {
@@ -146,11 +147,11 @@ export default function AdminEmailPage() {
         abTitle, abTarget, abSchedule || undefined,
         subjectA, contentA, subjectB, contentB, trafficA
       );
-      alert(t("admin.email.abTestCreated"));
+      toast.success(t("admin.email.abTestCreated"));
       setAbTitle(""); setSubjectA(""); setContentA(""); setSubjectB(""); setContentB(""); setAbSchedule("");
       setTab("campaigns");
     } catch {
-      alert(t("admin.email.campaignSaveFailed"));
+      toast.error(t("admin.email.campaignSaveFailed"));
     }
   };
 
@@ -159,7 +160,7 @@ export default function AdminEmailPage() {
       const data = await getCampaignAnalytics(id);
       setSelectedAnalytics(data);
     } catch {
-      alert(t("admin.email.loadFailed"));
+      toast.error(t("admin.email.loadFailed"));
     }
   };
 

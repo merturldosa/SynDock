@@ -12,7 +12,7 @@ import { getOrders } from "@/lib/orderApi";
 import { getPointBalance } from "@/lib/pointApi";
 import { getMyCoupons } from "@/lib/couponApi";
 import { getUnreadCount } from "@/lib/notificationApi";
-import { formatNumber } from "@/lib/format";
+import { formatNumber, formatDateShort } from "@/lib/format";
 import type { BaptismalNameInfo } from "@/types/saint";
 
 export default function MyPage() {
@@ -39,7 +39,7 @@ export default function MyPage() {
             patronSaint: null,
           });
         }
-      } catch {}
+      } catch { /* JSON parse - non-critical */ }
     }
   }, [user]);
 
@@ -64,7 +64,7 @@ export default function MyPage() {
     try {
       const result = await updateBaptismalName(baptismalName.trim());
       setBaptismalInfo(result);
-    } catch {}
+    } catch { toast.error(t("common.saveFailed")); }
     setSavingBaptismal(false);
   };
 
@@ -143,7 +143,7 @@ export default function MyPage() {
                   <div className="flex justify-between">
                     <span className="text-gray-500 text-sm">{t("mypage.feastDay")}</span>
                     <span className="text-sm text-gray-600">
-                      {new Date(baptismalInfo.patronSaint.feastDay).toLocaleDateString("ko-KR", { month: "long", day: "numeric" })}
+                      {formatDateShort(baptismalInfo.patronSaint.feastDay)}
                     </span>
                   </div>
                 )}

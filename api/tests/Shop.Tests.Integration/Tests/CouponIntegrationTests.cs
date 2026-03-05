@@ -32,9 +32,10 @@ public class CouponIntegrationTests : IClassFixture<CustomWebApplicationFactory>
             name = "Test 10% Coupon",
             discountType = "Percentage",
             discountValue = 10m,
-            minimumOrderAmount = 10000m,
+            minOrderAmount = 10000m,
             maxUsageCount = 100,
-            expiresAt = DateTime.UtcNow.AddDays(30).ToString("o")
+            startDate = DateTime.UtcNow.ToString("o"),
+            endDate = DateTime.UtcNow.AddDays(30).ToString("o")
         };
 
         var response = await client.PostAsJsonAsync("/api/coupons", request);
@@ -92,7 +93,10 @@ public class CouponIntegrationTests : IClassFixture<CustomWebApplicationFactory>
             name = "To Delete",
             discountType = "Fixed",
             discountValue = 1000m,
-            expiresAt = DateTime.UtcNow.AddDays(1).ToString("o")
+            minOrderAmount = 0m,
+            maxUsageCount = 100,
+            startDate = DateTime.UtcNow.ToString("o"),
+            endDate = DateTime.UtcNow.AddDays(1).ToString("o")
         };
         await client.PostAsJsonAsync("/api/coupons", createRequest);
 

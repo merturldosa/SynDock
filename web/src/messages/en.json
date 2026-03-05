@@ -443,6 +443,7 @@
     "pay": "Pay {amount}",
     "orderFailed": "Order failed. Please try again.",
     "paymentLoading": "Loading payment module. Please try again shortly.",
+    "andMore": "and {count} more",
     "paymentMethod": "Payment Method",
     "cardPayment": "Card Payment",
     "cardPaymentDesc": "Credit / Debit Card",

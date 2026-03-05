@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Plus, Trash2, Send } from "lucide-react";
+import toast from "react-hot-toast";
 import { useTranslations } from "next-intl";
 import {
   getCoupons,
@@ -23,7 +24,7 @@ export default function AdminCouponsPage() {
     setLoading(true);
     getCoupons(page)
       .then(setData)
-      .catch(() => {})
+      .catch(() => toast.error(t("common.fetchError")))
       .finally(() => setLoading(false));
   };
 
@@ -32,22 +33,22 @@ export default function AdminCouponsPage() {
   }, [page]);
 
   const handleDelete = async (id: number, name: string) => {
-    if (!confirm(t("admin.coupons.deleteConfirm", { name }))) return;
+    if (!window.confirm(t("admin.coupons.deleteConfirm", { name }))) return;
     try {
       await deleteCoupon(id);
       load();
     } catch {
-      alert(t("admin.coupons.deleteFailed"));
+      toast.error(t("admin.coupons.deleteFailed"));
     }
   };
 
   const handleIssueAll = async (id: number, name: string) => {
-    if (!confirm(t("admin.coupons.issueConfirm", { name }))) return;
+    if (!window.confirm(t("admin.coupons.issueConfirm", { name }))) return;
     try {
       const result = await issueCoupon(id);
-      alert(t("admin.coupons.issuedCount", { count: result.issuedCount }));
+      toast.success(t("admin.coupons.issuedCount", { count: result.issuedCount }));
     } catch {
-      alert(t("admin.coupons.issueFailed"));
+      toast.error(t("admin.coupons.issueFailed"));
     }
   };
 
@@ -134,12 +135,14 @@ export default function AdminCouponsPage() {
                           onClick={() => handleIssueAll(coupon.id, coupon.name)}
                           className="p-1.5 text-gray-400 hover:text-blue-500 transition-colors"
                           title={t("admin.coupons.issueAll")}
+                          aria-label="Issue coupon to all"
                         >
                           <Send size={16} />
                         </button>
                         <button
                           onClick={() => handleDelete(coupon.id, coupon.name)}
                           className="p-1.5 text-gray-400 hover:text-red-500 transition-colors"
+                          aria-label="Delete coupon"
                         >
                           <Trash2 size={16} />
                         </button>

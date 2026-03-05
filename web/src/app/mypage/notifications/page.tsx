@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Bell, Check, Trash2 } from "lucide-react";
+import toast from "react-hot-toast";
 import {
   getNotifications,
   markAsRead,
@@ -47,7 +48,7 @@ export default function NotificationsPage() {
     setLoading(true);
     getNotifications(page)
       .then(setData)
-      .catch(() => {})
+      .catch(() => toast.error(t("common.fetchError")))
       .finally(() => setLoading(false));
   };
 
@@ -139,6 +140,7 @@ export default function NotificationsPage() {
                       onClick={() => handleRead(noti.id)}
                       className="p-1.5 text-gray-400 hover:text-[var(--color-primary)]"
                       title={t("mypage.notifications.markRead")}
+                      aria-label="Mark as read"
                     >
                       <Check size={14} />
                     </button>
@@ -147,6 +149,7 @@ export default function NotificationsPage() {
                     onClick={() => handleDelete(noti.id)}
                     className="p-1.5 text-gray-400 hover:text-red-500"
                     title={t("common.delete")}
+                    aria-label="Delete notification"
                   >
                     <Trash2 size={14} />
                   </button>

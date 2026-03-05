@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import { getCategories } from "@/lib/productApi";
 import { useTranslations } from "next-intl";
 import type { CategoryInfo } from "@/types/product";
@@ -12,7 +13,7 @@ export function CategorySection() {
   const [categories, setCategories] = useState<CategoryInfo[]>([]);
 
   useEffect(() => {
-    getCategories().then(setCategories).catch(() => {});
+    getCategories().then(setCategories).catch(() => toast.error(t("common.fetchError")));
   }, []);
 
   if (categories.length === 0) return null;

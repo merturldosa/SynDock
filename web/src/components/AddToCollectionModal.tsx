@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { X, Plus, FolderPlus } from "lucide-react";
+import toast from "react-hot-toast";
 import {
   getMyCollections,
   createCollection,
@@ -33,7 +34,7 @@ export function AddToCollectionModal({
       setLoading(true);
       getMyCollections()
         .then(setCollections)
-        .catch(() => {})
+        .catch(() => toast.error(t("common.fetchError")))
         .finally(() => setLoading(false));
     }
   }, [isOpen]);
@@ -44,10 +45,10 @@ export function AddToCollectionModal({
     try {
       const { collectionId } = await createCollection(newName.trim());
       await addToCollection(collectionId, productId);
-      alert(t("collection.addedToNew"));
+      toast.success(t("collection.addedToNew"));
       onClose();
     } catch {
-      alert(t("collection.createFailed"));
+      toast.error(t("collection.createFailed"));
     }
     setCreating(false);
   };
@@ -56,10 +57,10 @@ export function AddToCollectionModal({
     setAdding(collectionId);
     try {
       await addToCollection(collectionId, productId);
-      alert(t("collection.added"));
+      toast.success(t("collection.added"));
       onClose();
     } catch {
-      alert(t("collection.addFailed"));
+      toast.error(t("collection.addFailed"));
     }
     setAdding(null);
   };
@@ -73,7 +74,7 @@ export function AddToCollectionModal({
           <h3 className="font-bold text-[var(--color-secondary)]">
             {t("collection.addToCollection")}
           </h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600" aria-label="Close dialog">
             <X size={20} />
           </button>
         </div>

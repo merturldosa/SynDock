@@ -27,7 +27,7 @@ public class BillingScheduler : BackgroundService
             {
                 await ProcessBillingCycle(stoppingToken);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not OperationCanceledException)
             {
                 _logger.LogError(ex, "Error in billing scheduler");
             }

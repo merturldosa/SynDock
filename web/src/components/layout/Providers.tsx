@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { Toaster } from "react-hot-toast";
 import { useTenantStore } from "@/stores/tenantStore";
 
 function TenantInitializer({ children }: { children: React.ReactNode }) {
@@ -17,6 +18,9 @@ function TenantInitializer({ children }: { children: React.ReactNode }) {
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <TenantInitializer>{children}</TenantInitializer>
+    <TenantInitializer>
+      {children}
+      <Toaster position="top-right" />
+    </TenantInitializer>
   );
 }

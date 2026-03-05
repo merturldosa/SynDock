@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ChevronLeft, FileText, CheckCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
+import toast from "react-hot-toast";
 import { formatPrice, formatDateShort } from "@/lib/format";
 import {
   getTenantBilling,
@@ -51,7 +52,7 @@ export default function TenantBillingPage() {
       getTenantInvoices(slug).then(setInvoices),
       getPlatformPlans().then(setPlans),
     ])
-      .catch(() => {})
+      .catch(() => { toast.error(t("common.fetchError")); })
       .finally(() => setLoading(false));
   }, [slug]);
 
@@ -64,10 +65,10 @@ export default function TenantBillingPage() {
         monthlyPrice: plan?.monthlyPrice ?? 0,
         billingStatus: selectedStatus,
       });
-      alert(t("superadmin.billing.updateSuccess"));
+      toast.success(t("superadmin.billing.updateSuccess"));
       router.push("/superadmin/billing");
     } catch {
-      alert(t("superadmin.billing.updateFailed"));
+      toast.error(t("superadmin.billing.updateFailed"));
     }
     setSaving(false);
   };
@@ -78,9 +79,9 @@ export default function TenantBillingPage() {
       await generateInvoice(slug, period);
       const updated = await getTenantInvoices(slug);
       setInvoices(updated);
-      alert(t("superadmin.billing.invoiceGenerated"));
+      toast.success(t("superadmin.billing.invoiceGenerated"));
     } catch {
-      alert(t("superadmin.billing.invoiceGenerateFailed"));
+      toast.error(t("superadmin.billing.invoiceGenerateFailed"));
     }
   };
 
@@ -91,7 +92,7 @@ export default function TenantBillingPage() {
       const updated = await getTenantInvoices(slug);
       setInvoices(updated);
     } catch {
-      alert(t("superadmin.billing.markPaidFailed"));
+      toast.error(t("superadmin.billing.markPaidFailed"));
     }
   };
 

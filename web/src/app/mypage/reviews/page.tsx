@@ -5,12 +5,12 @@ import { useTranslations } from "next-intl";
 import Link from "next/link";
 import Image from "next/image";
 import { Star, Trash2 } from "lucide-react";
+import toast from "react-hot-toast";
 import { getMyReviews, deleteReview, type MyReview } from "@/lib/reviewApi";
+import { formatDateShort } from "@/lib/format";
 
 function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString("ko-KR", {
-    year: "numeric", month: "short", day: "numeric",
-  });
+  return formatDateShort(dateStr);
 }
 
 export default function MyReviewsPage() {
@@ -28,19 +28,19 @@ export default function MyReviewsPage() {
         setReviews(res.items);
         setTotalCount(res.totalCount);
       })
-      .catch(() => {})
+      .catch(() => toast.error(t("common.fetchError")))
       .finally(() => setLoading(false));
   };
 
   useEffect(() => { load(page); }, [page]);
 
   const handleDelete = async (id: number) => {
-    if (!confirm(t("mypage.reviews.deleteConfirm"))) return;
+    if (!window.confirm(t("mypage.reviews.deleteConfirm"))) return;
     try {
       await deleteReview(id);
       load(page);
     } catch {
-      alert(t("mypage.reviews.deleteFailed"));
+      toast.error(t("mypage.reviews.deleteFailed"));
     }
   };
 
@@ -105,6 +105,7 @@ export default function MyReviewsPage() {
                 </div>
                 <button
                   onClick={() => handleDelete(review.id)}
+                  aria-label="Delete review"
                   className="p-2 text-gray-400 hover:text-red-500 transition-colors shrink-0 self-start"
                 >
                   <Trash2 size={16} />

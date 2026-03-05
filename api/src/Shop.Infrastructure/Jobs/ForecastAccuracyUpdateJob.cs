@@ -49,7 +49,7 @@ public class ForecastAccuracyUpdateJob : BackgroundService
             {
                 await RunAccuracyUpdate(stoppingToken);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not OperationCanceledException)
             {
                 _logger.LogError(ex, "Error in forecast accuracy update job");
             }

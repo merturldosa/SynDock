@@ -443,6 +443,7 @@
     "pay": "{amount} 결제하기",
     "orderFailed": "주문에 실패했습니다. 다시 시도해 주세요.",
     "paymentLoading": "결제 모듈을 불러오는 중입니다. 잠시 후 다시 시도해 주세요.",
+    "andMore": "외 {count}건",
     "paymentMethod": "결제 수단",
     "cardPayment": "카드 결제",
     "cardPaymentDesc": "신용카드 / 체크카드",

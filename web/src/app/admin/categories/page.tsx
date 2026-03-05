@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { FolderTree, Plus, Edit2, Trash2, Save, X } from "lucide-react";
+import toast from "react-hot-toast";
 import { getCategories } from "@/lib/productApi";
 import {
   createCategory,
@@ -27,7 +28,7 @@ export default function AdminCategoriesPage() {
     setLoading(true);
     getCategories()
       .then(setCategories)
-      .catch(() => {})
+      .catch(() => toast.error(t("common.fetchError")))
       .finally(() => setLoading(false));
   };
 
@@ -51,7 +52,7 @@ export default function AdminCategoriesPage() {
       setShowAdd(false);
       load();
     } catch {
-      alert(t("admin.categories.addFailed"));
+      toast.error(t("admin.categories.addFailed"));
     }
     setSubmitting(false);
   };
@@ -70,18 +71,18 @@ export default function AdminCategoriesPage() {
       setEditingId(null);
       load();
     } catch {
-      alert(t("admin.categories.editFailed"));
+      toast.error(t("admin.categories.editFailed"));
     }
     setSubmitting(false);
   };
 
   const handleDelete = async (id: number, name: string) => {
-    if (!confirm(t("admin.categories.deleteConfirm", { name }))) return;
+    if (!window.confirm(t("admin.categories.deleteConfirm", { name }))) return;
     try {
       await deleteCategory(id);
       load();
     } catch {
-      alert(t("admin.categories.deleteFailed"));
+      toast.error(t("admin.categories.deleteFailed"));
     }
   };
 
@@ -126,6 +127,7 @@ export default function AdminCategoriesPage() {
             </button>
             <button
               onClick={() => setShowAdd(false)}
+              aria-label="Cancel adding"
               className="px-3 py-2.5 text-gray-400 hover:text-gray-600"
             >
               <X size={18} />
@@ -170,12 +172,14 @@ export default function AdminCategoriesPage() {
                   <button
                     onClick={handleSave}
                     disabled={submitting}
+                    aria-label="Save category"
                     className="p-1.5 text-[var(--color-primary)] hover:bg-[var(--color-primary)]/10 rounded"
                   >
                     <Save size={16} />
                   </button>
                   <button
                     onClick={() => setEditingId(null)}
+                    aria-label="Cancel editing"
                     className="p-1.5 text-gray-400 hover:text-gray-600"
                   >
                     <X size={16} />
@@ -200,12 +204,14 @@ export default function AdminCategoriesPage() {
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => handleEdit(cat)}
+                      aria-label="Edit category"
                       className="p-1.5 text-gray-400 hover:text-[var(--color-primary)]"
                     >
                       <Edit2 size={16} />
                     </button>
                     <button
                       onClick={() => handleDelete(cat.id, cat.name)}
+                      aria-label="Delete category"
                       className="p-1.5 text-gray-400 hover:text-red-500"
                     >
                       <Trash2 size={16} />

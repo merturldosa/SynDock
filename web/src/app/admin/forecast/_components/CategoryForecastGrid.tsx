@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Layers, Package } from "lucide-react";
 import { useTranslations } from "next-intl";
+import toast from "react-hot-toast";
 import {
   getCategoryForecasts,
   type CategoryForecastResult,
@@ -16,7 +17,7 @@ export default function CategoryForecastGrid() {
   useEffect(() => {
     getCategoryForecasts(30)
       .then(setCategories)
-      .catch(() => {})
+      .catch(() => { toast.error(t("common.fetchError")); })
       .finally(() => setLoading(false));
   }, []);
 

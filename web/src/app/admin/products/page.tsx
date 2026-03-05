@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { Plus, Edit2, Trash2, Search } from "lucide-react";
+import toast from "react-hot-toast";
 import { getProducts } from "@/lib/productApi";
 import { deleteProduct } from "@/lib/adminApi";
 import { formatPrice } from "@/lib/format";
@@ -22,7 +23,7 @@ export default function AdminProductsPage() {
     setLoading(true);
     getProducts({ page, pageSize: 20, search: search || undefined })
       .then(setData)
-      .catch(() => {})
+      .catch(() => toast.error(t("common.fetchError")))
       .finally(() => setLoading(false));
   };
 
@@ -31,12 +32,12 @@ export default function AdminProductsPage() {
   }, [page, search]);
 
   const handleDelete = async (id: number, name: string) => {
-    if (!confirm(t("admin.products.deleteConfirm", { name }))) return;
+    if (!window.confirm(t("admin.products.deleteConfirm", { name }))) return;
     try {
       await deleteProduct(id);
       load();
     } catch {
-      alert(t("admin.products.deleteFailed"));
+      toast.error(t("admin.products.deleteFailed"));
     }
   };
 
@@ -168,12 +169,14 @@ export default function AdminProductsPage() {
                         <Link
                           href={`/admin/products/${product.id}/edit`}
                           className="p-1.5 text-gray-400 hover:text-[var(--color-primary)] transition-colors"
+                          aria-label="Edit product"
                         >
                           <Edit2 size={16} />
                         </Link>
                         <button
                           onClick={() => handleDelete(product.id, product.name)}
                           className="p-1.5 text-gray-400 hover:text-red-500 transition-colors"
+                          aria-label="Delete product"
                         >
                           <Trash2 size={16} />
                         </button>

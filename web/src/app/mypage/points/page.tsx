@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Coins, ArrowUpCircle, ArrowDownCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
+import toast from "react-hot-toast";
 import { getPointBalance, getPointHistory, type PointHistoryDto, type PagedPointHistory } from "@/lib/pointApi";
 import { formatNumber, formatDateShort } from "@/lib/format";
 
@@ -30,7 +31,7 @@ export default function PointsPage() {
         setBalance(bal.balance);
         setHistory(hist);
       })
-      .catch(() => {})
+      .catch(() => { toast.error(t("common.fetchError")); })
       .finally(() => setLoading(false));
   }, [page]);
 

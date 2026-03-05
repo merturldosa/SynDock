@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { FolderOpen, Plus, Trash2 } from "lucide-react";
+import toast from "react-hot-toast";
 import { useTranslations } from "next-intl";
 import {
   getMyCollections,
@@ -22,7 +23,7 @@ export default function MyCollectionsPage() {
     setLoading(true);
     getMyCollections()
       .then(setCollections)
-      .catch(() => {})
+      .catch(() => toast.error(t("common.fetchError")))
       .finally(() => setLoading(false));
   };
 
@@ -36,18 +37,18 @@ export default function MyCollectionsPage() {
       setNewName("");
       fetchData();
     } catch {
-      alert(t("collection.createFailed"));
+      toast.error(t("collection.createFailed"));
     }
     setCreating(false);
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm(t("mypage.collections.deleteConfirm"))) return;
+    if (!window.confirm(t("mypage.collections.deleteConfirm"))) return;
     try {
       await deleteCollection(id);
       fetchData();
     } catch {
-      alert(t("mypage.collections.deleteFailed"));
+      toast.error(t("mypage.collections.deleteFailed"));
     }
   };
 
@@ -116,6 +117,7 @@ export default function MyCollectionsPage() {
                 </Link>
                 <button
                   onClick={() => handleDelete(col.id)}
+                  aria-label="Delete collection"
                   className="p-2 text-gray-300 hover:text-red-400 transition-colors"
                 >
                   <Trash2 size={16} />

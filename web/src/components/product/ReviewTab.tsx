@@ -4,10 +4,12 @@ import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { Star, Trash2, Camera, X } from "lucide-react";
+import toast from "react-hot-toast";
 import { getProductReviews, createReview, deleteReview } from "@/lib/reviewApi";
 import { useAuthStore } from "@/stores/authStore";
 import type { ReviewSummary } from "@/types/review";
 import api from "@/lib/api";
+import { formatDateShort } from "@/lib/format";
 
 interface ReviewTabProps {
   productId: number;
@@ -32,7 +34,7 @@ function StarRating({ rating, onRate, interactive = false }: { rating: number; o
 }
 
 function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString("ko-KR", { year: "numeric", month: "short", day: "numeric" });
+  return formatDateShort(dateStr);
 }
 
 export function ReviewTab({ productId }: ReviewTabProps) {
@@ -50,7 +52,7 @@ export function ReviewTab({ productId }: ReviewTabProps) {
   const [expandedImage, setExpandedImage] = useState<string | null>(null);
 
   const load = () => {
-    getProductReviews(productId, page).then(setData).catch(() => {});
+    getProductReviews(productId, page).then(setData).catch(() => toast.error(t("common.fetchError")));
   };
 
   useEffect(() => { load(); }, [productId, page]);
@@ -67,7 +69,7 @@ export function ReviewTab({ productId }: ReviewTabProps) {
       });
       setNewImageUrl(result.url);
     } catch {
-      alert(t("review.uploadFailed"));
+      toast.error(t("review.uploadFailed"));
     }
     setUploading(false);
   };
@@ -83,18 +85,18 @@ export function ReviewTab({ productId }: ReviewTabProps) {
       setNewImageUrl("");
       load();
     } catch {
-      alert(t("review.writeFailed"));
+      toast.error(t("review.writeFailed"));
     }
     setSubmitting(false);
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm(t("review.deleteConfirm"))) return;
+    if (!window.confirm(t("review.deleteConfirm"))) return;
     try {
       await deleteReview(id);
       load();
     } catch {
-      alert(t("review.deleteFailed"));
+      toast.error(t("review.deleteFailed"));
     }
   };
 
@@ -208,7 +210,7 @@ export function ReviewTab({ productId }: ReviewTabProps) {
                 <div className="w-20 h-20 rounded-lg overflow-hidden bg-gray-100">
                   <Image src={newImageUrl} alt="" width={80} height={80} className="object-cover w-full h-full" />
                 </div>
-                <button onClick={() => setNewImageUrl("")} className="text-gray-400 hover:text-red-500">
+                <button onClick={() => setNewImageUrl("")} className="text-gray-400 hover:text-red-500" aria-label="Remove image">
                   <X size={14} />
                 </button>
               </div>
@@ -243,7 +245,7 @@ export function ReviewTab({ productId }: ReviewTabProps) {
                   <span className="text-xs text-gray-400">{formatDate(review.createdAt)}</span>
                 </div>
                 {user?.id === review.userId && (
-                  <button onClick={() => handleDelete(review.id)} className="text-gray-400 hover:text-red-500">
+                  <button onClick={() => handleDelete(review.id)} className="text-gray-400 hover:text-red-500" aria-label="Delete review">
                     <Trash2 size={14} />
                   </button>
                 )}
@@ -273,6 +275,7 @@ export function ReviewTab({ productId }: ReviewTabProps) {
             <button
               onClick={() => setExpandedImage(null)}
               className="absolute top-2 right-2 w-8 h-8 bg-white/80 rounded-full flex items-center justify-center text-gray-700 hover:bg-white"
+              aria-label="Close image"
             >
               <X size={18} />
             </button>

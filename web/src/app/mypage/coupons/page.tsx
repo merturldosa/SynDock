@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Ticket } from "lucide-react";
 import { useTranslations } from "next-intl";
+import toast from "react-hot-toast";
 import { getMyCoupons, type UserCouponDto } from "@/lib/couponApi";
 import { formatPrice, formatDateShort } from "@/lib/format";
 
@@ -14,7 +15,7 @@ export default function MyCouponsPage() {
   useEffect(() => {
     getMyCoupons()
       .then(setCoupons)
-      .catch(() => {})
+      .catch(() => { toast.error(t("common.fetchError")); })
       .finally(() => setLoading(false));
   }, []);
 

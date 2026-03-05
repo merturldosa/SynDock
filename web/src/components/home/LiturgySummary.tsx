@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
+import toast from "react-hot-toast";
 import { Church, ChevronRight } from "lucide-react";
 import { getTodayLiturgy } from "@/lib/liturgyApi";
 import type { LiturgyTodayDto } from "@/types/liturgy";
@@ -21,7 +22,7 @@ export function LiturgySummary() {
   const [data, setData] = useState<LiturgyTodayDto | null>(null);
 
   useEffect(() => {
-    getTodayLiturgy().then(setData).catch(() => {});
+    getTodayLiturgy().then(setData).catch(() => toast.error(t("common.fetchError")));
   }, []);
 
   if (!data) return null;

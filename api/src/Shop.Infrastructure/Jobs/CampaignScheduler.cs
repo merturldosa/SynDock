@@ -26,9 +26,9 @@ public class CampaignScheduler : BackgroundService
             {
                 await ProcessScheduledCampaigns(stoppingToken);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not OperationCanceledException)
             {
-                _logger.LogError(ex, "캠페인 스케줄러 오류");
+                _logger.LogError(ex, "Campaign scheduler error");
             }
 
             await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
@@ -51,7 +51,7 @@ public class CampaignScheduler : BackgroundService
         {
             try
             {
-                _logger.LogInformation("예약 캠페인 발송 시작: {CampaignId} ({Title})", campaign.Id, campaign.Title);
+                _logger.LogInformation("Scheduled campaign sending started: {CampaignId} ({Title})", campaign.Id, campaign.Title);
 
                 campaign.Status = "Sending";
                 await db.SaveChangesAsync(ct);
@@ -71,12 +71,12 @@ public class CampaignScheduler : BackgroundService
                 campaign.UpdatedAt = DateTime.UtcNow;
                 await db.SaveChangesAsync(ct);
 
-                _logger.LogInformation("캠페인 발송 완료: {CampaignId} (성공: {Sent}, 실패: {Failed})",
+                _logger.LogInformation("Campaign sending completed: {CampaignId} (sent: {Sent}, failed: {Failed})",
                     campaign.Id, campaign.SentCount, campaign.FailCount);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "캠페인 발송 실패: {CampaignId}", campaign.Id);
+                _logger.LogError(ex, "Campaign sending failed: {CampaignId}", campaign.Id);
                 campaign.Status = "Failed";
                 campaign.UpdatedAt = DateTime.UtcNow;
                 await db.SaveChangesAsync(ct);
@@ -97,7 +97,10 @@ public class CampaignScheduler : BackgroundService
                 await emailService.SendAsync(email, campaign.Title, campaign.Content, ct);
                 sentCount++;
             }
-            catch { failCount++; }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                failCount++;
+            }
         }
 
         campaign.SentCount = sentCount;
@@ -138,7 +141,10 @@ public class CampaignScheduler : BackgroundService
                     await emailService.SendAsync(email, variant.SubjectLine, variant.Content, ct);
                     sentCount++;
                 }
-                catch { failCount++; }
+                catch (Exception ex) when (ex is not OperationCanceledException)
+                {
+                    failCount++;
+                }
             }
 
             variant.SentCount = sentCount;

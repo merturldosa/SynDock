@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useTenantStore } from "@/stores/tenantStore";
 import { getCategories } from "@/lib/productApi";
 import { useTranslations } from "next-intl";
+import toast from "react-hot-toast";
 import type { CategoryInfo } from "@/types/product";
 
 export function Footer() {
@@ -13,7 +14,7 @@ export function Footer() {
   const [categories, setCategories] = useState<CategoryInfo[]>([]);
 
   useEffect(() => {
-    getCategories().then(setCategories).catch(() => {});
+    getCategories().then(setCategories).catch(() => { toast.error("Failed to load categories"); });
   }, []);
 
   const footerCategories = categories.slice(0, 5);

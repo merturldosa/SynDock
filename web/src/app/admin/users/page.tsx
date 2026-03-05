@@ -29,7 +29,7 @@ export default function AdminUsersPage() {
       await updateUser(user.id, newRole, user.isActive);
       load();
     } catch {
-      alert(t("admin.users.roleChangeFailed"));
+      toast.error(t("admin.users.roleChangeFailed"));
     }
     setUpdatingId(null);
   };
@@ -44,7 +44,7 @@ export default function AdminUsersPage() {
       await updateUser(user.id, user.role, !user.isActive);
       load();
     } catch {
-      alert(t("admin.users.statusChangeFailed"));
+      toast.error(t("admin.users.statusChangeFailed"));
     }
     setUpdatingId(null);
   };

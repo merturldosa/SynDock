@@ -13,6 +13,7 @@ import { toggleWishlist, checkWishlist } from "@/lib/reviewApi";
 import { getProductRecommendations, type RecommendedProduct } from "@/lib/recommendationApi";
 import { useAuthStore } from "@/stores/authStore";
 import { useCartStore } from "@/stores/cartStore";
+import toast from "react-hot-toast";
 import { useTenantStore } from "@/stores/tenantStore";
 import { ReviewTab } from "@/components/product/ReviewTab";
 import { QnATab } from "@/components/product/QnATab";
@@ -60,9 +61,9 @@ export default function ProductDetailClient() {
           setSelectedVariant(p.variants[0]);
         }
         if (isAuthenticated) {
-          checkWishlist([p.id]).then((res) => setIsWished(res.wishedProductIds.includes(p.id))).catch(() => {});
+          checkWishlist([p.id]).then((res) => setIsWished(res.wishedProductIds.includes(p.id))).catch(() => { toast.error(t("common.fetchError")); });
         }
-        getProductRecommendations(p.id, 6).then(setRecommendations).catch(() => {});
+        getProductRecommendations(p.id, 6).then(setRecommendations).catch(() => { toast.error(t("common.fetchError")); });
       })
       .catch(() => setProduct(null))
       .finally(() => setLoading(false));
@@ -118,7 +119,7 @@ export default function ProductDetailClient() {
     try {
       const { isWished: newState } = await toggleWishlist(product.id);
       setIsWished(newState);
-    } catch { /* ignore */ }
+    } catch { toast.error(t("common.fetchError")); }
   };
 
   const handleAddToCart = async () => {
@@ -131,7 +132,7 @@ export default function ProductDetailClient() {
     const success = await addToCart(product.id, selectedVariant?.id ?? null, quantity);
     setAddingToCart(false);
     if (success) {
-      alert(t("products.addedToCart", { name: product.name }));
+      toast.success(t("products.addedToCart", { name: product.name }));
     }
   };
 

@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
+import toast from "react-hot-toast";
+import { formatDateShort } from "@/lib/format";
 import {
   RefreshCcw, Plus, Trash2, Power, PowerOff, Send, X,
   AlertTriangle, CheckCircle, Clock, Package
@@ -59,7 +61,7 @@ export default function AutoReorderPage() {
       ]);
       setStats(s);
       setRules(r);
-    } catch { /* ignore */ }
+    } catch { toast.error(t("common.fetchError")); }
     setLoading(false);
   }, []);
 
@@ -67,7 +69,7 @@ export default function AutoReorderPage() {
     try {
       const o = await getPurchaseOrders(orderStatus || undefined);
       setOrders(o);
-    } catch { /* ignore */ }
+    } catch { toast.error(t("common.fetchError")); }
   }, [orderStatus]);
 
   useEffect(() => { load(); }, [load]);
@@ -78,7 +80,7 @@ export default function AutoReorderPage() {
       const { data } = await api.get("/api/products", { params: { pageSize: 200 } });
       const items = data.items || data;
       setProducts(items.map((p: { id: number; name: string }) => ({ id: p.id, name: p.name })));
-    } catch { /* ignore */ }
+    } catch { toast.error(t("common.fetchError")); }
   };
 
   const handleAddRule = async () => {
@@ -88,46 +90,46 @@ export default function AutoReorderPage() {
       setShowAddRule(false);
       setRuleForm({ productId: 0, reorderThreshold: 10, reorderQuantity: 0, maxStockLevel: 0, isEnabled: true, autoForwardToMes: true, minIntervalHours: 24 });
       load();
-    } catch { /* ignore */ }
+    } catch { toast.error(t("admin.autoReorder.saveFailed")); }
   };
 
   const handleBulkCreate = async () => {
     try {
       const result = await bulkCreateAutoReorderRules(bulkForm);
-      alert(t("admin.autoReorder.bulkCreatedMessage", { count: result.createdCount }));
+      toast.success(t("admin.autoReorder.bulkCreatedMessage", { count: result.createdCount }));
       setShowBulk(false);
       load();
-    } catch { /* ignore */ }
+    } catch { toast.error(t("admin.autoReorder.bulkFailed")); }
   };
 
   const handleToggle = async (id: number, enabled: boolean) => {
     try {
       await toggleAutoReorderRule(id, enabled);
       load();
-    } catch { /* ignore */ }
+    } catch { toast.error(t("common.fetchError")); }
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm(t("admin.autoReorder.confirmDeleteRule"))) return;
+    if (!window.confirm(t("admin.autoReorder.confirmDeleteRule"))) return;
     try {
       await deleteAutoReorderRule(id);
       load();
-    } catch { /* ignore */ }
+    } catch { toast.error(t("admin.autoReorder.deleteFailed")); }
   };
 
   const handleForward = async (id: number) => {
     try {
       await forwardPurchaseOrder(id);
       loadOrders();
-    } catch { /* ignore */ }
+    } catch { toast.error(t("admin.autoReorder.forwardFailed")); }
   };
 
   const handleCancel = async (id: number) => {
-    if (!confirm(t("admin.autoReorder.confirmCancelOrder"))) return;
+    if (!window.confirm(t("admin.autoReorder.confirmCancelOrder"))) return;
     try {
       await cancelPurchaseOrder(id);
       loadOrders();
-    } catch { /* ignore */ }
+    } catch { toast.error(t("admin.autoReorder.cancelFailed")); }
   };
 
   const StatCard = ({ label, value, icon: Icon, color }: { label: string; value: number | string; icon: typeof Package; color: string }) => (
@@ -207,7 +209,7 @@ export default function AutoReorderPage() {
               <div className="bg-white rounded-xl p-6 w-full max-w-md space-y-4" onClick={(e) => e.stopPropagation()}>
                 <div className="flex justify-between items-center">
                   <h3 className="font-bold">{t("admin.autoReorder.addRule")}</h3>
-                  <button onClick={() => setShowAddRule(false)}><X size={20} /></button>
+                  <button onClick={() => setShowAddRule(false)} aria-label="Close dialog"><X size={20} /></button>
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">{t("admin.autoReorder.product")}</label>
@@ -259,7 +261,7 @@ export default function AutoReorderPage() {
               <div className="bg-white rounded-xl p-6 w-full max-w-sm space-y-4" onClick={(e) => e.stopPropagation()}>
                 <div className="flex justify-between items-center">
                   <h3 className="font-bold">{t("admin.autoReorder.bulkCreate")}</h3>
-                  <button onClick={() => setShowBulk(false)}><X size={20} /></button>
+                  <button onClick={() => setShowBulk(false)} aria-label="Close dialog"><X size={20} /></button>
                 </div>
                 <p className="text-sm text-gray-600">{t("admin.autoReorder.bulkDesc")}</p>
                 <div>
@@ -321,10 +323,10 @@ export default function AutoReorderPage() {
                       </button>
                     </td>
                     <td className="text-center px-3 py-3 text-xs text-gray-500">
-                      {rule.lastTriggeredAt ? new Date(rule.lastTriggeredAt).toLocaleDateString() : "-"}
+                      {rule.lastTriggeredAt ? formatDateShort(rule.lastTriggeredAt) : "-"}
                     </td>
                     <td className="text-center px-3 py-3">
-                      <button onClick={() => handleDelete(rule.id)} className="text-red-500 hover:text-red-700">
+                      <button onClick={() => handleDelete(rule.id)} className="text-red-500 hover:text-red-700" aria-label="Delete rule">
                         <Trash2 size={16} />
                       </button>
                     </td>
@@ -359,7 +361,7 @@ export default function AutoReorderPage() {
                     <div className="flex items-center gap-4">
                       <div>
                         <p className="font-medium">{po.orderNumber}</p>
-                        <p className="text-xs text-gray-500">{new Date(po.createdAt).toLocaleString()}</p>
+                        <p className="text-xs text-gray-500">{formatDateShort(po.createdAt)}</p>
                       </div>
                       {statusBadge(po.status)}
                       <span className="text-xs px-2 py-0.5 rounded bg-gray-100">{po.triggerType}</span>
@@ -377,7 +379,8 @@ export default function AutoReorderPage() {
                               <Send size={12} /> MES
                             </button>
                             <button onClick={(e) => { e.stopPropagation(); handleCancel(po.id); }}
-                              className="px-3 py-1.5 bg-red-500 text-white rounded text-xs hover:bg-red-600">
+                              className="px-3 py-1.5 bg-red-500 text-white rounded text-xs hover:bg-red-600"
+                              aria-label="Cancel order">
                               <X size={12} />
                             </button>
                           </>

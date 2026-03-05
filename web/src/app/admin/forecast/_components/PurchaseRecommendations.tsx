@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { ShoppingCart, AlertCircle, Loader2, Send } from "lucide-react";
 import { useTranslations } from "next-intl";
+import toast from "react-hot-toast";
 import {
   getPurchaseRecommendations,
   createAutoPurchaseOrder,
@@ -28,7 +29,7 @@ export default function PurchaseRecommendations() {
   useEffect(() => {
     getPurchaseRecommendations(14)
       .then(setItems)
-      .catch(() => {})
+      .catch(() => { toast.error(t("common.fetchError")); })
       .finally(() => setLoading(false));
   }, []);
 

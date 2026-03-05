@@ -62,7 +62,7 @@ export function useAdminSignalR() {
     connection
       .start()
       .then(() => setIsConnected(true))
-      .catch((err) => console.error("SignalR connection failed:", err));
+      .catch(() => { /* SignalR connection failed silently */ });
 
     connectionRef.current = connection;
 

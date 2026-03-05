@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Heart, Trash2 } from "lucide-react";
+import toast from "react-hot-toast";
 import { useTranslations } from "next-intl";
 import { getWishlist, toggleWishlist } from "@/lib/reviewApi";
 import { useAuthStore } from "@/stores/authStore";
@@ -21,7 +22,7 @@ export default function WishlistPage() {
   useEffect(() => {
     if (!isAuthenticated) return;
     setLoading(true);
-    getWishlist().then(setItems).catch(() => {}).finally(() => setLoading(false));
+    getWishlist().then(setItems).catch(() => toast.error(t("common.fetchError"))).finally(() => setLoading(false));
   }, [isAuthenticated]);
 
   const handleRemove = async (productId: number) => {
@@ -87,6 +88,7 @@ export default function WishlistPage() {
                   <button
                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleRemove(item.productId); }}
                     className="absolute top-2 right-2 p-2 bg-white/90 rounded-full text-red-500 hover:bg-red-50 transition-colors"
+                    aria-label="Remove from wishlist"
                   >
                     <Trash2 size={16} />
                   </button>

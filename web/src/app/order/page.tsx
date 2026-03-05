@@ -7,6 +7,7 @@ import Image from "next/image";
 import Link from "next/link";
 import Script from "next/script";
 import { ShoppingCart, MapPin, Plus, Tag, Coins, Check, CreditCard, Banknote } from "lucide-react";
+import toast from "react-hot-toast";
 import { useCartStore } from "@/stores/cartStore";
 import { useAuthStore } from "@/stores/authStore";
 import { createOrder, getAddresses, createAddress, getPaymentClientKey } from "@/lib/orderApi";
@@ -61,15 +62,15 @@ export default function OrderPage() {
       const def = addrs.find((a) => a.isDefault);
       if (def) setSelectedAddressId(def.id);
       else if (addrs.length > 0) setSelectedAddressId(addrs[0].id);
-    }).catch(() => {});
+    }).catch(() => { toast.error(t("common.fetchError")); });
     getMyCoupons().then((coupons) => {
       setMyCoupons(coupons.map((c) => ({ code: c.code, couponName: c.name, discountType: c.discountType, discountValue: c.discountValue })));
-    }).catch(() => {});
-    getPointBalance().then((b) => setPointBalance(b.balance)).catch(() => {});
+    }).catch(() => { toast.error(t("common.fetchError")); });
+    getPointBalance().then((b) => setPointBalance(b.balance)).catch(() => { toast.error(t("common.fetchError")); });
     getPaymentClientKey().then((res) => {
       setPaymentProvider(res.provider);
       setPaymentClientKey(res.clientKey);
-    }).catch(() => {});
+    }).catch(() => { toast.error(t("common.fetchError")); });
   }, [isAuthenticated, fetchCart, router]);
 
   if (!isAuthenticated) return null;
@@ -107,7 +108,7 @@ export default function OrderPage() {
       setShowNewAddress(false);
       setNewAddress({ recipientName: "", phone: "", zipCode: "", address1: "", address2: "", isDefault: false });
     } catch {
-      alert(t("order.saveFailed"));
+      toast.error(t("order.saveFailed"));
     }
   };
 
@@ -127,7 +128,7 @@ export default function OrderPage() {
       if (paymentProvider === "TossPayments" && paymentClientKey && finalAmount > 0) {
         const tossPayments = (window as unknown as Record<string, unknown>).TossPayments as ((clientKey: string) => { requestPayment: (method: string, options: Record<string, unknown>) => Promise<void> }) | undefined;
         if (!tossPayments) {
-          alert(t("order.paymentLoading"));
+          toast.error(t("order.paymentLoading"));
           setSubmitting(false);
           return;
         }
@@ -137,7 +138,7 @@ export default function OrderPage() {
           amount: finalAmount,
           orderId: orderNumber,
           orderName: cart.items.length > 1
-            ? `${cart.items[0].productName} 외 ${cart.items.length - 1}건`
+            ? `${cart.items[0].productName} ${t("order.andMore", { count: cart.items.length - 1 })}`
             : cart.items[0].productName,
           successUrl: `${window.location.origin}/order/success`,
           failUrl: `${window.location.origin}/order/fail`,
@@ -147,7 +148,7 @@ export default function OrderPage() {
         router.push(`/order/complete?id=${orderId}`);
       }
     } catch {
-      alert(t("order.orderFailed"));
+      toast.error(t("order.orderFailed"));
       setSubmitting(false);
     }
   };

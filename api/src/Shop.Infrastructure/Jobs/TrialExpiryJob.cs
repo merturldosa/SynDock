@@ -25,7 +25,7 @@ public class TrialExpiryJob : BackgroundService
             {
                 await ProcessTrialExpiry(stoppingToken);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not OperationCanceledException)
             {
                 _logger.LogError(ex, "Error in trial expiry job");
             }

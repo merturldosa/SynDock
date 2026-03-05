@@ -28,7 +28,7 @@ public class SettlementScheduler : BackgroundService
                 await CreatePendingSettlements(stoppingToken);
                 await ProcessReadySettlements(stoppingToken);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not OperationCanceledException)
             {
                 _logger.LogError(ex, "Error in settlement scheduler");
             }
@@ -53,6 +53,7 @@ public class SettlementScheduler : BackgroundService
         // 정산 주기에 해당하는 테넌트별 설정 조회
         var settings = await db.CommissionSettings
             .AsNoTracking()
+            .IgnoreQueryFilters()
             .Where(cs => cs.ProductId == null && cs.CategoryId == null) // 테넌트 기본 설정만
             .ToListAsync(ct);
 
@@ -113,6 +114,7 @@ public class SettlementScheduler : BackgroundService
         var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
 
         var readySettlements = await db.Settlements
+            .IgnoreQueryFilters()
             .Where(s => s.Status == "Ready")
             .Select(s => s.Id)
             .ToListAsync(ct);

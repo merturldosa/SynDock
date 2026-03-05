@@ -49,7 +49,7 @@ public class PointsIntegrationTests : IClassFixture<CustomWebApplicationFactory>
         {
             userId = 2,
             amount = 1000,
-            reason = "Test reward"
+            description = "Test reward"
         };
 
         var response = await client.PostAsJsonAsync("/api/points/earn", request);
@@ -65,7 +65,7 @@ public class PointsIntegrationTests : IClassFixture<CustomWebApplicationFactory>
         {
             userId = 2,
             amount = 99999,
-            reason = "Self-award attempt"
+            description = "Self-award attempt"
         };
 
         var response = await client.PostAsJsonAsync("/api/points/earn", request);
@@ -79,14 +79,14 @@ public class PointsIntegrationTests : IClassFixture<CustomWebApplicationFactory>
         var client = _factory.CreateAuthenticatedClient(role: "Admin");
 
         // Earn first
-        await client.PostAsJsonAsync("/api/points/earn", new { userId = 2, amount = 5000, reason = "Pre-load" });
+        await client.PostAsJsonAsync("/api/points/earn", new { userId = 2, amount = 5000, description = "Pre-load" });
 
         // Use points
         var request = new
         {
             userId = 2,
             amount = 1000,
-            reason = "Test usage"
+            orderId = 1
         };
 
         var response = await client.PostAsJsonAsync("/api/points/use", request);
@@ -102,7 +102,7 @@ public class PointsIntegrationTests : IClassFixture<CustomWebApplicationFactory>
         {
             userId = 2,
             amount = 500,
-            reason = "Test refund"
+            orderId = 1
         };
 
         var response = await client.PostAsJsonAsync("/api/points/refund", request);

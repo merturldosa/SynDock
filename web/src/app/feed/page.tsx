@@ -9,6 +9,7 @@ import { useTranslations } from "next-intl";
 import { getFeed, getTrendingHashtags, toggleReaction } from "@/lib/postApi";
 import { useAuthStore } from "@/stores/authStore";
 import type { PostSummary, PagedPosts, HashtagInfo } from "@/types/post";
+import { formatDateShort } from "@/lib/format";
 
 export default function FeedPage() {
   const t = useTranslations();
@@ -23,7 +24,7 @@ export default function FeedPage() {
     if (hrs < 24) return t("feed.hoursAgo", { count: hrs });
     const days = Math.floor(hrs / 24);
     if (days < 30) return t("feed.daysAgo", { count: days });
-    return new Date(dateStr).toLocaleDateString();
+    return formatDateShort(dateStr);
   };
   const [data, setData] = useState<PagedPosts | null>(null);
   const [trending, setTrending] = useState<HashtagInfo[]>([]);

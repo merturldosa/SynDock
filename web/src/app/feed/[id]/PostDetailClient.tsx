@@ -5,11 +5,13 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { MessageCircle, Send } from "lucide-react";
+import toast from "react-hot-toast";
 import { useTranslations } from "next-intl";
 import { ReactionPicker } from "@/components/ui/ReactionPicker";
 import { getPost, toggleReaction, addComment } from "@/lib/postApi";
 import { useAuthStore } from "@/stores/authStore";
 import type { PostDto } from "@/types/post";
+import { formatDateShort } from "@/lib/format";
 
 export default function PostDetailClient() {
   const t = useTranslations();
@@ -25,7 +27,7 @@ export default function PostDetailClient() {
     if (hrs < 24) return t("feed.hoursAgo", { count: hrs });
     const days = Math.floor(hrs / 24);
     if (days < 30) return t("feed.daysAgo", { count: days });
-    return new Date(dateStr).toLocaleDateString();
+    return formatDateShort(dateStr);
   };
   const [post, setPost] = useState<PostDto | null>(null);
   const [loading, setLoading] = useState(true);
@@ -60,7 +62,7 @@ export default function PostDetailClient() {
             }
           : null
       );
-    } catch {}
+    } catch { toast.error(t("feed.reactionFailed")); }
   };
 
   const handleComment = async () => {
@@ -72,7 +74,7 @@ export default function PostDetailClient() {
       setReplyTo(null);
       load();
     } catch {
-      alert(t("feed.commentFailed"));
+      toast.error(t("feed.commentFailed"));
     }
     setSubmitting(false);
   };

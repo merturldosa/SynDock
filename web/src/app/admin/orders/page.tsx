@@ -76,7 +76,7 @@ export default function AdminOrdersPage() {
       await updateOrderStatus(orderId, newStatus);
       load();
     } catch {
-      alert(t("admin.orders.updateFailed"));
+      toast.error(t("admin.orders.updateFailed"));
     }
   };
 
@@ -107,12 +107,12 @@ export default function AdminOrdersPage() {
     try {
       const result = await bulkUpdateOrderStatus(Array.from(selectedIds), bulkStatus);
       if (result.failCount > 0) {
-        alert(t("admin.orders.bulkResult", { success: result.successCount, fail: result.failCount }) + "\n" + result.errors.join("\n"));
+        toast.error(t("admin.orders.bulkResult", { success: result.successCount, fail: result.failCount }));
       }
       setSelectedIds(new Set());
       load();
     } catch {
-      alert(t("admin.orders.bulkFailed"));
+      toast.error(t("admin.orders.bulkFailed"));
     }
     setBulkProcessing(false);
   };
@@ -125,7 +125,7 @@ export default function AdminOrdersPage() {
         search: searchQuery || undefined,
       });
     } catch {
-      alert(t("admin.orders.exportFailed"));
+      toast.error(t("admin.orders.exportFailed"));
     }
     setExporting(false);
   };

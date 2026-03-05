@@ -5,12 +5,12 @@ import { useTranslations } from "next-intl";
 import Link from "next/link";
 import Image from "next/image";
 import { MessageCircleQuestion, Trash2, Lock } from "lucide-react";
+import toast from "react-hot-toast";
 import { getMyQnAs, deleteQnA, type MyQnA } from "@/lib/reviewApi";
+import { formatDateShort } from "@/lib/format";
 
 function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString("ko-KR", {
-    year: "numeric", month: "short", day: "numeric",
-  });
+  return formatDateShort(dateStr);
 }
 
 export default function MyQnAPage() {
@@ -28,19 +28,19 @@ export default function MyQnAPage() {
         setQnAs(res.items);
         setTotalCount(res.totalCount);
       })
-      .catch(() => {})
+      .catch(() => toast.error(t("common.fetchError")))
       .finally(() => setLoading(false));
   };
 
   useEffect(() => { load(page); }, [page]);
 
   const handleDelete = async (id: number) => {
-    if (!confirm(t("mypage.qna.deleteConfirm"))) return;
+    if (!window.confirm(t("mypage.qna.deleteConfirm"))) return;
     try {
       await deleteQnA(id);
       load(page);
     } catch {
-      alert(t("mypage.qna.deleteFailed"));
+      toast.error(t("mypage.qna.deleteFailed"));
     }
   };
 
@@ -110,6 +110,7 @@ export default function MyQnAPage() {
                 </div>
                 <button
                   onClick={() => handleDelete(qna.id)}
+                  aria-label="Delete question"
                   className="p-2 text-gray-400 hover:text-red-500 transition-colors shrink-0 self-start"
                 >
                   <Trash2 size={16} />

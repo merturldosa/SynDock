@@ -4,9 +4,11 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { Hash, Heart, MessageCircle } from "lucide-react";
+import toast from "react-hot-toast";
 import { useTranslations } from "next-intl";
 import { getPostsByHashtag } from "@/lib/postApi";
 import type { PagedPosts } from "@/types/post";
+import { formatDateShort } from "@/lib/format";
 
 export default function HashtagPage() {
   const t = useTranslations();
@@ -22,7 +24,7 @@ export default function HashtagPage() {
     if (hrs < 24) return t("feed.hoursAgo", { count: hrs });
     const days = Math.floor(hrs / 24);
     if (days < 30) return t("feed.daysAgo", { count: days });
-    return new Date(dateStr).toLocaleDateString();
+    return formatDateShort(dateStr);
   };
   const [data, setData] = useState<PagedPosts | null>(null);
   const [page, setPage] = useState(1);
@@ -33,7 +35,7 @@ export default function HashtagPage() {
     setLoading(true);
     getPostsByHashtag(decodeURIComponent(tag), page)
       .then(setData)
-      .catch(() => {})
+      .catch(() => toast.error(t("common.fetchError")))
       .finally(() => setLoading(false));
   }, [tag, page]);
 

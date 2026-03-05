@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { getTenantSettings, updateTenantSettings, type TenantSettings } from "@/lib/adminApi";
 import api from "@/lib/api";
+import toast from "react-hot-toast";
 
 export default function AdminSettingsPage() {
   const t = useTranslations();
@@ -56,7 +57,7 @@ export default function AdminSettingsPage() {
           themeBackground: s.theme?.background || "",
         });
       })
-      .catch(() => {})
+      .catch(() => { toast.error(t("common.fetchError")); })
       .finally(() => setLoading(false));
   }, []);
 
@@ -71,7 +72,7 @@ export default function AdminSettingsPage() {
       });
       setForm((f) => ({ ...f, [field]: data.url }));
     } catch {
-      alert(t("admin.settings.uploadFailed"));
+      toast.error(t("admin.settings.uploadFailed"));
     }
   };
 

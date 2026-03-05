@@ -9,6 +9,7 @@ import { getProductById, getCategories } from "@/lib/productApi";
 import { updateProduct, getProductVariants, updateProductVariants, type ProductVariantDto } from "@/lib/adminApi";
 import { generateProductImage } from "@/lib/forecastApi";
 import { AIContentGenerator } from "@/components/admin/AIContentGenerator";
+import toast from "react-hot-toast";
 import type { ProductDetail, CategoryInfo } from "@/types/product";
 
 export default function AdminProductEditPage() {
@@ -61,7 +62,7 @@ export default function AdminProductEditPage() {
           isNew: false,
         });
       })
-      .catch(() => {})
+      .catch(() => { toast.error(t("common.fetchError")); })
       .finally(() => setLoading(false));
   }, [params.id]);
 
@@ -92,7 +93,7 @@ export default function AdminProductEditPage() {
       );
       setGeneratedImageUrl(result.url);
     } catch {
-      alert(t("admin.products.aiImageGenerateFailed"));
+      toast.error(t("admin.products.aiImageGenerateFailed"));
     }
     setGeneratingImage(false);
   };
@@ -106,10 +107,10 @@ export default function AdminProductEditPage() {
         updateProduct(product.id, form),
         updateProductVariants(product.id, variants.map((v, i) => ({ ...v, sortOrder: i }))),
       ]);
-      alert(t("admin.products.updated"));
+      toast.success(t("admin.products.updated"));
       router.push("/admin/products");
     } catch {
-      alert(t("admin.products.updateFailed"));
+      toast.error(t("admin.products.updateFailed"));
     }
     setSubmitting(false);
   };

@@ -7,6 +7,7 @@ import {
   type CommissionSummaryItem, type SettlementDto,
 } from "@/lib/adminApi";
 import { DollarSign, Building2, Clock, CheckCircle, AlertCircle, Plus, Send } from "lucide-react";
+import toast from "react-hot-toast";
 import { formatPrice } from "@/lib/format";
 
 function StatusBadge({ status }: { status: string }) {
@@ -41,7 +42,7 @@ export default function SettlementsPage() {
   useEffect(() => {
     getCommissionSummary()
       .then(setSummary)
-      .catch(() => {})
+      .catch(() => { toast.error(t("common.fetchError")); })
       .finally(() => setLoading(false));
   }, []);
 
@@ -108,7 +109,7 @@ export default function SettlementsPage() {
       {message && (
         <div className="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-lg text-sm flex items-center justify-between">
           {message}
-          <button onClick={() => setMessage(null)} className="text-blue-500 hover:text-blue-700">×</button>
+          <button onClick={() => setMessage(null)} className="text-blue-500 hover:text-blue-700" aria-label="Dismiss message">×</button>
         </div>
       )}
 

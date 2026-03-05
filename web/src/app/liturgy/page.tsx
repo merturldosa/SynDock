@@ -7,6 +7,7 @@ import { Calendar, Church, Star, ChevronRight } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { getTodayLiturgy, getLiturgicalSeasons } from "@/lib/liturgyApi";
 import type { LiturgyTodayDto, LiturgicalSeasonDto } from "@/types/liturgy";
+import { formatDateShort } from "@/lib/format";
 
 const SEASON_KEYS = [
   "Advent",
@@ -26,10 +27,7 @@ const COLOR_MAP: Record<string, { bg: string; text: string; border: string; acce
 };
 
 function formatDate(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString("ko-KR", {
-    month: "long",
-    day: "numeric",
-  });
+  return formatDateShort(dateStr);
 }
 
 export default function LiturgyPage() {

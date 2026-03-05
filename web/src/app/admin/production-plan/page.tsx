@@ -54,7 +54,7 @@ export default function ProductionPlanPage() {
       const params = statusFilter ? { status: statusFilter } : {};
       const { data } = await api.get("/admin/mes/production-plan", { params });
       setSuggestions(data);
-    } catch {}
+    } catch { showMessage("error", t("common.fetchError")); }
     setLoading(false);
   };
 
@@ -153,7 +153,7 @@ export default function ProductionPlanPage() {
           <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-md">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-semibold">{t("admin.productionPlan.rejectReasonPrompt")}</h3>
-              <button onClick={() => setRejectModal(null)} className="text-gray-400 hover:text-gray-600"><X size={20} /></button>
+              <button onClick={() => setRejectModal(null)} className="text-gray-400 hover:text-gray-600" aria-label="Close dialog"><X size={20} /></button>
             </div>
             <textarea
               value={rejectModal.reason}

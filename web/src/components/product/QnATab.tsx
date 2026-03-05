@@ -3,16 +3,18 @@
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { MessageCircle, Lock, Trash2 } from "lucide-react";
+import toast from "react-hot-toast";
 import { getProductQnAs, createQnA, deleteQnA } from "@/lib/reviewApi";
 import { useAuthStore } from "@/stores/authStore";
 import type { PagedQnA } from "@/types/review";
+import { formatDateShort } from "@/lib/format";
 
 interface QnATabProps {
   productId: number;
 }
 
 function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString("ko-KR", { year: "numeric", month: "short", day: "numeric" });
+  return formatDateShort(dateStr);
 }
 
 export function QnATab({ productId }: QnATabProps) {
@@ -27,7 +29,7 @@ export function QnATab({ productId }: QnATabProps) {
   const [submitting, setSubmitting] = useState(false);
 
   const load = () => {
-    getProductQnAs(productId, page).then(setData).catch(() => {});
+    getProductQnAs(productId, page).then(setData).catch(() => toast.error(t("common.fetchError")));
   };
 
   useEffect(() => { load(); }, [productId, page]);
@@ -43,18 +45,18 @@ export function QnATab({ productId }: QnATabProps) {
       setIsSecret(false);
       load();
     } catch {
-      alert(t("qna.writeFailed"));
+      toast.error(t("qna.writeFailed"));
     }
     setSubmitting(false);
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm(t("qna.deleteConfirm"))) return;
+    if (!window.confirm(t("qna.deleteConfirm"))) return;
     try {
       await deleteQnA(id);
       load();
     } catch {
-      alert(t("qna.deleteFailed"));
+      toast.error(t("qna.deleteFailed"));
     }
   };
 
@@ -139,7 +141,7 @@ export function QnATab({ productId }: QnATabProps) {
                   )}
                 </div>
                 {user?.id === qna.userId && (
-                  <button onClick={() => handleDelete(qna.id)} className="text-gray-400 hover:text-red-500 ml-2">
+                  <button onClick={() => handleDelete(qna.id)} className="text-gray-400 hover:text-red-500 ml-2" aria-label="Delete question">
                     <Trash2 size={14} />
                   </button>
                 )}

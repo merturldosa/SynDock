@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Package, MapPin, ArrowLeft, Truck, Clock, Search, Download } from "lucide-react";
+import toast from "react-hot-toast";
 import { useTranslations } from "next-intl";
 import { getOrderById, cancelOrder, getShippingTracking, downloadOrderReceipt, type TrackingEvent } from "@/lib/orderApi";
 import { useAuthStore } from "@/stores/authStore";
@@ -29,7 +30,7 @@ interface ExtendedOrder extends Order {
   trackingCarrier?: string | null;
 }
 
-import { formatPrice, formatDate } from "@/lib/format";
+import { formatPrice, formatDate, formatDateShort } from "@/lib/format";
 
 const STATUS_COLORS: Record<string, string> = {
   Pending: "bg-yellow-100 text-yellow-700",
@@ -103,10 +104,10 @@ export default function MypageOrderDetailPage() {
         setTrackingEvents(result.events);
         setTrackingStatus(result.currentStatus);
       } else {
-        alert(result.error || t("mypage.orders.trackingFailed"));
+        toast.error(result.error || t("mypage.orders.trackingFailed"));
       }
     } catch {
-      alert(t("mypage.orders.trackingFailed"));
+      toast.error(t("mypage.orders.trackingFailed"));
     }
     setTrackingLoading(false);
   };
@@ -118,13 +119,13 @@ export default function MypageOrderDetailPage() {
   const progressIndex = getProgressIndex(order.status);
 
   const handleCancel = async () => {
-    if (!confirm(t("mypage.orders.cancelConfirm"))) return;
+    if (!window.confirm(t("mypage.orders.cancelConfirm"))) return;
     setCancelling(true);
     try {
       await cancelOrder(order.id);
       setOrder({ ...order, status: "Cancelled" });
     } catch {
-      alert(t("mypage.orders.cancelFailed"));
+      toast.error(t("mypage.orders.cancelFailed"));
     }
     setCancelling(false);
   };
@@ -235,7 +236,7 @@ export default function MypageOrderDetailPage() {
                         <p className="text-sm font-medium text-purple-900">{event.status}</p>
                         {event.description && <p className="text-xs text-purple-600">{event.description}</p>}
                         <p className="text-xs text-purple-400 mt-0.5">
-                          {new Date(event.time).toLocaleDateString("ko-KR", { month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                          {formatDate(event.time)}
                         </p>
                       </div>
                     </div>

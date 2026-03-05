@@ -9,6 +9,7 @@ import { LiturgySummary } from "@/components/home/LiturgySummary";
 import { PromoBanner } from "@/components/home/PromoBanner";
 import { useAuthStore } from "@/stores/authStore";
 import { useCartStore } from "@/stores/cartStore";
+import toast from "react-hot-toast";
 import { useTranslations } from "next-intl";
 import { getProducts, getCategories } from "@/lib/productApi";
 import type { ProductSummary, CategoryInfo } from "@/types/product";
@@ -30,17 +31,17 @@ export default function Home() {
           setSection1((prev) => ({ ...prev, category: cat1 }));
           getProducts({ category: cat1.slug || undefined, pageSize: 8 })
             .then((res) => setSection1({ products: res.items, category: cat1 }))
-            .catch(() => {});
+            .catch(() => toast.error(t("fetchError")));
         }
         if (cats.length > 1) {
           const cat2 = cats[1];
           setSection2((prev) => ({ ...prev, category: cat2 }));
           getProducts({ category: cat2.slug || undefined, pageSize: 8 })
             .then((res) => setSection2({ products: res.items, category: cat2 }))
-            .catch(() => {});
+            .catch(() => toast.error(t("fetchError")));
         }
       })
-      .catch(() => {});
+      .catch(() => toast.error(t("fetchError")));
   }, []);
 
   const handleAddToCart = async (product: ProductSummary) => {

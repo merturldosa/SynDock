@@ -8,6 +8,7 @@ import {
 import { BarChart3, TrendingUp, TrendingDown, ShoppingCart, DollarSign, Users, Package, Download, ArrowUpRight, ArrowDownRight } from "lucide-react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
+import toast from "react-hot-toast";
 import { formatPrice, formatDateShort } from "@/lib/format";
 
 function MiniBarChart({ data, maxValue, t }: { data: DailySales[]; maxValue: number; t: ReturnType<typeof useTranslations> }) {
@@ -67,10 +68,10 @@ function SalesTab() {
     setLoading(true);
     if (customRange && startDate && endDate) {
       getSalesAnalytics(undefined as unknown as number, startDate, endDate, comparison)
-        .then(setAnalytics).catch(() => {}).finally(() => setLoading(false));
+        .then(setAnalytics).catch(() => { toast.error(t("common.fetchError")); }).finally(() => setLoading(false));
     } else {
       getSalesAnalytics(days, undefined, undefined, comparison)
-        .then(setAnalytics).catch(() => {}).finally(() => setLoading(false));
+        .then(setAnalytics).catch(() => { toast.error(t("common.fetchError")); }).finally(() => setLoading(false));
     }
   };
 
@@ -83,7 +84,7 @@ function SalesTab() {
       const s = analytics.dailySales[0].date;
       const e = analytics.dailySales[analytics.dailySales.length - 1].date;
       await exportSalesReport(s, e);
-    } catch { alert(t("admin.analytics.exportFailed")); }
+    } catch { toast.error(t("admin.analytics.exportFailed")); }
     setExporting(false);
   };
 
@@ -226,7 +227,7 @@ function CustomerTab() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getCustomerAnalytics().then(setData).catch(() => {}).finally(() => setLoading(false));
+    getCustomerAnalytics().then(setData).catch(() => { toast.error(t("common.fetchError")); }).finally(() => setLoading(false));
   }, []);
 
   if (loading) return <LoadingSpinner />;
@@ -363,7 +364,7 @@ function ProductTab() {
 
   useEffect(() => {
     setLoading(true);
-    getProductPerformance(sort, page).then(setData).catch(() => {}).finally(() => setLoading(false));
+    getProductPerformance(sort, page).then(setData).catch(() => { toast.error(t("common.fetchError")); }).finally(() => setLoading(false));
   }, [sort, page]);
 
   if (loading) return <LoadingSpinner />;

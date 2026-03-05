@@ -58,6 +58,7 @@ export function NotificationToast() {
         <button
           onClick={(e) => { e.stopPropagation(); setVisible(false); }}
           className="flex-shrink-0 text-gray-400 hover:text-gray-600"
+          aria-label="Dismiss notification"
         >
           <X size={16} />
         </button>

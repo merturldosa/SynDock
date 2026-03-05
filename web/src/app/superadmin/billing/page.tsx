@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { formatPrice, formatDateShort } from "@/lib/format";
+import toast from "react-hot-toast";
 import { getAllBilling, type TenantBilling } from "@/lib/platformApi";
 
 const STATUS_COLORS: Record<string, string> = {
@@ -23,7 +24,7 @@ export default function BillingOverviewPage() {
   useEffect(() => {
     getAllBilling()
       .then(setBillings)
-      .catch(() => {})
+      .catch(() => { toast.error(t("common.fetchError")); })
       .finally(() => setLoading(false));
   }, []);
 

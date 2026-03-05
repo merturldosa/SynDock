@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { ChevronUp, ChevronDown, Trash2, Plus, Save, X } from "lucide-react";
+import toast from "react-hot-toast";
 import {
   getProductDetailSections,
   createProductDetailSection,
@@ -44,7 +45,7 @@ export function ProductDetailSectionEditor({ productId }: Props) {
     try {
       const data = await getProductDetailSections(productId);
       setSections(data);
-    } catch {}
+    } catch { toast.error(t("common.fetchError")); }
     setLoading(false);
   };
 
@@ -68,13 +69,13 @@ export function ProductDetailSectionEditor({ productId }: Props) {
       });
       setForm((f) => ({ ...f, imageUrl: data.url }));
     } catch {
-      alert(t("admin.sections.uploadFailed"));
+      toast.error(t("admin.sections.uploadFailed"));
     }
     setUploading(false);
   };
 
   const handleSubmit = async () => {
-    if (!form.title.trim()) return alert(t("admin.sections.titleRequired"));
+    if (!form.title.trim()) { toast.error(t("admin.sections.titleRequired")); return; }
     try {
       if (editingId) {
         await updateProductDetailSection(productId, editingId, {
@@ -97,17 +98,17 @@ export function ProductDetailSectionEditor({ productId }: Props) {
       resetForm();
       await load();
     } catch {
-      alert(t("admin.sections.saveFailed"));
+      toast.error(t("admin.sections.saveFailed"));
     }
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm(t("admin.sections.deleteConfirm"))) return;
+    if (!window.confirm(t("admin.sections.deleteConfirm"))) return;
     try {
       await deleteProductDetailSection(productId, id);
       await load();
     } catch {
-      alert(t("admin.sections.deleteFailed"));
+      toast.error(t("admin.sections.deleteFailed"));
     }
   };
 
@@ -120,7 +121,7 @@ export function ProductDetailSectionEditor({ productId }: Props) {
       await reorderProductDetailSections(productId, ids);
       await load();
     } catch {
-      alert(t("admin.sections.reorderFailed"));
+      toast.error(t("admin.sections.reorderFailed"));
     }
   };
 
@@ -179,16 +180,16 @@ export function ProductDetailSectionEditor({ productId }: Props) {
               </div>
 
               <div className="flex items-center gap-1 flex-shrink-0">
-                <button onClick={() => handleMove(i, -1)} disabled={i === 0} className="p-1.5 text-gray-400 hover:text-gray-600 disabled:opacity-30">
+                <button onClick={() => handleMove(i, -1)} disabled={i === 0} className="p-1.5 text-gray-400 hover:text-gray-600 disabled:opacity-30" aria-label="Move section up">
                   <ChevronUp size={16} />
                 </button>
-                <button onClick={() => handleMove(i, 1)} disabled={i === sections.length - 1} className="p-1.5 text-gray-400 hover:text-gray-600 disabled:opacity-30">
+                <button onClick={() => handleMove(i, 1)} disabled={i === sections.length - 1} className="p-1.5 text-gray-400 hover:text-gray-600 disabled:opacity-30" aria-label="Move section down">
                   <ChevronDown size={16} />
                 </button>
-                <button onClick={() => startEdit(section)} className="p-1.5 text-gray-400 hover:text-blue-500">
+                <button onClick={() => startEdit(section)} className="p-1.5 text-gray-400 hover:text-blue-500" aria-label="Edit section">
                   <Save size={16} />
                 </button>
-                <button onClick={() => handleDelete(section.id)} className="p-1.5 text-gray-400 hover:text-red-500">
+                <button onClick={() => handleDelete(section.id)} className="p-1.5 text-gray-400 hover:text-red-500" aria-label="Delete section">
                   <Trash2 size={16} />
                 </button>
               </div>
@@ -204,7 +205,7 @@ export function ProductDetailSectionEditor({ productId }: Props) {
             <h3 className="font-semibold text-[var(--color-secondary)]">
               {editingId ? t("admin.sections.editSection") : t("admin.sections.newSection")}
             </h3>
-            <button onClick={resetForm} className="text-gray-400 hover:text-gray-600">
+            <button onClick={resetForm} className="text-gray-400 hover:text-gray-600" aria-label="Close form">
               <X size={18} />
             </button>
           </div>

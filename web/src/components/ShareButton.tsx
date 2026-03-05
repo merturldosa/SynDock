@@ -39,6 +39,7 @@ export function ShareButton({ title, text, url }: ShareButtonProps) {
       onClick={handleShare}
       className="p-4 rounded-xl border-2 border-gray-200 text-gray-400 hover:border-blue-300 hover:text-blue-500 transition-colors"
       title={t("share.title")}
+      aria-label="Share"
     >
       {copied ? <Check size={22} className="text-emerald-500" /> : <Share2 size={22} />}
     </button>

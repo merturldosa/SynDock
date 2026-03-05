@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ChevronLeft, X } from "lucide-react";
 import { useTranslations } from "next-intl";
+import toast from "react-hot-toast";
 import {
   getCollectionDetail,
   removeFromCollection,
@@ -38,7 +39,7 @@ export default function CollectionDetailPage() {
       await removeFromCollection(collection.id, productId);
       fetchData();
     } catch {
-      alert(t("mypage.collections.deleteFailed"));
+      toast.error(t("mypage.collections.deleteFailed"));
     }
   };
 
@@ -92,6 +93,7 @@ export default function CollectionDetailPage() {
             >
               <button
                 onClick={() => handleRemove(item.productId)}
+                aria-label="Remove from collection"
                 className="absolute top-2 right-2 z-10 p-1.5 bg-white/90 rounded-full text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
               >
                 <X size={14} />

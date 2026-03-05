@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
 import { Package, MapPin, ArrowLeft, Truck, Clock, Search } from "lucide-react";
+import toast from "react-hot-toast";
 import { getOrderById, cancelOrder, getShippingTracking, type TrackingEvent } from "@/lib/orderApi";
 import { useAuthStore } from "@/stores/authStore";
 import type { Order } from "@/types/order";
@@ -95,10 +96,10 @@ export default function OrderDetailPage() {
         setTrackingEvents(result.events);
         setTrackingStatus(result.currentStatus);
       } else {
-        alert(result.error || t("order.detail.trackingFailed"));
+        toast.error(result.error || t("order.detail.trackingFailed"));
       }
     } catch {
-      alert(t("order.detail.trackingFailed"));
+      toast.error(t("order.detail.trackingFailed"));
     }
     setTrackingLoading(false);
   };
@@ -108,13 +109,13 @@ export default function OrderDetailPage() {
   const statusColor = STATUS_COLORS[order.status] || "bg-gray-100 text-gray-500";
 
   const handleCancel = async () => {
-    if (!confirm(t("order.detail.cancelConfirm"))) return;
+    if (!window.confirm(t("order.detail.cancelConfirm"))) return;
     setCancelling(true);
     try {
       await cancelOrder(order.id);
       setOrder({ ...order, status: "Cancelled" });
     } catch {
-      alert(t("order.detail.cancelFailed"));
+      toast.error(t("order.detail.cancelFailed"));
     }
     setCancelling(false);
   };
@@ -176,7 +177,7 @@ export default function OrderDetailPage() {
                         <p className="text-sm font-medium text-purple-900">{event.status}</p>
                         {event.description && <p className="text-xs text-purple-600">{event.description}</p>}
                         <p className="text-xs text-purple-400 mt-0.5">
-                          {new Date(event.time).toLocaleDateString("ko-KR", { month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                          {formatDate(event.time)}
                         </p>
                       </div>
                     </div>

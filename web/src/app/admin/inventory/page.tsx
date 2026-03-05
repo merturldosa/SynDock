@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Warehouse, AlertTriangle, Save, Server } from "lucide-react";
+import toast from "react-hot-toast";
 import { useTranslations } from "next-intl";
 import { getLowStock, updateStock, type LowStockItem } from "@/lib/adminApi";
 import { formatNumber } from "@/lib/format";
@@ -24,7 +25,7 @@ export default function InventoryPage() {
     setLoading(true);
     getLowStock(threshold)
       .then(setItems)
-      .catch(() => {})
+      .catch(() => toast.error(t("common.fetchError")))
       .finally(() => setLoading(false));
   };
 
@@ -50,7 +51,7 @@ export default function InventoryPage() {
       );
       setEditingId(null);
     } catch {
-      alert(t("admin.inventory.saveFailed"));
+      toast.error(t("admin.inventory.saveFailed"));
     }
     setSaving(false);
   };

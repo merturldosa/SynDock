@@ -46,7 +46,7 @@ public class MesInventorySyncJob : BackgroundService
             {
                 await SyncInventory(stoppingToken);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not OperationCanceledException)
             {
                 _logger.LogError(ex, "Error in MES inventory sync");
             }
@@ -156,7 +156,7 @@ public class MesInventorySyncJob : BackgroundService
                     syncedCount, failedCount, skippedCount);
             }
 
-            history.Status = failedCount > 0 ? "Completed" : "Completed";
+            history.Status = failedCount > 0 ? "CompletedWithErrors" : "Completed";
         }
         catch (Exception ex)
         {

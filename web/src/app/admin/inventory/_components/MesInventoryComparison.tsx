@@ -13,6 +13,7 @@ import {
   WifiOff,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import toast from "react-hot-toast";
 import { formatDate } from "@/lib/format";
 import {
   getMesSyncStatus,
@@ -73,7 +74,7 @@ export default function MesInventoryComparison() {
       await syncMesProduct(productId);
       await load();
     } catch {
-      alert(t("admin.inventory.mes.syncFailed"));
+      toast.error(t("admin.inventory.mes.syncFailed"));
     } finally {
       setSyncingProductId(null);
     }

@@ -219,6 +219,7 @@ export default function DomainManagementPage() {
                       onClick={() => copyToClipboard(dns.target, i)}
                       className="ml-2 p-1.5 text-gray-400 hover:text-gray-600 flex-shrink-0"
                       title={t("superadmin.domain.copy")}
+                      aria-label="Copy to clipboard"
                     >
                       {copiedIndex === i ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
                     </button>

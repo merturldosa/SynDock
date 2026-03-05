@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Upload, X, Hash } from "lucide-react";
 import { useTranslations } from "next-intl";
+import toast from "react-hot-toast";
 import { createPost, uploadImage } from "@/lib/postApi";
 import { useAuthStore } from "@/stores/authStore";
 
@@ -36,7 +37,7 @@ export default function FeedWritePage() {
       try {
         const { url } = await uploadImage(file, "posts");
         setImageUrls((prev) => [...prev, url]);
-      } catch {}
+      } catch { toast.error(t("feed.uploadFailed")); }
     }
     setUploading(false);
     e.target.value = "";
@@ -53,7 +54,7 @@ export default function FeedWritePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!content.trim()) {
-      alert(t("feed.contentRequired"));
+      toast.error(t("feed.contentRequired"));
       return;
     }
     setSubmitting(true);
@@ -67,7 +68,7 @@ export default function FeedWritePage() {
       });
       router.push("/feed");
     } catch {
-      alert(t("feed.postFailed"));
+      toast.error(t("feed.postFailed"));
     }
     setSubmitting(false);
   };

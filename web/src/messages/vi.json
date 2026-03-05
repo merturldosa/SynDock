@@ -443,6 +443,7 @@
     "pay": "Thanh toán {amount}",
     "orderFailed": "Đặt hàng thất bại. Vui lòng thử lại.",
     "paymentLoading": "Đang tải mô-đun thanh toán. Vui lòng thử lại sau.",
+    "andMore": "và {count} sản phẩm khác",
     "paymentMethod": "Phương thức thanh toán",
     "cardPayment": "Thẻ thanh toán",
     "cardPaymentDesc": "Thẻ tín dụng / ghi nợ",

@@ -5,7 +5,9 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { UserCheck, UserPlus } from "lucide-react";
 import { useTranslations } from "next-intl";
+import toast from "react-hot-toast";
 import { getSocialProfile, toggleFollow, getFeed } from "@/lib/postApi";
+import { formatDateShort } from "@/lib/format";
 import { useAuthStore } from "@/stores/authStore";
 import type { SocialProfile, PagedPosts } from "@/types/post";
 
@@ -23,7 +25,7 @@ export default function ProfilePage() {
     if (hrs < 24) return t("feed.hoursAgo", { count: hrs });
     const days = Math.floor(hrs / 24);
     if (days < 30) return t("feed.daysAgo", { count: days });
-    return new Date(dateStr).toLocaleDateString();
+    return formatDateShort(dateStr);
   };
   const [profile, setProfile] = useState<SocialProfile | null>(null);
   const [posts, setPosts] = useState<PagedPosts | null>(null);
@@ -39,7 +41,7 @@ export default function ProfilePage() {
         setProfile(p);
         setPosts(f);
       })
-      .catch(() => {})
+      .catch(() => toast.error(t("common.fetchError")))
       .finally(() => setLoading(false));
   }, [userId]);
 
@@ -56,7 +58,7 @@ export default function ProfilePage() {
             }
           : null
       );
-    } catch {}
+    } catch { toast.error(t("common.fetchError")); }
   };
 
   if (loading) {

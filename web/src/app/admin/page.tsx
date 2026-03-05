@@ -16,7 +16,7 @@ export default function AdminDashboard() {
   const [trend, setTrend] = useState<DailySales[]>([]);
   const [loading, setLoading] = useState(true);
   const [pulse, setPulse] = useState(false);
-  const [toast, setToast] = useState<string | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
   const { lastEvent, connect, disconnect } = useAdminDashboardStore();
   const toastTimer = useRef<NodeJS.Timeout | null>(null);
 
@@ -79,9 +79,9 @@ export default function AdminDashboard() {
         msg = t("admin.dashboard.notification");
     }
 
-    setToast(msg);
+    setToastMessage(msg);
     if (toastTimer.current) clearTimeout(toastTimer.current);
-    toastTimer.current = setTimeout(() => setToast(null), 5000);
+    toastTimer.current = setTimeout(() => setToastMessage(null), 5000);
   }, [lastEvent, loadStats]);
 
   if (loading) {
@@ -109,9 +109,9 @@ export default function AdminDashboard() {
       </h1>
 
       {/* Toast */}
-      {toast && (
+      {toastMessage && (
         <div className="fixed top-4 right-4 z-50 bg-[var(--color-primary)] text-white px-5 py-3 rounded-xl shadow-lg text-sm font-medium animate-[slideIn_0.3s_ease-out]">
-          {toast}
+          {toastMessage}
         </div>
       )}
 

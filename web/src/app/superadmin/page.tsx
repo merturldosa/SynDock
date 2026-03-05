@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Store, ShoppingCart, Plus } from "lucide-react";
+import toast from "react-hot-toast";
 import { useTranslations } from "next-intl";
 import { getPlatformTenants, type TenantDetail } from "@/lib/platformApi";
 import { formatDateShort } from "@/lib/format";
@@ -15,7 +16,7 @@ export default function SuperAdminDashboardPage() {
   useEffect(() => {
     getPlatformTenants()
       .then(setTenants)
-      .catch(() => {})
+      .catch(() => toast.error(t("common.fetchError")))
       .finally(() => setLoading(false));
   }, []);
 

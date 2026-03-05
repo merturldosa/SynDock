@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Globe, BarChart3 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import toast from "react-hot-toast";
 import {
   getPlatformTenant,
   updatePlatformTenant,
@@ -49,7 +50,7 @@ export default function TenantDetailPage() {
       .catch(() => router.push("/superadmin/tenants"))
       .finally(() => setLoading(false));
 
-    getTenantDomainConfig(slug).then(setDomainConfig).catch(() => {});
+    getTenantDomainConfig(slug).then(setDomainConfig).catch(() => { toast.error(t("common.fetchError")); });
   }, [slug, router]);
 
   const handleSave = async () => {
@@ -96,7 +97,7 @@ export default function TenantDetailPage() {
   try {
     if (configText) config = JSON.parse(configText) as TenantConfig;
   } catch {
-    /* ignore */
+    /* invalid JSON while editing - expected */
   }
 
   return (
@@ -250,7 +251,7 @@ export default function TenantDetailPage() {
                   const parsed = configText ? JSON.parse(configText) : {};
                   parsed.paymentConfig = { ...parsed.paymentConfig, provider: e.target.value };
                   setConfigText(JSON.stringify(parsed, null, 2));
-                } catch { /* ignore */ }
+                } catch { /* invalid JSON while editing - expected */ }
               }}
               className="w-full px-3 py-2.5 border rounded-lg text-sm"
             >
@@ -271,7 +272,7 @@ export default function TenantDetailPage() {
                       const parsed = configText ? JSON.parse(configText) : {};
                       parsed.paymentConfig = { ...parsed.paymentConfig, clientKey: e.target.value };
                       setConfigText(JSON.stringify(parsed, null, 2));
-                    } catch { /* ignore */ }
+                    } catch { /* invalid JSON while editing - expected */ }
                   }}
                   placeholder="test_ck_..."
                   className="w-full px-3 py-2.5 border rounded-lg text-sm font-mono"
@@ -287,7 +288,7 @@ export default function TenantDetailPage() {
                       const parsed = configText ? JSON.parse(configText) : {};
                       parsed.paymentConfig = { ...parsed.paymentConfig, secretKey: e.target.value };
                       setConfigText(JSON.stringify(parsed, null, 2));
-                    } catch { /* ignore */ }
+                    } catch { /* invalid JSON while editing - expected */ }
                   }}
                   placeholder="test_sk_..."
                   className="w-full px-3 py-2.5 border rounded-lg text-sm font-mono"

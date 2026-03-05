@@ -443,6 +443,7 @@
     "pay": "支付 {amount}",
     "orderFailed": "下单失败，请重试。",
     "paymentLoading": "支付模块加载中，请稍后重试。",
+    "andMore": "及其他{count}件",
     "paymentMethod": "支付方式",
     "cardPayment": "银行卡支付",
     "cardPaymentDesc": "信用卡 / 借记卡",

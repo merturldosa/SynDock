@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { MapPin, Plus, Pencil, Trash2, X } from "lucide-react";
+import toast from "react-hot-toast";
 import { getAddresses, createAddress, updateAddress, deleteAddress, type Address } from "@/lib/addressApi";
 
 interface AddressForm {
@@ -36,7 +37,7 @@ export default function AddressesPage() {
     setLoading(true);
     getAddresses()
       .then(setAddresses)
-      .catch(() => {})
+      .catch(() => toast.error(t("common.fetchError")))
       .finally(() => setLoading(false));
   };
 
@@ -81,18 +82,18 @@ export default function AddressesPage() {
       setModalOpen(false);
       load();
     } catch {
-      alert(t("mypage.addresses.saveFailed"));
+      toast.error(t("mypage.addresses.saveFailed"));
     }
     setSubmitting(false);
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm(t("mypage.addresses.deleteConfirm"))) return;
+    if (!window.confirm(t("mypage.addresses.deleteConfirm"))) return;
     try {
       await deleteAddress(id);
       load();
     } catch {
-      alert(t("mypage.addresses.deleteFailed"));
+      toast.error(t("mypage.addresses.deleteFailed"));
     }
   };
 
@@ -160,12 +161,14 @@ export default function AddressesPage() {
                 <button
                   onClick={() => openEdit(addr)}
                   className="p-2 text-gray-400 hover:text-[var(--color-primary)] transition-colors"
+                  aria-label="Edit address"
                 >
                   <Pencil size={16} />
                 </button>
                 <button
                   onClick={() => handleDelete(addr.id)}
                   className="p-2 text-gray-400 hover:text-red-500 transition-colors"
+                  aria-label="Delete address"
                 >
                   <Trash2 size={16} />
                 </button>
@@ -183,7 +186,7 @@ export default function AddressesPage() {
               <h2 className="font-semibold text-[var(--color-secondary)]">
                 {editingId ? t("mypage.addresses.editAddress") : t("mypage.addresses.addNew")}
               </h2>
-              <button onClick={() => setModalOpen(false)} className="text-gray-400 hover:text-gray-600">
+              <button onClick={() => setModalOpen(false)} className="text-gray-400 hover:text-gray-600" aria-label="Close dialog">
                 <X size={20} />
               </button>
             </div>

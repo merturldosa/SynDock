@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import Link from "next/link";
 import { Send, Bot, User, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { sendChatMessage, type ChatMessageDto } from "@/lib/chatApi";
@@ -150,9 +151,9 @@ export default function ChatPage() {
           {!user ? (
             <div className="text-center py-3 text-sm text-gray-500">
               {t("chat.loginRequired")}{" "}
-              <a href="/login" className="text-[var(--color-primary)] hover:underline font-medium">
+              <Link href="/login" className="text-[var(--color-primary)] hover:underline font-medium">
                 {t("chat.login")}
-              </a>
+              </Link>
             </div>
           ) : (
             <div className="flex items-center gap-3">
@@ -170,6 +171,7 @@ export default function ChatPage() {
                 onClick={handleSend}
                 disabled={!input.trim() || isLoading}
                 className="flex-shrink-0 w-11 h-11 rounded-full bg-[var(--color-primary)] text-white flex items-center justify-center hover:opacity-90 transition-opacity disabled:opacity-40"
+                aria-label="Send message"
               >
                 <Send className="w-4 h-4" />
               </button>

@@ -8,6 +8,7 @@ import { getCategories } from "@/lib/productApi";
 import { createProduct } from "@/lib/adminApi";
 import { uploadImage } from "@/lib/postApi";
 import { AIContentGenerator } from "@/components/admin/AIContentGenerator";
+import toast from "react-hot-toast";
 import type { CategoryInfo } from "@/types/product";
 
 export default function AdminProductNewPage() {
@@ -33,7 +34,7 @@ export default function AdminProductNewPage() {
   });
 
   useEffect(() => {
-    getCategories().then(setCategories).catch(() => {});
+    getCategories().then(setCategories).catch(() => { toast.error(t("common.fetchError")); });
   }, []);
 
   const handleSlugGen = () => {
@@ -57,7 +58,7 @@ export default function AdminProductNewPage() {
         setImageUrls((prev) => [...prev, url]);
       }
     } catch {
-      alert(t("admin.products.imageUploadFailed"));
+      toast.error(t("admin.products.imageUploadFailed"));
     }
     setUploading(false);
     e.target.value = "";
@@ -66,7 +67,7 @@ export default function AdminProductNewPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name || !form.categoryId) {
-      alert(t("admin.products.nameAndCategoryRequired"));
+      toast.error(t("admin.products.nameAndCategoryRequired"));
       return;
     }
     setSubmitting(true);
@@ -75,10 +76,10 @@ export default function AdminProductNewPage() {
         ...form,
         imageUrls,
       });
-      alert(t("admin.products.registered"));
+      toast.success(t("admin.products.registered"));
       router.push("/admin/products");
     } catch {
-      alert(t("admin.products.registerFailed"));
+      toast.error(t("admin.products.registerFailed"));
     }
     setSubmitting(false);
   };
@@ -253,6 +254,7 @@ export default function AdminProductNewPage() {
                     setImageUrls((prev) => prev.filter((_, idx) => idx !== i))
                   }
                   className="absolute top-1 right-1 p-0.5 bg-red-500 text-white rounded-full"
+                  aria-label="Remove image"
                 >
                   <X size={12} />
                 </button>

@@ -11,6 +11,7 @@ import {
   BarChart2,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import toast from "react-hot-toast";
 import { getLowStockForecasts, type ForecastResult } from "@/lib/forecastApi";
 import DemandChart from "./_components/DemandChart";
 import PurchaseRecommendations from "./_components/PurchaseRecommendations";
@@ -30,7 +31,7 @@ export default function ForecastPage() {
   useEffect(() => {
     getLowStockForecasts(30)
       .then(setLowStock)
-      .catch(() => {})
+      .catch(() => { toast.error(t("common.fetchError")); })
       .finally(() => setLoading(false));
   }, []);
 

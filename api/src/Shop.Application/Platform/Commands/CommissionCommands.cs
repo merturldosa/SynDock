@@ -326,10 +326,10 @@ public class ProcessSettlementCommandHandler : IRequestHandler<ProcessSettlement
             foreach (var email in adminEmails)
             {
                 try { await _emailService.SendAsync(email, subject, body); }
-                catch { /* 이메일 실패는 정산 처리에 영향 없음 */ }
+                catch { /* Email failure does not affect settlement processing */ }
             }
         }
-        catch { /* 알림 실패는 무시 */ }
+        catch { /* Notification failure is non-critical */ }
     }
 
     private static string BuildSettlementEmailBody(
