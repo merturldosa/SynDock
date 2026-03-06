@@ -23,6 +23,7 @@ import {
   RefreshCcw,
   Menu,
   X,
+  Image,
 } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 
@@ -39,6 +40,7 @@ const NAV_ITEMS = [
   { href: "/admin/forecast", icon: TrendingUp, labelKey: "admin.nav.forecast" },
   { href: "/admin/production-plan", icon: Factory, labelKey: "admin.nav.productionPlan" },
   { href: "/admin/auto-reorder", icon: RefreshCcw, labelKey: "admin.nav.autoReorder" },
+  { href: "/admin/banners", icon: Image, labelKey: "admin.nav.banners" },
   { href: "/admin/email", icon: Mail, labelKey: "admin.nav.email" },
   { href: "/admin/notifications", icon: Bell, labelKey: "admin.nav.notifications" },
   { href: "/admin/settings", icon: Settings, labelKey: "admin.nav.settings" },

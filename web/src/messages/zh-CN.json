@@ -776,6 +776,7 @@
       "forecast": "需求预测",
       "productionPlan": "生产计划",
       "autoReorder": "自动订购",
+      "banners": "横幅管理",
       "backToShop": "返回商城",
       "admin": "管理"
     },
