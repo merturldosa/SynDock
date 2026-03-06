@@ -259,6 +259,24 @@ export function ReviewTab({ productId }: ReviewTabProps) {
                   <Image src={review.imageUrl} alt="" width={96} height={96} className="object-cover w-full h-full" />
                 </button>
               )}
+              {/* Admin Reply */}
+              {(() => {
+                const r = review as unknown as Record<string, unknown>;
+                const adminReply = r.adminReply as string | undefined;
+                const adminRepliedAt = r.adminRepliedAt as string | undefined;
+                if (!adminReply) return null;
+                return (
+                  <div className="mt-3 ml-4 pl-4 border-l-2 border-[var(--color-primary)]/30 bg-blue-50/50 rounded-r-lg p-3">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-xs font-semibold text-[var(--color-primary)]">{t("review.storeReply")}</span>
+                      {adminRepliedAt && (
+                        <span className="text-xs text-gray-400">{formatDate(adminRepliedAt)}</span>
+                      )}
+                    </div>
+                    <p className="text-sm text-gray-600">{adminReply}</p>
+                  </div>
+                );
+              })()}
             </div>
           ))}
         </div>

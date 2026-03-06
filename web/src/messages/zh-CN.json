@@ -329,7 +329,10 @@
       "empty": "收藏列表为空。",
       "browseProducts": "浏览商品",
       "removeFailed": "取消收藏失败。",
-      "addToCartFailed": "加入购物车失败。"
+      "addToCartFailed": "加入购物车失败。",
+      "share": "分享",
+      "linkCopied": "链接已复制。",
+      "shareFailed": "生成分享链接失败。"
     },
     "points": {
       "title": "积分",
@@ -504,6 +507,7 @@
     "deleteFailed": "删除失败。",
     "noReviews": "暂无评价。",
     "noPhotoReviews": "暂无带图评价。",
+    "storeReply": "商家回复",
     "ratingUnit": ""
   },
   "qna": {
@@ -818,6 +822,7 @@
       "orderStatusChanged": "订单状态变更：{orderNumber} → {status}",
       "nOrders": "{count} 笔订单",
       "nSold": "已售 {count} 件",
+      "todayRevenue": "今日收入",
       "viewAll": "查看全部",
       "manage": "管理",
       "weeklyTrend": "7天销售趋势",

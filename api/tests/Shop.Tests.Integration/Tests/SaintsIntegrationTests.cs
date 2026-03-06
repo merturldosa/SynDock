@@ -81,4 +81,15 @@ public class SaintsIntegrationTests : IClassFixture<CustomWebApplicationFactory>
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
+
+    [Fact]
+    public async Task GetProductsBySaint_Returns200()
+    {
+        var client = _factory.CreateClient();
+        client.DefaultRequestHeaders.Add("X-Tenant-Id", "catholia");
+
+        var response = await client.GetAsync("/api/saints/1/products");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
 }

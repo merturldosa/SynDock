@@ -329,7 +329,10 @@
       "empty": "Your wishlist is empty.",
       "browseProducts": "Browse Products",
       "removeFailed": "Failed to remove from wishlist.",
-      "addToCartFailed": "Failed to add to cart."
+      "addToCartFailed": "Failed to add to cart.",
+      "share": "Share",
+      "linkCopied": "Link copied to clipboard.",
+      "shareFailed": "Failed to generate share link."
     },
     "points": {
       "title": "Points",
@@ -504,6 +507,7 @@
     "deleteFailed": "Failed to delete.",
     "noReviews": "No reviews yet.",
     "noPhotoReviews": "No photo reviews.",
+    "storeReply": "Store Reply",
     "ratingUnit": ""
   },
   "qna": {
@@ -820,6 +824,7 @@
       "orderStatusChanged": "Order status changed: {orderNumber} → {status}",
       "nOrders": "{count} orders",
       "nSold": "{count} sold",
+      "todayRevenue": "Today's Revenue",
       "viewAll": "View All",
       "manage": "Manage",
       "mesSyncCompleted": "MES sync completed: {synced} succeeded, {failed} failed",

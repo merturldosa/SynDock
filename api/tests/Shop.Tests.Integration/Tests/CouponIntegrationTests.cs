@@ -105,4 +105,72 @@ public class CouponIntegrationTests : IClassFixture<CustomWebApplicationFactory>
 
         response.StatusCode.Should().BeOneOf(HttpStatusCode.OK, HttpStatusCode.NoContent, HttpStatusCode.NotFound);
     }
+
+    // --- Bulk Generation Tests ---
+
+    [Fact]
+    public async Task BulkGenerateCoupons_AsAdmin_Returns200()
+    {
+        var client = _factory.CreateAuthenticatedClient(role: "Admin");
+        var request = new
+        {
+            prefix = "BULK",
+            count = 5,
+            name = "Bulk Test Coupon",
+            discountType = "Fixed",
+            discountValue = 2000m,
+            minOrderAmount = 10000m,
+            maxUsageCount = 1,
+            startDate = DateTime.UtcNow.ToString("o"),
+            endDate = DateTime.UtcNow.AddDays(30).ToString("o")
+        };
+
+        var response = await client.PostAsJsonAsync("/api/coupons/bulk-generate", request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
+    [Fact]
+    public async Task BulkGenerateCoupons_InvalidCount_Returns400()
+    {
+        var client = _factory.CreateAuthenticatedClient(role: "Admin");
+        var request = new
+        {
+            prefix = "BAD",
+            count = 0,
+            name = "Invalid",
+            discountType = "Fixed",
+            discountValue = 1000m,
+            minOrderAmount = 0m,
+            maxUsageCount = 1,
+            startDate = DateTime.UtcNow.ToString("o"),
+            endDate = DateTime.UtcNow.AddDays(1).ToString("o")
+        };
+
+        var response = await client.PostAsJsonAsync("/api/coupons/bulk-generate", request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task BulkGenerateCoupons_AsMember_Returns403()
+    {
+        var client = _factory.CreateAuthenticatedClient(userId: 2, username: "member", role: "Member");
+        var request = new
+        {
+            prefix = "HACK",
+            count = 5,
+            name = "Unauthorized",
+            discountType = "Fixed",
+            discountValue = 1000m,
+            minOrderAmount = 0m,
+            maxUsageCount = 1,
+            startDate = DateTime.UtcNow.ToString("o"),
+            endDate = DateTime.UtcNow.AddDays(1).ToString("o")
+        };
+
+        var response = await client.PostAsJsonAsync("/api/coupons/bulk-generate", request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
 }

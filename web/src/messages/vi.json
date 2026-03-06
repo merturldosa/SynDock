@@ -329,7 +329,10 @@
       "empty": "Danh sách yêu thích của bạn đang trống.",
       "browseProducts": "Xem sản phẩm",
       "removeFailed": "Xóa khỏi danh sách yêu thích thất bại.",
-      "addToCartFailed": "Thêm vào giỏ hàng thất bại."
+      "addToCartFailed": "Thêm vào giỏ hàng thất bại.",
+      "share": "Chia sẻ",
+      "linkCopied": "Đã sao chép liên kết.",
+      "shareFailed": "Tạo liên kết chia sẻ thất bại."
     },
     "points": {
       "title": "Điểm",
@@ -504,6 +507,7 @@
     "deleteFailed": "Xóa thất bại.",
     "noReviews": "Chưa có đánh giá nào.",
     "noPhotoReviews": "Chưa có đánh giá có ảnh.",
+    "storeReply": "Phản hồi cửa hàng",
     "ratingUnit": ""
   },
   "qna": {
@@ -818,6 +822,7 @@
       "orderStatusChanged": "Trạng thái đơn hàng thay đổi: {orderNumber} → {status}",
       "nOrders": "{count} đơn hàng",
       "nSold": "Đã bán {count}",
+      "todayRevenue": "Doanh thu hôm nay",
       "viewAll": "Xem tất cả",
       "manage": "Quản lý",
       "weeklyTrend": "Xu hướng doanh thu 7 ngày",

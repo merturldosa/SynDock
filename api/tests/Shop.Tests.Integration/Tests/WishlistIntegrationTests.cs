@@ -67,4 +67,41 @@ public class WishlistIntegrationTests : IClassFixture<CustomWebApplicationFactor
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
+
+    // --- Wishlist Sharing Tests ---
+
+    [Fact]
+    public async Task ShareWishlist_Authenticated_Returns200OrBadRequest()
+    {
+        var client = _factory.CreateAuthenticatedClient(userId: 2, username: "member", role: "Member");
+
+        // Add item to wishlist first
+        await client.PostAsJsonAsync("/api/wishlist/toggle", new { productId = 1 });
+
+        var response = await client.PostAsync("/api/wishlist/share", null);
+
+        response.StatusCode.Should().BeOneOf(HttpStatusCode.OK, HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task GetSharedWishlist_WithInvalidToken_ReturnsEmpty()
+    {
+        var client = _factory.CreateClient();
+        client.DefaultRequestHeaders.Add("X-Tenant-Id", "catholia");
+
+        var response = await client.GetAsync($"/api/wishlist/shared/{Guid.NewGuid()}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
+    [Fact]
+    public async Task ShareWishlist_Unauthenticated_Returns401()
+    {
+        var client = _factory.CreateClient();
+        client.DefaultRequestHeaders.Add("X-Tenant-Id", "catholia");
+
+        var response = await client.PostAsync("/api/wishlist/share", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
 }

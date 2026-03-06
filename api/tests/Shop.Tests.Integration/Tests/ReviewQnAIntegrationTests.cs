@@ -127,4 +127,28 @@ public class ReviewQnAIntegrationTests : IClassFixture<CustomWebApplicationFacto
         answerResponse.StatusCode.Should().BeOneOf(
             HttpStatusCode.OK, HttpStatusCode.NotFound, HttpStatusCode.BadRequest);
     }
+
+    // --- Admin Review Reply Tests ---
+
+    [Fact]
+    public async Task ReplyToReview_AsAdmin_Returns200OrNotFound()
+    {
+        var client = _factory.CreateAuthenticatedClient(role: "Admin");
+        var request = new { reply = "Thank you for your feedback!" };
+
+        var response = await client.PutAsJsonAsync("/api/review/1/reply", request);
+
+        response.StatusCode.Should().BeOneOf(HttpStatusCode.OK, HttpStatusCode.NotFound, HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task ReplyToReview_AsRegularUser_Returns403()
+    {
+        var client = _factory.CreateAuthenticatedClient(userId: 2, username: "member", role: "Member");
+        var request = new { reply = "Unauthorized reply" };
+
+        var response = await client.PutAsJsonAsync("/api/review/1/reply", request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
 }

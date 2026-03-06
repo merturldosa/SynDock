@@ -3,13 +3,14 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Heart, Trash2 } from "lucide-react";
+import { Heart, Trash2, Share2, Link as LinkIcon } from "lucide-react";
 import toast from "react-hot-toast";
 import { useTranslations } from "next-intl";
 import { getWishlist, toggleWishlist } from "@/lib/reviewApi";
 import { useAuthStore } from "@/stores/authStore";
 import { useCartStore } from "@/stores/cartStore";
 import { formatPrice } from "@/lib/format";
+import api from "@/lib/api";
 import type { WishlistItem } from "@/types/review";
 
 export default function WishlistPage() {
@@ -18,6 +19,7 @@ export default function WishlistPage() {
   const { addToCart } = useCartStore();
   const [items, setItems] = useState<WishlistItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [shareToken, setShareToken] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -32,6 +34,19 @@ export default function WishlistPage() {
 
   const handleAddToCart = async (productId: number) => {
     await addToCart(productId);
+  };
+
+  const handleShare = async () => {
+    try {
+      const { data } = await api.post("/wishlist/share");
+      const token = data.shareToken;
+      setShareToken(token);
+      const url = `${window.location.origin}/wishlist/shared/${token}`;
+      await navigator.clipboard.writeText(url);
+      toast.success(t("mypage.wishlist.linkCopied"));
+    } catch {
+      toast.error(t("mypage.wishlist.shareFailed"));
+    }
   };
 
   if (!isAuthenticated) {
@@ -59,9 +74,32 @@ export default function WishlistPage() {
         <span className="text-[var(--color-secondary)] font-medium">{t("mypage.wishlist.title")}</span>
       </div>
 
-      <h1 className="text-2xl font-bold text-[var(--color-secondary)] mb-6">
-        {t("mypage.wishlist.title")} <span className="text-[var(--color-primary)]">({items.length})</span>
-      </h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold text-[var(--color-secondary)]">
+          {t("mypage.wishlist.title")} <span className="text-[var(--color-primary)]">({items.length})</span>
+        </h1>
+        {items.length > 0 && (
+          <button
+            onClick={handleShare}
+            className="flex items-center gap-2 px-4 py-2 text-sm border border-[var(--color-primary)] text-[var(--color-primary)] rounded-lg hover:bg-[var(--color-primary)]/5 transition-colors"
+          >
+            <Share2 size={16} />
+            {t("mypage.wishlist.share")}
+          </button>
+        )}
+      </div>
+      {shareToken && (
+        <div className="mb-4 flex items-center gap-2 p-3 bg-green-50 rounded-lg text-sm">
+          <LinkIcon size={14} className="text-green-600" />
+          <span className="text-green-700 truncate flex-1">{`${typeof window !== "undefined" ? window.location.origin : ""}/wishlist/shared/${shareToken}`}</span>
+          <button
+            onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/wishlist/shared/${shareToken}`); toast.success(t("mypage.wishlist.linkCopied")); }}
+            className="text-xs text-green-600 hover:underline whitespace-nowrap"
+          >
+            {t("common.copy")}
+          </button>
+        </div>
+      )}
 
       {items.length === 0 ? (
         <div className="text-center py-20">

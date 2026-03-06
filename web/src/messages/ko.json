@@ -329,7 +329,10 @@
       "empty": "찜한 상품이 없습니다.",
       "browseProducts": "상품 둘러보기",
       "removeFailed": "찜 해제에 실패했습니다.",
-      "addToCartFailed": "장바구니 추가에 실패했습니다."
+      "addToCartFailed": "장바구니 추가에 실패했습니다.",
+      "share": "공유하기",
+      "linkCopied": "링크가 복사되었습니다.",
+      "shareFailed": "공유 링크 생성에 실패했습니다."
     },
     "points": {
       "title": "포인트",
@@ -504,6 +507,7 @@
     "deleteFailed": "삭제에 실패했습니다.",
     "noReviews": "아직 리뷰가 없습니다.",
     "noPhotoReviews": "포토 리뷰가 없습니다.",
+    "storeReply": "판매자 답변",
     "ratingUnit": "점"
   },
   "qna": {
@@ -815,6 +819,7 @@
       "orderStatusChanged": "주문 상태 변경: {orderNumber} → {status}",
       "nOrders": "{count}건 주문",
       "nSold": "{count}건 판매",
+      "todayRevenue": "오늘 매출",
       "period": {
         "week": "1주일",
         "month": "1개월",

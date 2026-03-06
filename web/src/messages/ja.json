@@ -329,7 +329,10 @@
       "empty": "お気に入りの商品がありません。",
       "browseProducts": "商品を見る",
       "removeFailed": "お気に入り解除に失敗しました。",
-      "addToCartFailed": "カートへの追加に失敗しました。"
+      "addToCartFailed": "カートへの追加に失敗しました。",
+      "share": "共有する",
+      "linkCopied": "リンクがコピーされました。",
+      "shareFailed": "共有リンクの生成に失敗しました。"
     },
     "points": {
       "title": "ポイント",
@@ -504,6 +507,7 @@
     "deleteFailed": "削除に失敗しました。",
     "noReviews": "まだレビューがありません。",
     "noPhotoReviews": "フォトレビューがありません。",
+    "storeReply": "ストア返信",
     "ratingUnit": "点"
   },
   "qna": {
