@@ -21,7 +21,6 @@ test.describe("Authentication Flow", () => {
   test("should show validation errors on empty login", async ({ page }) => {
     await page.goto("/login");
     await page.locator('button[type="submit"]').click();
-    // Form should not submit - still on login page
     await expect(page).toHaveURL(/.*login/);
   });
 
@@ -36,8 +35,7 @@ test.describe("Authentication Flow", () => {
     await page.locator("#username").fill("nonexistent@test.com");
     await page.locator("#password").fill("wrongpass");
     await page.locator('button[type="submit"]').click();
-    // Should show error message
-    await page.waitForTimeout(2000);
+    await page.waitForLoadState("networkidle");
     await expect(page).toHaveURL(/.*login/);
   });
 
@@ -61,10 +59,9 @@ test.describe("Authentication Flow", () => {
 
   test("should show OAuth buttons", async ({ page }) => {
     await page.goto("/login");
-    // Check for OAuth buttons (Kakao, Google)
     const buttons = page.locator("button");
     const count = await buttons.count();
-    expect(count).toBeGreaterThanOrEqual(1); // At minimum the submit button
+    expect(count).toBeGreaterThanOrEqual(1);
   });
 
   test("register form validates password match", async ({ page }) => {
@@ -75,7 +72,6 @@ test.describe("Authentication Flow", () => {
     await page.locator("#confirmPassword").fill("Different123!");
     await page.locator("#name").fill("Test User");
     await page.locator('button[type="submit"]').click();
-    // Should stay on register page due to validation
     await expect(page).toHaveURL(/.*register/);
   });
 
@@ -92,7 +88,7 @@ test.describe("Authentication Flow", () => {
 
   test("register form validates username length", async ({ page }) => {
     await page.goto("/register");
-    await page.locator("#username").fill("ab"); // too short (min 4)
+    await page.locator("#username").fill("ab");
     await page.locator("#email").fill("test@test.com");
     await page.locator("#password").fill("Password123!");
     await page.locator("#confirmPassword").fill("Password123!");

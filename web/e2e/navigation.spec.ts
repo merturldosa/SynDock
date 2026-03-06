@@ -57,13 +57,13 @@ test.describe("Navigation & Routing", () => {
 
   test("should handle deep link to product", async ({ page }) => {
     await page.goto("/products/1");
-    await page.waitForTimeout(2000);
+    await page.waitForLoadState("networkidle");
     await expect(page.locator("body")).toBeVisible();
   });
 
   test("should handle deep link with query params", async ({ page }) => {
     await page.goto("/products?category=1&sort=newest&page=1");
-    await page.waitForTimeout(2000);
+    await page.waitForLoadState("networkidle");
     await expect(page.locator("body")).toBeVisible();
   });
 });
