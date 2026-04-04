@@ -1,3 +1,4 @@
+using Asp.Versioning;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -11,6 +12,7 @@ using Shop.Domain.Interfaces;
 
 namespace Shop.API.Controllers;
 
+[ApiVersion("1.0")]
 [ApiController]
 [Route("api/admin/mes")]
 [Authorize(Roles = "TenantAdmin,Admin,PlatformAdmin")]

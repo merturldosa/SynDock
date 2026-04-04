@@ -4,6 +4,8 @@ import { StatusBar } from "expo-status-bar";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useAuthStore } from "../src/stores/authStore";
 import { useTenantStore } from "../src/stores/tenantStore";
+import { useNotificationStore } from "../src/stores/notificationStore";
+import { setupNotificationListeners } from "../src/lib/notifications";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -13,12 +15,24 @@ const queryClient = new QueryClient({
 
 export default function RootLayout() {
   const checkAuth = useAuthStore((s) => s.checkAuth);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const fetchConfig = useTenantStore((s) => s.fetchConfig);
+  const registerPushToken = useNotificationStore((s) => s.registerPushToken);
+  const fetchUnreadCount = useNotificationStore((s) => s.fetchUnreadCount);
 
   useEffect(() => {
     checkAuth();
     fetchConfig();
+    const cleanup = setupNotificationListeners();
+    return cleanup;
   }, []);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      registerPushToken();
+      fetchUnreadCount();
+    }
+  }, [isAuthenticated]);
 
   return (
     <QueryClientProvider client={queryClient}>

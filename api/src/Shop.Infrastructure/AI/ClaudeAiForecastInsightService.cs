@@ -106,7 +106,7 @@ public class ClaudeAiForecastInsightService : IAiForecastInsightService
                 """;
 
             var response = await _chatProvider.ChatAsync(
-                [new ChatMessage("user", prompt)],
+                [new AiChatMessage("user", prompt)],
                 "당신은 소매업 수요 예측 전문 분석가입니다. JSON으로만 응답하세요.",
                 ct);
 
@@ -171,7 +171,7 @@ public class ClaudeAiForecastInsightService : IAiForecastInsightService
                 """;
 
             var response = await _chatProvider.ChatAsync(
-                [new ChatMessage("user", prompt)],
+                [new AiChatMessage("user", prompt)],
                 "당신은 소매업 카테고리 수요 예측 전문 분석가입니다. JSON으로만 응답하세요.",
                 ct);
 
@@ -235,7 +235,7 @@ public class ClaudeAiForecastInsightService : IAiForecastInsightService
                 """;
 
             var response = await _chatProvider.ChatAsync(
-                [new ChatMessage("user", prompt)],
+                [new AiChatMessage("user", prompt)],
                 "당신은 소매업 재고/수요 분석 전문가입니다. JSON으로만 응답하세요.",
                 ct);
 

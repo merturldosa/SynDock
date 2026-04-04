@@ -1,23 +1,30 @@
+using Asp.Versioning;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Shop.Application.Common.Interfaces;
 using Shop.Application.Products.Commands;
 using Shop.Application.Products.Queries;
 
 namespace Shop.API.Controllers;
 
+[ApiVersion("1.0")]
 [ApiController]
 [Route("api/[controller]")]
 public class ProductsController : ControllerBase
 {
     private readonly IMediator _mediator;
     private readonly IImageGenerator _imageGenerator;
+    private readonly IShopDbContext _db;
+    private readonly IFileStorageService _fileStorage;
 
-    public ProductsController(IMediator mediator, IImageGenerator imageGenerator)
+    public ProductsController(IMediator mediator, IImageGenerator imageGenerator, IShopDbContext db, IFileStorageService fileStorage)
     {
         _mediator = mediator;
         _imageGenerator = imageGenerator;
+        _db = db;
+        _fileStorage = fileStorage;
     }
 
     [HttpGet]
@@ -161,6 +168,86 @@ public class ProductsController : ControllerBase
         return Ok(new { url = result.Url, revisedPrompt = result.RevisedPrompt });
     }
 
+    /// <summary>상품 이미지 삭제</summary>
+    [HttpDelete("{productId:int}/images/{imageId:int}")]
+    [Authorize(Roles = "TenantAdmin,Admin,PlatformAdmin")]
+    public async Task<IActionResult> DeleteImage(int productId, int imageId, CancellationToken ct)
+    {
+        var image = await _db.ProductImages
+            .FirstOrDefaultAsync(i => i.Id == imageId && i.ProductId == productId, ct);
+
+        if (image is null)
+            return NotFound(new { error = "Image not found." });
+
+        // Delete file from storage
+        if (!string.IsNullOrEmpty(image.Url))
+            await _fileStorage.DeleteAsync(image.Url, ct);
+
+        _db.ProductImages.Remove(image);
+        await _db.SaveChangesAsync(ct);
+
+        return Ok(new { success = true });
+    }
+
+    /// <summary>상품 이미지 추가</summary>
+    [HttpPost("{productId:int}/images")]
+    [Authorize(Roles = "TenantAdmin,Admin,PlatformAdmin")]
+    public async Task<IActionResult> AddImage(int productId, [FromBody] AddProductImageRequest request, CancellationToken ct)
+    {
+        var product = await _db.Products.FindAsync(new object[] { productId }, ct);
+        if (product is null)
+            return NotFound(new { error = "Product not found." });
+
+        var existingCount = await _db.ProductImages.CountAsync(i => i.ProductId == productId, ct);
+
+        var image = new Domain.Entities.ProductImage
+        {
+            ProductId = productId,
+            Url = request.Url,
+            AltText = request.AltText,
+            SortOrder = request.SortOrder ?? existingCount,
+            IsPrimary = request.IsPrimary ?? (existingCount == 0),
+            CreatedBy = User.Identity?.Name ?? "system"
+        };
+
+        await _db.ProductImages.AddAsync(image, ct);
+        await _db.SaveChangesAsync(ct);
+
+        return Ok(new { imageId = image.Id });
+    }
+
+    /// <summary>상세 섹션용 AI 이미지 생성</summary>
+    [HttpPost("{productId:int}/sections/generate-image")]
+    [Authorize(Roles = "TenantAdmin,Admin,PlatformAdmin")]
+    public async Task<IActionResult> GenerateSectionImage(int productId, [FromBody] GenerateSectionImageRequest request, CancellationToken ct)
+    {
+        var product = await _mediator.Send(new GetProductByIdQuery(productId), ct);
+        if (product is null)
+            return NotFound(new { error = "Product not found." });
+
+        var prompt = string.IsNullOrWhiteSpace(request.Prompt)
+            ? $"Beautiful lifestyle photography showcasing {product.Name}. Natural setting, warm lighting, appetizing food photography style, Korean traditional aesthetic."
+            : request.Prompt;
+
+        if (!string.IsNullOrWhiteSpace(request.SectionType))
+        {
+            prompt = request.SectionType switch
+            {
+                "Hero" => $"Hero banner image for {product.Name}. Wide format, dramatic lighting, premium feel, Korean traditional food aesthetic.",
+                "Feature" => $"Feature highlight of {product.Name}. Close-up detail shot, showing texture and quality, appetizing warm tones.",
+                "Closing" => $"Elegant closing image for {product.Name}. Gift-wrapped presentation, premium packaging, ready to serve.",
+                _ => prompt
+            };
+        }
+
+        var result = await _imageGenerator.GenerateAsync(prompt, request.Size ?? "1024x1024");
+
+        if (string.IsNullOrEmpty(result.Url))
+            return BadRequest(new { error = result.RevisedPrompt ?? "Image generation failed." });
+
+        return Ok(new { url = result.Url, revisedPrompt = result.RevisedPrompt });
+    }
+
     [HttpGet("export")]
     [Authorize(Roles = "TenantAdmin,Admin,PlatformAdmin")]
     public async Task<IActionResult> Export(CancellationToken ct)
@@ -188,14 +275,22 @@ public class ProductsController : ControllerBase
     }
 }
 
-public record CreateProductRequest(
-    string Name, string? Slug, string? Description,
-    decimal Price, decimal? SalePrice, string PriceType,
-    string? Specification, int CategoryId,
-    bool IsFeatured = false, bool IsNew = false,
-    string? CustomFieldsJson = null,
-    List<CreateProductImageDto>? Images = null,
-    List<CreateProductVariantDto>? Variants = null);
+public class CreateProductRequest
+{
+    public string Name { get; set; } = "";
+    public string? Slug { get; set; }
+    public string? Description { get; set; }
+    public decimal Price { get; set; }
+    public decimal? SalePrice { get; set; }
+    public string PriceType { get; set; } = "Fixed";
+    public string? Specification { get; set; }
+    public int CategoryId { get; set; }
+    public bool IsFeatured { get; set; }
+    public bool IsNew { get; set; }
+    public string? CustomFieldsJson { get; set; }
+    public List<CreateProductImageDto>? Images { get; set; }
+    public List<CreateProductVariantDto>? Variants { get; set; }
+}
 
 public record UpdateProductRequest(
     string Name, string? Slug, string? Description,
@@ -207,3 +302,5 @@ public record UpdateProductRequest(
 public record UpdateVariantRequestItem(int? Id, string Name, string? Sku, decimal? Price, int Stock, int SortOrder, bool IsActive);
 public record UpdateProductVariantsRequest(List<UpdateVariantRequestItem> Variants);
 public record GenerateImageRequest(string? Prompt = null, string? Size = "1024x1024");
+public record AddProductImageRequest(string Url, string? AltText = null, int? SortOrder = null, bool? IsPrimary = null);
+public record GenerateSectionImageRequest(string? Prompt = null, string? SectionType = null, string? Size = "1024x1024");

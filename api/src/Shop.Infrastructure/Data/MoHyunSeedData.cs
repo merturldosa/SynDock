@@ -14,11 +14,18 @@ public static class MoHyunSeedData
             Secondary = "#2D5016",
             SecondaryLight = "#3D6B22",
             Background = "#FFF8F0",
-            LogoUrl = null,
-            FaviconUrl = null,
+            LogoUrl = "/uploads/tenants/mohyun/logo.png",
+            FaviconUrl = "/uploads/tenants/mohyun/favicon.ico",
             FontFamily = "'Noto Serif KR', serif"
         },
-        EnabledFeatures = ["aiChat", "collection"],
+        EnabledFeatures = ["aiChat", "collection", "community", "wishlist", "review", "qna"],
+        SeasonalThemes = new Dictionary<string, SeasonalThemeConfig>
+        {
+            ["spring"] = new() { Primary = "#6B8E23", Secondary = "#556B2F", Background = "#FAFFF0" },
+            ["summer"] = new() { Primary = "#CD853F", Secondary = "#2E8B57", Background = "#FFFFF0" },
+            ["autumn"] = new() { Primary = "#A0522D", Secondary = "#8B4513", Background = "#FFF5EB" },
+            ["winter"] = new() { Primary = "#8B0000", Secondary = "#2F4F4F", Background = "#FFF8F5" }
+        },
         ChatPersona = new ChatPersonaConfig
         {
             Name = "\uBAA8\uD604 AI \uB3C4\uC6B0\uBBF8",
@@ -49,11 +56,7 @@ public static class MoHyunSeedData
             Blog = "https://blog.mohyun.com",
             KakaoChannel = "mohyun"
         },
-        Onboarding = new OnboardingConfig
-        {
-            IsCompleted = true,
-            TemplateType = "mohyun"
-        },
+        Onboarding = new OnboardingConfig { IsCompleted = true, TemplateType = "mohyun" },
         PromoBanner = new PromoBannerConfig
         {
             Title = "\uC21C\uCC3D \uC804\uD1B5 \uC7A5\uB958 \uC2DC\uC98C",
@@ -61,14 +64,19 @@ public static class MoHyunSeedData
             IsActive = true,
             BackgroundColor = "#2D5016"
         },
+        AutoCoupon = new AutoCouponConfig
+        {
+            WelcomeCouponEnabled = true, WelcomeCouponCode = "MOHYUN-WELCOME",
+            BirthdayCouponEnabled = true, BirthdayCouponCode = "MOHYUN-BIRTHDAY"
+        },
         Settings = new Dictionary<string, object>
         {
             ["companyName"] = "\uBAA8\uD604",
-            ["companyAddress"] = "\uC804\uB77C\uBD81\uB3C4 \uC21C\uCC3D\uAD70 \uC21C\uCC3D\uC74D \uC7A5\uB958\uB85C 123",
+            ["companyAddress"] = "\uC804\uB77C\uBD81\uB3C4 \uC21C\uCC3D\uAD70 \uC801\uC131\uBA74 \uC801\uC131\uB85C 145-9",
             ["businessNumber"] = "456-78-90123",
-            ["ceoName"] = "\uBC15\uC21C\uCC3D",
-            ["contactPhone"] = "063-650-1234",
-            ["contactEmail"] = "contact@mohyun.com",
+            ["ceoName"] = "\uC774\uC6B0\uC11D",
+            ["contactPhone"] = "010-4050-4009",
+            ["contactEmail"] = "goosbeery@hanmail.net",
             ["heroSubtitle"] = "100\uB144 \uC804\uD1B5\uC758 \uB9DB, \uC21C\uCC3D \uC7A5\uB958",
             ["heroTagline"] = "\uBAA8\uD604 MoHyun",
             ["heroDescription"] = "\uC21C\uCC3D\uC758 \uB9D1\uC740 \uBB3C\uACFC \uAE68\uB057\uD55C \uACF5\uAE30\uB85C\n\uC815\uC131\uAECB \uBE5A\uC740 \uC804\uD1B5 \uC7A5\uB958\uC758 \uCC38\uB9DB"
@@ -77,261 +85,130 @@ public static class MoHyunSeedData
 
     public static List<SeedCategoryDto> GetCategories() =>
     [
-        // 1. \uB41C\uC7A5 (Doenjang - Soybean Paste)
-        new SeedCategoryDto(
-            Name: "\uB41C\uC7A5",
-            Slug: "doenjang",
-            Description: "\uC21C\uCC3D \uC804\uD1B5 \uBC29\uC2DD\uC73C\uB85C \uBC1C\uD6A8\uC2DC\uD0A8 \uB41C\uC7A5",
-            Icon: "\uD83E\uDED8",
-            SortOrder: 1,
-            Children:
+        new SeedCategoryDto("전통장류", "traditional-jang", "순창 전통 간장, 고추장, 된장", "🫘", 1,
             [
-                new SeedCategoryDto("\uC7AC\uB798\uB41C\uC7A5", "traditional-doenjang", "\uC804\uD1B5 \uBC29\uC2DD \uC7AC\uB798 \uB41C\uC7A5", null, 1),
-                new SeedCategoryDto("\uC300\uC7A5", "ssamjang", "\uC374\uC5D0 \uC2F8 \uBA39\uB294 \uC300\uC7A5", null, 2),
-                new SeedCategoryDto("\uCCAD\uAD6D\uC7A5", "cheonggukjang", "\uBE60\uB978 \uBC1C\uD6A8 \uCCAD\uAD6D\uC7A5", null, 3)
+                new SeedCategoryDto("간장", "ganjang", "전통 숙성 간장", null, 1),
+                new SeedCategoryDto("고추장", "gochujang", "전통 고추장", null, 2),
+                new SeedCategoryDto("된장", "doenjang", "전통 된장", null, 3)
             ]),
-
-        // 2. \uACE0\uCD94\uC7A5 (Gochujang - Red Pepper Paste)
-        new SeedCategoryDto(
-            Name: "\uACE0\uCD94\uC7A5",
-            Slug: "gochujang",
-            Description: "\uC21C\uCC3D \uC804\uD1B5 \uACE0\uCD94\uC7A5",
-            Icon: "\uD83C\uDF36\uFE0F",
-            SortOrder: 2,
-            Children:
+        new SeedCategoryDto("소스", "sauce", "전통 장류 기반 만능 소스", "🥫", 2,
             [
-                new SeedCategoryDto("\uC804\uD1B5\uACE0\uCD94\uC7A5", "traditional-gochujang", "\uC804\uD1B5 \uBC29\uC2DD \uACE0\uCD94\uC7A5", null, 1),
-                new SeedCategoryDto("\uCC39\uC300\uACE0\uCD94\uC7A5", "glutinous-gochujang", "\uCC39\uC300\uB85C \uB2F4\uADFC \uACE0\uCD94\uC7A5", null, 2),
-                new SeedCategoryDto("\uB9E4\uC6B4\uACE0\uCD94\uC7A5", "hot-gochujang", "\uB9E4\uCF64\uD55C \uACE0\uCD94\uC7A5", null, 3)
+                new SeedCategoryDto("간장소스", "soy-sauce", "간장 베이스 소스", null, 1),
+                new SeedCategoryDto("된장소스", "bean-sauce", "된장 베이스 소스", null, 2),
+                new SeedCategoryDto("고추장소스", "pepper-sauce", "고추장 베이스 소스", null, 3),
+                new SeedCategoryDto("핫소스", "hot-sauce", "매운 핫소스", null, 4)
             ]),
-
-        // 3. \uAC04\uC7A5 (Ganjang - Soy Sauce)
-        new SeedCategoryDto(
-            Name: "\uAC04\uC7A5",
-            Slug: "ganjang",
-            Description: "\uC21C\uCC3D \uC804\uD1B5 \uAC04\uC7A5",
-            Icon: "\uD83E\uDD62",
-            SortOrder: 3,
-            Children:
+        new SeedCategoryDto("건강식품", "health", "전통 건강 보조 식품", "💊", 3,
             [
-                new SeedCategoryDto("\uC870\uC120\uAC04\uC7A5", "joseon-ganjang", "\uC804\uD1B5 \uC870\uC120\uAC04\uC7A5", null, 1),
-                new SeedCategoryDto("\uC591\uC870\uAC04\uC7A5", "brewed-ganjang", "\uC591\uC870 \uBC29\uC2DD \uAC04\uC7A5", null, 2),
-                new SeedCategoryDto("\uB9DB\uAC04\uC7A5", "mat-ganjang", "\uB9CC\uB2A5 \uB9DB\uAC04\uC7A5", null, 3)
+                new SeedCategoryDto("지리환", "jirihwan", "전통 건강 환", null, 1),
+                new SeedCategoryDto("꽃벵이환", "kkotbaengi", "꽃벵이 발효 건강환", null, 2),
+                new SeedCategoryDto("건강식초", "health-vinegar", "발효 건강 식초", null, 3)
             ]),
-
-        // 4. \uC9C0\uB9AC\uD658 (Jirihwan - Traditional Health Pills)
-        new SeedCategoryDto(
-            Name: "\uC9C0\uB9AC\uD658",
-            Slug: "jirihwan",
-            Description: "\uC21C\uCC3D \uC804\uD1B5 \uAC74\uAC15 \uD658",
-            Icon: "\uD83D\uDC8A",
-            SortOrder: 4),
-
-        // 5. \uC120\uBB3C\uC138\uD2B8 (Gift Sets)
-        new SeedCategoryDto(
-            Name: "\uC120\uBB3C\uC138\uD2B8",
-            Slug: "gift-set",
-            Description: "\uC21C\uCC3D \uC7A5\uB958 \uC120\uBB3C \uC138\uD2B8",
-            Icon: "\uD83C\uDF81",
-            SortOrder: 5,
-            Children:
-            [
-                new SeedCategoryDto("\uD504\uB9AC\uBBF8\uC5C4\uC138\uD2B8", "premium-set", "\uD504\uB9AC\uBBF8\uC5C4 \uC7A5\uB958 \uC138\uD2B8", null, 1),
-                new SeedCategoryDto("\uBA85\uC808\uC138\uD2B8", "holiday-set", "\uBA85\uC808 \uC120\uBB3C\uC6A9 \uC138\uD2B8", null, 2),
-                new SeedCategoryDto("\uC18C\uD3EC\uC7A5\uC138\uD2B8", "small-set", "\uC18C\uD3EC\uC7A5 \uB9DB\uBCF4\uAE30 \uC138\uD2B8", null, 3)
-            ]),
-
-        // 6. \uC2DD\uCD08/\uAE30\uD0C0 (Vinegar & Others)
-        new SeedCategoryDto(
-            Name: "\uC2DD\uCD08/\uAE30\uD0C0",
-            Slug: "vinegar-etc",
-            Description: "\uC804\uD1B5 \uC2DD\uCD08 \uBC0F \uAE30\uD0C0 \uBC1C\uD6A8 \uC2DD\uD488",
-            Icon: "\uD83C\uDF76",
-            SortOrder: 6,
-            Children:
-            [
-                new SeedCategoryDto("\uC804\uD1B5\uC2DD\uCD08", "traditional-vinegar", "\uC804\uD1B5 \uBC29\uC2DD \uC2DD\uCD08", null, 1),
-                new SeedCategoryDto("\uC7A5\uC544\uCC0C", "jangajji", "\uC804\uD1B5 \uC7A5\uC544\uCC0C", null, 2),
-                new SeedCategoryDto("\uACE0\uCD67\uAC00\uB8E8", "gochugaru", "\uC21C\uCC3D \uACE0\uCD67\uAC00\uB8E8", null, 3)
-            ])
+        new SeedCategoryDto("선물세트", "gift-set", "명절 및 선물용 장류 세트", "🎁", 4),
+        new SeedCategoryDto("간식", "snack", "건강한 영양 간식", "🍪", 5),
+        new SeedCategoryDto("액젓/기타", "etc", "액젓 및 기타 발효 식품", "🐟", 6)
     ];
+
+    private static string Specs(string json) => json;
 
     public static List<SeedProductDto> GetProducts() =>
     [
-        // === \uB41C\uC7A5 (Doenjang) ===
-        new SeedProductDto(
-            Name: "\uC21C\uCC3D \uC804\uD1B5 \uC7AC\uB798 \uB41C\uC7A5 1kg",
-            Slug: "sunchang-traditional-doenjang-1kg",
-            Description: "\uC21C\uCC3D\uC758 \uB9D1\uC740 \uACF5\uAE30\uC640 \uAE68\uB057\uD55C \uBB3C\uB85C \uBE5A\uC740 \uC804\uD1B5 \uC7AC\uB798 \uB41C\uC7A5\uC785\uB2C8\uB2E4. 1\uB144 \uC774\uC0C1 \uC790\uC5F0 \uBC1C\uD6A8\uC2DC\uCF1C \uAE4A\uC740 \uAC10\uCE60\uB9DB\uC744 \uB2F4\uC558\uC2B5\uB2C8\uB2E4.",
-            Price: 15000,
-            SalePrice: null,
-            CategorySlug: "traditional-doenjang",
-            IsFeatured: true,
-            IsNew: true),
+        // ─── 전통장류: 간장 ───
+        new("맛있는 간장 300ml", "delicious-ganjang-300ml",
+            "깊은 맛과 풍미가 살아있는 프리미엄 간장입니다. 자연 숙성 방식으로 제조되어 건강한 맛을 자랑합니다.",
+            15000, null, "ganjang", true, false, "300ml / 한식간장 / 국산 대두",
+            "/uploads/tenants/mohyun/products/soy_sauce.jpg",
+            Specs(@"{""features"":[""100% 국산 대두 사용 (NON-GMO)"",""3년 이상 전통 항아리 자연 숙성"",""무방부제, 무색소, 무화학조미료"",""HACCP 인증 시설에서 위생적인 생산""],""specs"":{""volume"":""300ml"",""type"":""한식간장"",""ingredients"":""대두(국산), 천일염(국산), 정제수"",""storage"":""직사광선을 피하고 서늘한 곳 보관""}}")),
 
-        new SeedProductDto(
-            Name: "\uC21C\uCC3D \uC300\uC7A5 500g",
-            Slug: "sunchang-ssamjang-500g",
-            Description: "\uC2E0\uC120\uD55C \uCC44\uC18C\uC640 \uD568\uAED8 \uC374\uC5D0 \uC2F8 \uBA39\uAE30 \uC88B\uC740 \uACE0\uC18C\uD55C \uC300\uC7A5\uC785\uB2C8\uB2E4. \uB41C\uC7A5\uACFC \uACE0\uCD94\uC7A5\uC758 \uC870\uD654\uB85C\uC6B4 \uBE14\uB80C\uB529.",
-            Price: 8000,
-            SalePrice: 6500,
-            CategorySlug: "ssamjang",
-            IsFeatured: false,
-            IsNew: true),
+        // ─── 전통장류: 고추장 ───
+        new("영양 고추장 300g", "nutrient-gochujang-300g",
+            "매콤하면서도 감칠맛이 도는 영양 만점 고추장입니다. 다양한 요리에 활용하기 좋습니다.",
+            22000, null, "gochujang", true, false, "300g / 전통고추장 / 국산 태양초",
+            "/uploads/tenants/mohyun/products/red_paste.jpg",
+            Specs(@"{""features"":[""100% 국산 태양초 고추 사용"",""국산 찹쌀 조청으로 낸 건강한 단맛"",""전통 방식 그대로 메주가루 발효"",""깔끔하고 칼칼한 매운맛""],""specs"":{""volume"":""300g"",""type"":""전통고추장"",""ingredients"":""고춧가루(국산), 찹쌀(국산), 메주가루, 조청, 천일염"",""storage"":""냉장보관 (0~10℃)""}}")),
 
-        new SeedProductDto(
-            Name: "\uCCAD\uAD6D\uC7A5 \uBD84\uB9D0 300g",
-            Slug: "cheonggukjang-powder-300g",
-            Description: "\uBE60\uB978 \uBC1C\uD6A8\uB85C \uAD6C\uC218\uD55C \uD5A5\uC774 \uC0B4\uC544\uC788\uB294 \uCCAD\uAD6D\uC7A5 \uBD84\uB9D0\uC785\uB2C8\uB2E4. \uCC0C\uAC1C\uB098 \uC694\uB9AC\uC5D0 \uAC04\uD3B8\uD558\uAC8C \uC0AC\uC6A9\uD558\uC138\uC694.",
-            Price: 12000,
-            SalePrice: null,
-            CategorySlug: "cheonggukjang",
-            IsFeatured: false,
-            IsNew: false),
+        // ─── 전통장류: 된장 ───
+        new("영양 된장 300g", "nutrient-doenjang-300g",
+            "구수한 맛이 일품인 전통 방식의 영양 된장입니다. 찌개나 국 요리에 최적입니다.",
+            18000, null, "doenjang", true, false, "300g / 한식된장 / 국산 콩",
+            "/uploads/tenants/mohyun/products/soybean_paste.jpg",
+            Specs(@"{""features"":[""국산 콩 100% 사용"",""전통 방식 메주 발효"",""살아있는 콩 알갱이 식감"",""깊고 진한 구수한 맛""],""specs"":{""volume"":""300g"",""type"":""한식된장"",""ingredients"":""대두(국산), 천일염(국산), 정제수"",""storage"":""냉장보관""}}")),
 
-        // === \uACE0\uCD94\uC7A5 (Gochujang) ===
-        new SeedProductDto(
-            Name: "\uC21C\uCC3D \uC804\uD1B5 \uACE0\uCD94\uC7A5 1kg",
-            Slug: "sunchang-traditional-gochujang-1kg",
-            Description: "\uD587\uACE0\uCD94\uC640 \uCC39\uC300\uB85C \uC815\uC131\uAECB \uB2F4\uADFC \uC21C\uCC3D \uC804\uD1B5 \uACE0\uCD94\uC7A5\uC785\uB2C8\uB2E4. \uB2EC\uCF64\uD558\uBA74\uC11C\uB3C4 \uC54C\uC2F8\uD55C \uB9DB\uC774 \uC77C\uD488\uC785\uB2C8\uB2E4.",
-            Price: 18000,
-            SalePrice: null,
-            CategorySlug: "traditional-gochujang",
-            IsFeatured: true,
-            IsNew: true),
+        // ─── 소스: 간장소스 ───
+        new("간장 소스 300ml", "soy-sauce-300ml",
+            "바베큐, 양념갈비, 샐러드에 잘 어울리는 만능 간장 소스입니다.",
+            8000, null, "soy-sauce", false, true, "300ml / 만능 소스",
+            "/uploads/tenants/mohyun/products/sauce_soy.jpg",
+            Specs(@"{""features"":[""양념갈비 재울 때 최적"",""샐러드 오리엔탈 드레싱 대용 가능"",""바베큐 디핑 소스로 활용""],""specs"":{""volume"":""300ml"",""uses"":""바베큐, 양념갈비, 샐러드""}}")),
 
-        new SeedProductDto(
-            Name: "\uCC39\uC300 \uACE0\uCD94\uC7A5 500g",
-            Slug: "glutinous-gochujang-500g",
-            Description: "\uCC39\uC300\uC758 \uCC30\uAE30\uAC00 \uB354\uD574\uC9C4 \uBD80\uB4DC\uB7EC\uC6B4 \uACE0\uCD94\uC7A5\uC785\uB2C8\uB2E4. \uBE44\uBE54\uBC25\uC774\uB098 \uB5A1\uBCF6\uC774\uC5D0 \uC798 \uC5B4\uC6B8\uB9BD\uB2C8\uB2E4.",
-            Price: 12000,
-            SalePrice: 9900,
-            CategorySlug: "glutinous-gochujang",
-            IsFeatured: false,
-            IsNew: true),
+        // ─── 소스: 된장소스 ───
+        new("된장 소스 300ml", "bean-sauce-300ml",
+            "바베큐에 가장 잘 어울리는 특제 된장 소스입니다. 파스타에도 활용 가능합니다.",
+            8000, null, "bean-sauce", false, true, "300ml / 된장 베이스",
+            "/uploads/tenants/mohyun/products/sauce_bean.jpg",
+            Specs(@"{""features"":[""바베큐 딥핑 소스로 강력 추천"",""크림 파스타에 넣어 된장 파스타 가능"",""고기 요리와 최상의 궁합""],""specs"":{""volume"":""300ml"",""uses"":""바베큐, 크림 파스타""}}")),
 
-        new SeedProductDto(
-            Name: "\uB9E4\uC6B4 \uACE0\uCD94\uC7A5 500g",
-            Slug: "hot-gochujang-500g",
-            Description: "\uCCAD\uC591\uACE0\uCD94\uB97C \uB4EC\uBF51 \uB123\uC5B4 \uD654\uB044\uD55C \uB9DB\uC744 \uB0B4\uB294 \uB9E4\uC6B4 \uACE0\uCD94\uC7A5\uC785\uB2C8\uB2E4. \uB9E4\uC6B4 \uC74C\uC2DD \uC560\uD638\uAC00\uC5D0\uAC8C \uCD94\uCC9C\uD569\uB2C8\uB2E4.",
-            Price: 10000,
-            SalePrice: null,
-            CategorySlug: "hot-gochujang",
-            IsFeatured: false,
-            IsNew: false),
+        // ─── 소스: 고추장소스 ───
+        new("고추장 소스 300ml", "pepper-sauce-300ml",
+            "매콤달콤한 맛으로 양념갈비, 비빔국수, 골뱅이무침에 딱입니다.",
+            8000, null, "pepper-sauce", false, true, "300ml / 고추장 베이스",
+            "/uploads/tenants/mohyun/products/sauce_red.jpg",
+            Specs(@"{""features"":[""양념갈비(Best)"",""비빔면 소스 활용"",""골뱅이 무침 양념으로 최적""],""specs"":{""volume"":""300ml"",""uses"":""양념갈비, 비빔국수, 골뱅이무침""}}")),
 
-        // === \uAC04\uC7A5 (Ganjang) ===
-        new SeedProductDto(
-            Name: "3\uB144 \uC219\uC131 \uC870\uC120\uAC04\uC7A5 500ml",
-            Slug: "3year-joseon-ganjang-500ml",
-            Description: "3\uB144 \uC774\uC0C1 \uC625\uD56D\uC544\uB9AC\uC5D0\uC11C \uC790\uC5F0 \uC219\uC131\uC2DC\uD0A8 \uAE4A\uC740 \uD48D\uBBF8\uC758 \uC870\uC120\uAC04\uC7A5\uC785\uB2C8\uB2E4. \uB098\uBB3C\uC774\uB098 \uBCF6\uC74C\uC5D0 \uC81C\uACA9\uC785\uB2C8\uB2E4.",
-            Price: 22000,
-            SalePrice: null,
-            CategorySlug: "joseon-ganjang",
-            IsFeatured: true,
-            IsNew: true),
+        // ─── 소스: 핫소스 ───
+        new("핫 소스 300ml", "hot-sauce-300ml",
+            "로스트 치킨이나 돼지고기, 타코 샐러드에 어울리는 화끈한 매운맛 소스입니다.",
+            8000, null, "hot-sauce", false, true, "300ml / 핫소스",
+            "/uploads/tenants/mohyun/products/sauce_hot.jpg",
+            Specs(@"{""features"":[""로스트 치킨 디핑 소스"",""타코 샐러드 드레싱"",""샌드위치 스프레드로 활용""],""specs"":{""volume"":""300ml"",""uses"":""로스트 치킨/포크, 타코샐러드, 샌드위치""}}")),
 
-        new SeedProductDto(
-            Name: "\uC591\uC870\uAC04\uC7A5 1L",
-            Slug: "brewed-ganjang-1l",
-            Description: "\uC790\uC5F0 \uC591\uC870 \uBC29\uC2DD\uC73C\uB85C \uBE5A\uC740 \uAD48\uD615 \uC7A1\uD78C \uAC04\uC7A5\uC785\uB2C8\uB2E4. \uC77C\uC0C1 \uC694\uB9AC\uC5D0 \uB9CC\uB2A5\uC73C\uB85C \uC0AC\uC6A9\uD558\uC138\uC694.",
-            Price: 15000,
-            SalePrice: null,
-            CategorySlug: "brewed-ganjang",
-            IsFeatured: false,
-            IsNew: false),
+        // ─── 건강식품: 꾸지뽕 식초 ───
+        new("꾸지뽕 식초 500ml", "cudrania-vinegar-500ml",
+            "꾸지뽕의 영양을 그대로 담은 건강 식초입니다. 물에 희석하여 드시면 좋습니다.",
+            30000, null, "health-vinegar", true, false, "500ml / 발효식초 / 국산 꾸지뽕",
+            "/uploads/tenants/mohyun/products/vinegar.png",
+            Specs(@"{""features"":[""국내산 꾸지뽕 열매 100% 사용"",""전통 항아리 자연 발효 숙성"",""부드러운 목넘김과 깊은 향"",""다양한 요리 및 건강 음료로 활용 가능""],""specs"":{""volume"":""500ml"",""type"":""발효식초"",""ingredients"":""꾸지뽕열매(국산), 정제수, 유기농설탕"",""storage"":""직사광선을 피하고 서늘한 곳 보관""}}")),
 
-        new SeedProductDto(
-            Name: "\uB9CC\uB2A5 \uB9DB\uAC04\uC7A5 500ml",
-            Slug: "all-purpose-mat-ganjang-500ml",
-            Description: "\uAC04\uC7A5\uC5D0 \uB9C8\uB298, \uD30C, \uCC38\uAE68\uB97C \uB123\uC5B4 \uB9CC\uB4E0 \uB9CC\uB2A5 \uB9DB\uAC04\uC7A5\uC785\uB2C8\uB2E4. \uBE44\uBE54\uBC25\uBD80\uD130 \uBCF6\uC74C\uAE4C\uC9C0 \uD55C \uBCD1\uC73C\uB85C \uD574\uACB0\uD558\uC138\uC694.",
-            Price: 13000,
-            SalePrice: 10000,
-            CategorySlug: "mat-ganjang",
-            IsFeatured: false,
-            IsNew: true),
+        // ─── 건강식품: 블루베리 식초 ───
+        new("블루베리 식초 500ml", "blueberry-vinegar-500ml",
+            "항산화 성분이 풍부한 블루베리를 통째로 발효시킨 상큼한 식초입니다.",
+            32000, null, "health-vinegar", false, true, "500ml / 발효식초 / 국산 블루베리",
+            "/uploads/tenants/mohyun/products/blueberry_vinegar.png",
+            Specs(@"{""features"":[""국산 유기농 블루베리 사용"",""안토시아닌 풍부"",""샐러드 드레싱으로 최적"",""전통 항아리 자연 발효""],""specs"":{""volume"":""500ml"",""type"":""발효식초"",""ingredients"":""블루베리(국산), 정제수, 유기농설탕"",""storage"":""직사광선을 피하고 서늘한 곳 보관""}}")),
 
-        // === \uC9C0\uB9AC\uD658 (Jirihwan) ===
-        new SeedProductDto(
-            Name: "\uC21C\uCC3D \uC9C0\uB9AC\uD658 100g",
-            Slug: "sunchang-jirihwan-100g",
-            Description: "\uC9C0\uB9AC\uC0B0 \uC57D\uCD08\uC640 \uC804\uD1B5 \uBC29\uBC95\uC73C\uB85C \uBE5A\uC740 \uAC74\uAC15 \uD658\uC785\uB2C8\uB2E4. \uB9E4\uC77C \uC544\uCE68 \uACF5\uBCF5\uC5D0 \uBB3C\uACFC \uD568\uAED8 \uB4DC\uC138\uC694.",
-            Price: 35000,
-            SalePrice: null,
-            CategorySlug: "jirihwan",
-            IsFeatured: true,
-            IsNew: true),
+        // ─── 건강식품: 꽃벵이 환 ───
+        new("꽃벵이 환 300g", "kkotbaengi-pill-300g",
+            "활력 넘치는 하루를 위한 꽃벵이 환입니다. 먹기 편한 스틱형 포장입니다.",
+            45000, null, "kkotbaengi", true, false, "300g (3g x 100포) / 1일 1~2회",
+            "/uploads/tenants/mohyun/products/fermented_pill.jpg",
+            Specs(@"{""features"":[""국내산 꽃벵이 100% 사용"",""혈전 용해에 도움을 주는 인돌 알칼로이드 함유"",""특허 유산균 발효로 냄새 없이 고소한 맛"",""휴대가 간편한 스틱형 포장""],""specs"":{""volume"":""300g (3g x 100포)"",""consumption"":""1일 1~2회, 1회 1포"",""ingredients"":""꽃벵이 발효분말 95%, 찹쌀풀 5%"",""storage"":""직사광선을 피하고 서늘한 곳 보관""},""healthBenefits"":[""간 건강"",""혈액 순환 개선""]}")),
 
-        new SeedProductDto(
-            Name: "\uC9C0\uB9AC\uD658 \uC120\uBB3C \uC138\uD2B8",
-            Slug: "jirihwan-gift-set",
-            Description: "\uACE0\uAE09 \uBAA9\uD568 \uD3EC\uC7A5\uC73C\uB85C \uAC10\uC2FC \uC9C0\uB9AC\uD658 \uC120\uBB3C \uC138\uD2B8\uC785\uB2C8\uB2E4. \uBD80\uBAA8\uB2D8, \uC5B4\uB978 \uC120\uBB3C\uB85C \uCD5C\uACE0\uC758 \uC120\uD0DD\uC785\uB2C8\uB2E4.",
-            Price: 65000,
-            SalePrice: null,
-            CategorySlug: "jirihwan",
-            IsFeatured: false,
-            IsNew: true),
+        // ─── 건강식품: 프리미엄 지리환 ───
+        new("[프리미엄] 지리환 300g", "premium-jirihwan-300g",
+            "지리산의 정기와 10가지 귀한 한방 재료가 만난 황제의 보약입니다.",
+            120000, null, "jirihwan", true, true, "300g (30환) / 1일 1환 / 프리미엄",
+            "/uploads/tenants/mohyun/products/jirihwan_premium.jpg",
+            Specs(@"{""features"":[""지리산 꽃벵이 + 녹용 + 침향 + 홍삼 배합"",""전통 방식 그대로 72시간 중탕 및 제환"",""설탕, 합성착향료, 보존료 無첨가"",""VIP용 고급 패키지 및 보자기 포장""],""specs"":{""volume"":""300g (30환)"",""consumption"":""1일 1환, 천천히 씹어서 섭취"",""ingredients"":""꽃벵이(국산), 침향(인도네시아), 녹용(러시아), 홍삼, 당귀, 산수유, 꿀"",""storage"":""직사광선을 피하고 서늘한 곳 보관""},""premiumIngredients"":[""러시아산 녹용"",""인도네시아산 침향"",""6년근 홍삼""]}")),
 
-        // === \uC120\uBB3C\uC138\uD2B8 (Gift Sets) ===
-        new SeedProductDto(
-            Name: "\uD504\uB9AC\uBBF8\uC5C4 \uC7A5\uB958 3\uC885 \uC138\uD2B8",
-            Slug: "premium-jang-3-set",
-            Description: "\uB41C\uC7A5, \uACE0\uCD94\uC7A5, \uAC04\uC7A5 3\uC885\uC744 \uD55C \uBC88\uC5D0 \uB9DB\uBCFC \uC218 \uC788\uB294 \uD504\uB9AC\uBBF8\uC5C4 \uC138\uD2B8\uC785\uB2C8\uB2E4. \uACE0\uAE09 \uD3EC\uC7A5\uC73C\uB85C \uC120\uBB3C\uC6A9\uC73C\uB85C\uB3C4 \uC88B\uC2B5\uB2C8\uB2E4.",
-            Price: 48000,
-            SalePrice: null,
-            CategorySlug: "premium-set",
-            IsFeatured: true,
-            IsNew: true),
+        // ─── 선물세트 ───
+        new("명품 장류 선물 세트", "premium-jang-gift-set",
+            "간장, 고추장, 된장으로 구성된 품격 있는 선물 세트입니다. 명절 선물로 추천합니다.",
+            55000, null, "gift-set", true, false, "간장 300ml + 고추장 300g + 된장 300g",
+            "/uploads/tenants/mohyun/products/gift_set.png",
+            Specs(@"{""features"":[""베스트셀러 3종(간장, 고추장, 된장) 통합 구성"",""고급스러운 디자인의 선물 박스 + 쇼핑백"",""명절/생일/감사 선물로 최적"",""전통 장류의 깊은 맛을 한 번에""],""specs"":{""composition"":""맛있는 간장 300ml + 영양 고추장 300g + 영양 된장 300g"",""packaging"":""고급 하드케이스 + 쇼핑백""}}")),
 
-        new SeedProductDto(
-            Name: "\uBA85\uC808 \uC7A5\uB958 5\uC885 \uC138\uD2B8",
-            Slug: "holiday-jang-5-set",
-            Description: "\uC124\uB0A0\uACFC \uCD94\uC11D\uC5D0 \uB9DE\uB294 \uC131\uC2EC \uB2F4\uC740 5\uC885 \uC7A5\uB958 \uC138\uD2B8\uC785\uB2C8\uB2E4. \uAC10\uC0AC\uC758 \uB9C8\uC74C\uC744 \uC804\uD1B5 \uC7A5\uB958\uC5D0 \uB2F4\uC544\uBCF4\uC138\uC694.",
-            Price: 78000,
-            SalePrice: null,
-            CategorySlug: "holiday-set",
-            IsFeatured: false,
-            IsNew: true),
+        // ─── 간식 ───
+        new("고소애 쿠키 120g", "insect-cookie-120g",
+            "고단백 영양 간식, 고소애를 넣어 만든 바삭하고 고소한 쿠키입니다.",
+            5000, null, "snack", false, true, "120g (12g x 10개입) / 고단백 간식",
+            "/uploads/tenants/mohyun/products/insect_cookie.jpg",
+            Specs(@"{""features"":[""고단백 식용 곤충(고소애) 분말 함유"",""일반 쿠키 대비 높은 단백질 함량"",""고소하고 바삭한 식감 (거부감 ZERO)"",""개별 포장으로 간편한 휴대""],""specs"":{""volume"":""120g (12g x 10개입)"",""type"":""과자/쿠키"",""ingredients"":""밀가루(국산), 버터, 설탕, 고소애분말 15%, 계란"",""storage"":""직사광선을 피하고 서늘한 곳 보관""},""nutritionalFacts"":{""protein"":""53g/100g (소고기 26g 대비 2배)"",""unsaturatedFat"":""75%"",""vitamins"":""비타민 B3, B5 풍부""}}")),
 
-        new SeedProductDto(
-            Name: "\uC18C\uD3EC\uC7A5 \uB9DB\uBCF4\uAE30 \uC138\uD2B8",
-            Slug: "small-tasting-set",
-            Description: "\uCC98\uC74C \uC21C\uCC3D \uC7A5\uB958\uB97C \uC811\uD558\uB294 \uBD84\uB4E4\uC744 \uC704\uD55C \uC18C\uD3EC\uC7A5 \uB9DB\uBCF4\uAE30 \uC138\uD2B8\uC785\uB2C8\uB2E4. \uBD80\uB2F4 \uC5C6\uC774 \uB2E4\uC591\uD55C \uC7A5\uB958\uB97C \uACBD\uD5D8\uD558\uC138\uC694.",
-            Price: 25000,
-            SalePrice: 19900,
-            CategorySlug: "small-set",
-            IsFeatured: false,
-            IsNew: true),
-
-        // === \uC2DD\uCD08/\uAE30\uD0C0 (Vinegar & Others) ===
-        new SeedProductDto(
-            Name: "\uC804\uD1B5 \uD604\uBBF8\uC2DD\uCD08 500ml",
-            Slug: "traditional-brown-rice-vinegar-500ml",
-            Description: "\uD604\uBBF8\uB97C \uC790\uC5F0 \uBC1C\uD6A8\uC2DC\uCF1C \uBE5A\uC740 \uC804\uD1B5 \uD604\uBBF8\uC2DD\uCD08\uC785\uB2C8\uB2E4. \uC0C8\uCF64\uD558\uBA74\uC11C\uB3C4 \uBD80\uB4DC\uB7EC\uC6B4 \uB9DB\uC774 \uD2B9\uC9D5\uC785\uB2C8\uB2E4.",
-            Price: 16000,
-            SalePrice: null,
-            CategorySlug: "traditional-vinegar",
-            IsFeatured: true,
-            IsNew: true),
-
-        new SeedProductDto(
-            Name: "\uB41C\uC7A5 \uC7A5\uC544\uCC0C 300g",
-            Slug: "doenjang-jangajji-300g",
-            Description: "\uB41C\uC7A5\uC5D0 \uBC15\uC544 \uC219\uC131\uC2DC\uD0A8 \uC804\uD1B5 \uC7A5\uC544\uCC0C\uC785\uB2C8\uB2E4. \uBC25\uBC18\uCC2C\uC73C\uB85C \uADF8\uB9CC\uC778 \uAE4A\uC740 \uAC10\uCE60\uB9DB\uC744 \uC990\uACA8\uBCF4\uC138\uC694.",
-            Price: 9000,
-            SalePrice: null,
-            CategorySlug: "jangajji",
-            IsFeatured: false,
-            IsNew: false),
-
-        new SeedProductDto(
-            Name: "\uC21C\uCC3D \uACE0\uCD67\uAC00\uB8E8 500g",
-            Slug: "sunchang-gochugaru-500g",
-            Description: "\uC21C\uCC3D \uD587\uACE0\uCD94\uB97C \uD587\uBCCC\uC5D0 \uB9D0\uB824 \uBE7B\uC740 \uD504\uB9AC\uBBF8\uC5C4 \uACE0\uCD67\uAC00\uB8E8\uC785\uB2C8\uB2E4. \uAE40\uCE58\uB2F4\uADF8\uAE30\uC640 \uC694\uB9AC\uC5D0 \uC544\uC8FC \uC88B\uC2B5\uB2C8\uB2E4.",
-            Price: 20000,
-            SalePrice: null,
-            CategorySlug: "gochugaru",
-            IsFeatured: false,
-            IsNew: true)
+        // ─── 액젓/기타 ───
+        new("프리미엄 액젓 1kg", "premium-fish-sauce-1kg",
+            "김치 담글 때나 국물 요리의 감칠맛을 더해주는 프리미엄 액젓입니다.",
+            12000, null, "etc", false, false, "1kg / 멸치액젓 / 국산 멸치",
+            "/uploads/tenants/mohyun/products/fish_sauce.png",
+            Specs(@"{""features"":[""국내산 멸치와 천일염 사용"",""2년 이상 장기 숙성으로 비린내 제거"",""맑고 투명한 빛깔"",""김치 담그기에 필수""],""specs"":{""volume"":""1kg"",""type"":""멸치액젓"",""ingredients"":""멸치(국산) 75%, 천일염(국산) 25%"",""storage"":""서늘한 곳 보관""}}"))
     ];
 }

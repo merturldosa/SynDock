@@ -19,6 +19,7 @@ interface TenantState {
   isLoaded: boolean;
   loadTenant: () => Promise<void>;
   applySeasonalTheme: (seasonName: string) => void;
+  hasFeature: (name: string) => boolean;
 }
 
 function applyThemeToDOM(theme: TenantTheme) {
@@ -80,6 +81,11 @@ export const useTenantStore = create<TenantState>((set, get) => ({
         isLoaded: true,
       });
     }
+  },
+
+  hasFeature: (name: string) => {
+    const { config } = get();
+    return config?.enabledFeatures?.includes(name) ?? false;
   },
 
   applySeasonalTheme: (seasonName: string) => {

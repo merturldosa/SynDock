@@ -56,6 +56,30 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, Result<Au
         if (await _db.Users.AnyAsync(u => u.Email == request.Email, cancellationToken))
             return Result<AuthResponse>.Failure("Email is already in use.");
 
+        // SSO: Create platform user (TenantId=0) for cross-tenant access
+        var platformUser = await _db.Users
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(u => u.Email == request.Email && u.TenantId == 0, cancellationToken);
+
+        if (platformUser == null)
+        {
+            platformUser = new User
+            {
+                TenantId = 0, // Platform user - works across all tenant shops
+                Username = request.Username,
+                Email = request.Email,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
+                Name = request.Name,
+                Phone = request.Phone,
+                Role = nameof(UserRole.Member),
+                CustomFieldsJson = request.CustomFieldsJson,
+                CreatedBy = "SSO-Platform"
+            };
+            await _db.Users.AddAsync(platformUser, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+        }
+
+        // Also create tenant-specific user for this shop (linked by email)
         var user = new User
         {
             TenantId = _tenantContext.TenantId,

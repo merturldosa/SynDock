@@ -47,7 +47,7 @@ public class GenerateProductContentCommandHandler : IRequestHandler<GenerateProd
 
         var userMessage = $"상품명: {product.Name}\n카테고리: {product.Category?.Name ?? "미분류"}\n현재 설명: {product.Description ?? "없음"}\n규격: {product.Specification ?? "없음"}\n\n이 상품의 상세 페이지를 상단(Hero)/중단(Features)/하단(CTA) 3섹션으로 작성해주세요.";
 
-        var messages = new List<ChatMessage>
+        var messages = new List<AiChatMessage>
         {
             new("user", userMessage)
         };

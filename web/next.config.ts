@@ -22,6 +22,14 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
+        hostname: "mohyun.com",
+      },
+      {
+        protocol: "http",
+        hostname: "mohyun.com",
+      },
+      {
+        protocol: "https",
         hostname: "*.syndock.co.kr",
       },
       {

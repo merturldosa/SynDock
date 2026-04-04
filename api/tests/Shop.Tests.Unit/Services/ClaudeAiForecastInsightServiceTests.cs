@@ -49,8 +49,8 @@ public class ClaudeAiForecastInsightServiceTests
 
         string? capturedPrompt = null;
         _chatProviderMock
-            .Setup(x => x.ChatAsync(It.IsAny<IReadOnlyList<ChatMessage>>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
-            .Callback<IReadOnlyList<ChatMessage>, string?, CancellationToken>((msgs, _, _) =>
+            .Setup(x => x.ChatAsync(It.IsAny<IReadOnlyList<AiChatMessage>>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+            .Callback<IReadOnlyList<AiChatMessage>, string?, CancellationToken>((msgs, _, _) =>
             {
                 capturedPrompt = msgs[0].Content;
             })
@@ -87,7 +87,7 @@ public class ClaudeAiForecastInsightServiceTests
         }
         """;
         _chatProviderMock
-            .Setup(x => x.ChatAsync(It.IsAny<IReadOnlyList<ChatMessage>>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.ChatAsync(It.IsAny<IReadOnlyList<AiChatMessage>>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new ChatResponse(jsonResponse, null));
 
         // Act - First call
@@ -102,7 +102,7 @@ public class ClaudeAiForecastInsightServiceTests
 
         // ChatAsync should only be called once (second call uses cache)
         _chatProviderMock.Verify(
-            x => x.ChatAsync(It.IsAny<IReadOnlyList<ChatMessage>>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()),
+            x => x.ChatAsync(It.IsAny<IReadOnlyList<AiChatMessage>>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()),
             Times.Once);
     }
 
@@ -127,7 +127,7 @@ public class ClaudeAiForecastInsightServiceTests
         }
         """;
         _chatProviderMock
-            .Setup(x => x.ChatAsync(It.IsAny<IReadOnlyList<ChatMessage>>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.ChatAsync(It.IsAny<IReadOnlyList<AiChatMessage>>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new ChatResponse(jsonResponse, null));
 
         // Act

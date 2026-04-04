@@ -14,7 +14,8 @@ public record UpdateOrderStatusCommand(
     int OrderId,
     string Status,
     string? TrackingNumber = null,
-    string? TrackingCarrier = null
+    string? TrackingCarrier = null,
+    string? Note = null
 ) : IRequest<Result<bool>>;
 
 public class UpdateOrderStatusCommandHandler : IRequestHandler<UpdateOrderStatusCommand, Result<bool>>
@@ -42,6 +43,8 @@ public class UpdateOrderStatusCommandHandler : IRequestHandler<UpdateOrderStatus
 
     public async Task<Result<bool>> Handle(UpdateOrderStatusCommand request, CancellationToken cancellationToken)
     {
+        _logger.LogInformation("=== UpdateOrderStatus: OrderId={OrderId}, Status={Status} ===", request.OrderId, request.Status);
+
         if (_currentUser.UserId is null)
             return Result<bool>.Failure("Authentication required.");
 
@@ -155,8 +158,20 @@ public class UpdateOrderStatusCommandHandler : IRequestHandler<UpdateOrderStatus
         // Publish MES order forwarding event for confirmed orders
         if (request.Status == nameof(OrderStatus.Confirmed))
         {
-            try { await _mediator.Publish(new OrderConfirmedEvent(order.Id, order.TenantId, order.OrderNumber), cancellationToken); }
-            catch (Exception ex) { _logger.LogWarning(ex, "MES forwarding failed for order {OrderNumber}", order.OrderNumber); }
+            _logger.LogInformation("PUBLISHING OrderConfirmedEvent for order {OrderId} {OrderNumber} tenant={TenantId}", order.Id, order.OrderNumber, order.TenantId);
+            try
+            {
+                await _mediator.Publish(new OrderConfirmedEvent(order.Id, order.TenantId, order.OrderNumber), cancellationToken);
+                _logger.LogInformation("OrderConfirmedEvent published successfully for {OrderNumber}", order.OrderNumber);
+            }
+            catch (Exception ex) { _logger.LogWarning(ex, "Event handlers failed for order {OrderNumber}", order.OrderNumber); }
+        }
+
+        // Publish cancellation event for cancelled orders
+        if (request.Status == nameof(OrderStatus.Cancelled))
+        {
+            try { await _mediator.Publish(new OrderCancelledEvent(order.Id, order.TenantId, order.OrderNumber, order.UserId, request.Note), cancellationToken); }
+            catch (Exception ex) { _logger.LogWarning(ex, "Cancellation event failed for order {OrderNumber}", order.OrderNumber); }
         }
 
         // Notify admin dashboard

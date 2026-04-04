@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Shop.Application.Common.Interfaces;
+using Shop.Application.Orders.Events;
 using Shop.Domain.Entities;
 using SynDock.Core.Common;
 using SynDock.Core.Interfaces;
@@ -32,13 +33,15 @@ public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand,
     private readonly ICurrentUserService _currentUser;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IPlanEnforcer _planEnforcer;
+    private readonly IPublisher _publisher;
 
-    public CreateProductCommandHandler(IShopDbContext db, ICurrentUserService currentUser, IUnitOfWork unitOfWork, IPlanEnforcer planEnforcer)
+    public CreateProductCommandHandler(IShopDbContext db, ICurrentUserService currentUser, IUnitOfWork unitOfWork, IPlanEnforcer planEnforcer, IPublisher publisher)
     {
         _db = db;
         _currentUser = currentUser;
         _unitOfWork = unitOfWork;
         _planEnforcer = planEnforcer;
+        _publisher = publisher;
     }
 
     public async Task<Result<int>> Handle(CreateProductCommand request, CancellationToken cancellationToken)
@@ -124,6 +127,10 @@ public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand,
 
         // Track usage
         await _planEnforcer.IncrementProductCount(user.TenantId, 1, cancellationToken);
+
+        // Publish event for auto-marketing (OpenMall exposure + SNS content generation)
+        var imageUrl = request.Images?.FirstOrDefault()?.Url;
+        await _publisher.Publish(new ProductCreatedEvent(product.Id, user.TenantId, product.Name, product.Price, imageUrl), cancellationToken);
 
         return Result<int>.Success(product.Id);
     }

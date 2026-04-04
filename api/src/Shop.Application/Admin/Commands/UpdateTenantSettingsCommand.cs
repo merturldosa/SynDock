@@ -11,11 +11,17 @@ namespace Shop.Application.Admin.Commands;
 
 public record TenantThemeDto(string? Primary, string? PrimaryLight, string? Secondary, string? SecondaryLight, string? Background);
 
+public record AiIntegrationDto(
+    string? OpenAiApiKey, string? OpenAiModel,
+    string? DalleModel, string? ClaudeApiKey, string? ClaudeModel,
+    bool AiContentEnabled = false, bool AiImageEnabled = false);
+
 public record UpdateTenantSettingsCommand(
     string? CompanyName, string? CompanyAddress, string? BusinessNumber,
     string? CeoName, string? ContactPhone, string? ContactEmail,
     string? HeroSubtitle, string? HeroTagline, string? HeroDescription,
-    TenantThemeDto? Theme, string? LogoUrl, string? FaviconUrl
+    TenantThemeDto? Theme, string? LogoUrl, string? FaviconUrl,
+    AiIntegrationDto? AiIntegration = null
 ) : IRequest<Result<bool>>;
 
 public class UpdateTenantSettingsCommandHandler : IRequestHandler<UpdateTenantSettingsCommand, Result<bool>>
@@ -71,6 +77,19 @@ public class UpdateTenantSettingsCommandHandler : IRequestHandler<UpdateTenantSe
             if (request.Theme.SecondaryLight is not null) themeObj["secondaryLight"] = request.Theme.SecondaryLight;
             if (request.Theme.Background is not null) themeObj["background"] = request.Theme.Background;
             config["theme"] = themeObj;
+        }
+
+        if (request.AiIntegration is not null)
+        {
+            var aiObj = config["aiIntegration"]?.AsObject() ?? new JsonObject();
+            if (request.AiIntegration.OpenAiApiKey is not null) aiObj["openAiApiKey"] = request.AiIntegration.OpenAiApiKey;
+            if (request.AiIntegration.OpenAiModel is not null) aiObj["openAiModel"] = request.AiIntegration.OpenAiModel;
+            if (request.AiIntegration.DalleModel is not null) aiObj["dalleModel"] = request.AiIntegration.DalleModel;
+            if (request.AiIntegration.ClaudeApiKey is not null) aiObj["claudeApiKey"] = request.AiIntegration.ClaudeApiKey;
+            if (request.AiIntegration.ClaudeModel is not null) aiObj["claudeModel"] = request.AiIntegration.ClaudeModel;
+            aiObj["aiContentEnabled"] = request.AiIntegration.AiContentEnabled;
+            aiObj["aiImageEnabled"] = request.AiIntegration.AiImageEnabled;
+            config["aiIntegration"] = aiObj;
         }
 
         tenant.ConfigJson = config.ToJsonString(new JsonSerializerOptions { WriteIndented = false });

@@ -35,4 +35,22 @@ public class SignalRAdminDashboardNotifier : IAdminDashboardNotifier
         await _hubContext.Clients.Group($"admins-{tenantId}")
             .SendAsync("AutoReorderTriggered", new { orderNumber, itemCount, totalQuantity, timestamp = DateTime.UtcNow }, ct);
     }
+
+    public async Task NotifyDeliveryAssigned(int tenantId, string orderNumber, string driverName, CancellationToken ct = default)
+    {
+        await _hubContext.Clients.Group($"admins-{tenantId}")
+            .SendAsync("DeliveryAssigned", new { orderNumber, driverName, timestamp = DateTime.UtcNow }, ct);
+    }
+
+    public async Task NotifyDeliveryCompleted(int tenantId, string orderNumber, CancellationToken ct = default)
+    {
+        await _hubContext.Clients.Group($"admins-{tenantId}")
+            .SendAsync("DeliveryCompleted", new { orderNumber, timestamp = DateTime.UtcNow }, ct);
+    }
+
+    public async Task NotifyDeliveryFailed(int tenantId, string orderNumber, string reason, CancellationToken ct = default)
+    {
+        await _hubContext.Clients.Group($"admins-{tenantId}")
+            .SendAsync("DeliveryFailed", new { orderNumber, reason, timestamp = DateTime.UtcNow }, ct);
+    }
 }

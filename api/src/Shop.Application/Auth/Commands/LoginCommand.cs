@@ -28,8 +28,16 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<LoginRes
 
     public async Task<Result<LoginResponse>> Handle(LoginCommand request, CancellationToken cancellationToken)
     {
+        // First try tenant-scoped user lookup (global query filter applies)
         var user = await _db.Users
             .FirstOrDefaultAsync(u => u.Email == request.Email && u.IsActive, cancellationToken);
+
+        // SSO fallback: check for platform user (TenantId=0) who can access any tenant
+        if (user == null)
+        {
+            user = await _db.Users.IgnoreQueryFilters()
+                .FirstOrDefaultAsync(u => u.Email == request.Email && u.TenantId == 0 && u.IsActive, cancellationToken);
+        }
 
         if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
             return Result<LoginResponse>.Failure("Invalid email or password.");
@@ -52,7 +60,7 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<LoginRes
             TenantId = _tenantContext.TenantId,
             UserId = user.Id,
             Token = refreshTokenValue,
-            ExpiresAt = DateTime.UtcNow.AddDays(7),
+            ExpiresAt = DateTime.UtcNow.AddDays(90), // 90-day persistent login
             CreatedBy = user.Username
         };
         await _db.RefreshTokens.AddAsync(refreshToken, cancellationToken);
@@ -67,6 +75,7 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<LoginRes
                 accessToken,
                 refreshTokenValue,
                 new UserDto(user.Id, user.Username, user.Email, user.Name, user.Phone, user.Role, user.CustomFieldsJson)
-            )));
+            ),
+            MustChangePassword: user.MustChangePassword));
     }
 }

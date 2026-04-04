@@ -1,3 +1,4 @@
+using Asp.Versioning;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -12,6 +13,7 @@ using Shop.Infrastructure.Data;
 
 namespace Shop.API.Controllers;
 
+[ApiVersion("1.0")]
 [ApiController]
 [Route("api/platform/tenants")]
 [Authorize(Roles = "PlatformAdmin")]
@@ -27,6 +29,7 @@ public class PlatformController : ControllerBase
     }
 
     [HttpGet("~/api/platform/plans")]
+    [AllowAnonymous]
     public IActionResult GetPlans()
     {
         var plans = PlanLimits.GetAllPlans().Select(p => new
@@ -54,6 +57,7 @@ public class PlatformController : ControllerBase
     }
 
     [HttpGet("{slug}")]
+    [AllowAnonymous]
     public async Task<IActionResult> GetTenant(string slug, CancellationToken ct)
     {
         var tenant = await _db.Tenants
@@ -371,6 +375,20 @@ public class PlatformController : ControllerBase
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(result.Data);
+    }
+
+    /// <summary>Load registered seed data (MoHyun, Catholia) for a tenant</summary>
+    [HttpPost("{slug}/seed-registered")]
+    public async Task<IActionResult> SeedRegisteredData(string slug, [FromServices] IServiceProvider sp)
+    {
+        var tenant = await _db.Tenants.AsNoTracking().FirstOrDefaultAsync(t => t.Slug == slug);
+        if (tenant is null)
+            return NotFound(new { error = "Tenant not found." });
+
+        var seeded = await Shop.Infrastructure.Data.InitialDataSeeder.SeedTenantBySlugAsync(sp, slug);
+        return seeded
+            ? Ok(new { message = $"Seed data loaded for '{slug}'", slug })
+            : Ok(new { message = $"No registered seed data for '{slug}'", slug });
     }
 }
 

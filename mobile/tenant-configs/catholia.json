@@ -1,0 +1,13 @@
+{
+  "tenantSlug": "catholia",
+  "tenantName": "Catholia",
+  "apiBaseUrl": "https://catholia.syndock.com",
+  "primaryColor": "#B8860B",
+  "secondaryColor": "#1a1a2e",
+  "fontFamily": "Noto Sans KR",
+  "bundleId": "com.syndock.shop.catholia",
+  "appStoreId": "",
+  "playStoreId": "",
+  "logoUrl": "/uploads/tenants/catholia/logo.png",
+  "splashBackgroundColor": "#1a1a2e"
+}

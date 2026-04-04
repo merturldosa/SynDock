@@ -61,8 +61,16 @@ export default function LoginPage() {
     setError("");
     setIsLoading(true);
     try {
-      const { data: res } = await api.post<LoginResponse>("/auth/login", data);
-      login(res.accessToken, res.refreshToken, res.user);
+      const { data: res } = await api.post<LoginResponse>("/auth/login", { email: data.username, password: data.password });
+      if (res.requiresTwoFactor) {
+        setError("2FA 인증이 필요합니다.");
+        return;
+      }
+      if (!res.auth) {
+        setError("로그인 응답 오류");
+        return;
+      }
+      login(res.auth.accessToken, res.auth.refreshToken, res.auth.user);
       const returnTo = sessionStorage.getItem("returnTo") || "/";
       sessionStorage.removeItem("returnTo");
       router.push(returnTo);

@@ -48,6 +48,11 @@ public class Order : BaseEntity, ITenantEntity
 
     public int? ShippingAddressId { get; set; }
 
+    public int? DeliveryOptionId { get; set; }
+
+    [MaxLength(20)]
+    public string? DeliveryType { get; set; }
+
     // Navigation
     [ForeignKey("UserId")]
     public User User { get; set; } = null!;
@@ -64,6 +69,11 @@ public class Order : BaseEntity, ITenantEntity
     public ICollection<OrderItem> Items { get; set; } = new List<OrderItem>();
 
     public ICollection<Payment> Payments { get; set; } = new List<Payment>();
+
+    [ForeignKey("DeliveryOptionId")]
+    public DeliveryOption? DeliveryOption { get; set; }
+
+    public DeliveryAssignment? DeliveryAssignment { get; set; }
 
     public ICollection<OrderHistory> Histories { get; set; } = new List<OrderHistory>();
 }

@@ -50,6 +50,8 @@ public class User : BaseEntity, ITenantEntity
 
     public DateTime? LastLoginAt { get; set; }
 
+    public bool MustChangePassword { get; set; } = false;
+
     public bool TwoFactorEnabled { get; set; } = false;
 
     [MaxLength(100)]
@@ -57,6 +59,9 @@ public class User : BaseEntity, ITenantEntity
 
     [Column(TypeName = "jsonb")]
     public string? TwoFactorBackupCodes { get; set; }
+
+    [MaxLength(50)]
+    public string? Department { get; set; } // Sales, Warehouse, Accounting, CS, HR, Production, Marketing
 
     [Column(TypeName = "jsonb")]
     public string? CustomFieldsJson { get; set; }

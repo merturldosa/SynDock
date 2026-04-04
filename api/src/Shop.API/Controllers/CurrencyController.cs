@@ -1,9 +1,11 @@
+using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
 using Shop.Application.Common.Interfaces;
 
 namespace Shop.API.Controllers;
 
 [ApiController]
+[ApiVersion("1.0")]
 [Route("api/[controller]")]
 public class CurrencyController : ControllerBase
 {

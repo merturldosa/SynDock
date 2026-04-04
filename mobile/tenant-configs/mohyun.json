@@ -1,0 +1,13 @@
+{
+  "tenantSlug": "mohyun",
+  "tenantName": "모현",
+  "apiBaseUrl": "https://mohyun.syndock.com",
+  "primaryColor": "#8B4513",
+  "secondaryColor": "#2D5016",
+  "fontFamily": "Noto Serif KR",
+  "bundleId": "com.syndock.shop.mohyun",
+  "appStoreId": "",
+  "playStoreId": "",
+  "logoUrl": "/uploads/tenants/mohyun/logo.png",
+  "splashBackgroundColor": "#8B4513"
+}

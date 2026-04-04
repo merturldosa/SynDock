@@ -16,7 +16,8 @@ public record CreateOrderCommand(
     int? ShippingAddressId,
     string? Note,
     string? CouponCode,
-    decimal PointsToUse = 0
+    decimal PointsToUse = 0,
+    int? DeliveryOptionId = null
 ) : IRequest<Result<CreateOrderResult>>;
 
 public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Result<CreateOrderResult>>
@@ -164,13 +165,30 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Res
             }
         }
 
+        // Calculate delivery fee
+        decimal deliveryFee = 0;
+        string? deliveryType = null;
+        if (request.DeliveryOptionId.HasValue)
+        {
+            var deliveryOption = await _db.DeliveryOptions
+                .AsNoTracking()
+                .FirstOrDefaultAsync(o => o.Id == request.DeliveryOptionId.Value && o.IsActive, cancellationToken);
+            if (deliveryOption is not null)
+            {
+                deliveryFee = deliveryOption.AdditionalFee;
+                deliveryType = deliveryOption.DeliveryType;
+            }
+        }
+
         var order = new Order
         {
             OrderNumber = orderNumber,
             UserId = userId,
             Status = nameof(OrderStatus.Pending),
             TotalAmount = Math.Max(0, subtotal - discountAmount - pointsUsed),
-            ShippingFee = 0,
+            ShippingFee = deliveryFee,
+            DeliveryOptionId = request.DeliveryOptionId,
+            DeliveryType = deliveryType,
             DiscountAmount = discountAmount,
             PointsUsed = pointsUsed,
             CouponId = couponId,
@@ -189,6 +207,19 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Res
                 .FirstOrDefaultAsync(uc => uc.CouponId == couponId.Value && uc.UserId == userId, cancellationToken);
             if (userCoupon is not null)
                 userCoupon.UsedOrderId = order.Id;
+        }
+
+        // Create delivery assignment if express delivery selected
+        if (request.DeliveryOptionId.HasValue)
+        {
+            var deliveryAssignment = new DeliveryAssignment
+            {
+                OrderId = order.Id,
+                DeliveryOptionId = request.DeliveryOptionId,
+                Status = nameof(Domain.Enums.DeliveryAssignmentStatus.Pending),
+                CreatedBy = _currentUser.Username ?? "system"
+            };
+            await _db.DeliveryAssignments.AddAsync(deliveryAssignment, cancellationToken);
         }
 
         // Clear cart after order creation

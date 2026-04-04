@@ -62,8 +62,33 @@ export interface Order {
   orderNumber: string;
   status: string;
   totalAmount: number;
+  shippingFee: number;
+  discountAmount: number;
+  deliveryType?: string;
+  deliveryOptionId?: number;
+  note?: string;
   createdAt: string;
   items: OrderItem[];
+}
+
+export interface DeliveryTracking {
+  assignmentId: number;
+  status: string;
+  driverName?: string;
+  driverPhone?: string;
+  vehicleType?: string;
+  licensePlate?: string;
+  driverLatitude?: number;
+  driverLongitude?: number;
+  estimatedDeliveryAt?: string;
+  acceptedAt?: string;
+  pickedUpAt?: string;
+  inTransitAt?: string;
+  deliveredAt?: string;
+  deliveryPhotoUrl?: string;
+  deliveryNote?: string;
+  deliveryType?: string;
+  deliveryOptionName?: string;
 }
 
 export interface OrderItem {

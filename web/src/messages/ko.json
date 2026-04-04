@@ -113,6 +113,7 @@
     "addToCollection": "컬렉션에 추가",
     "searchNoResults": "\"{term}\" 검색 결과가 없습니다.",
     "popularInCategory": "{name} 카테고리의 인기 상품",
+    "fetchError": "상품 정보를 불러오는데 실패했습니다",
     "priceRange": "가격 범위",
     "minPrice": "최소",
     "maxPrice": "최대",
@@ -778,7 +779,14 @@
       "autoReorder": "자동 발주",
       "banners": "배너 관리",
       "backToShop": "쇼핑몰로 돌아가기",
-      "admin": "관리자"
+      "admin": "관리자",
+      "viewShop": "쇼핑몰 보기",
+      "sectionOperations": "운영",
+      "sectionProducts": "상품",
+      "sectionCustomers": "고객",
+      "sectionAnalytics": "분석",
+      "sectionFinance": "정산",
+      "sectionSettings": "설정"
     },
     "dashboard": {
       "title": "관리자 대시보드",

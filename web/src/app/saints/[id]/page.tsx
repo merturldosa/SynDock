@@ -2,8 +2,24 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft, Calendar, BookOpen } from "lucide-react";
 
+import { redirect } from "next/navigation";
+
 const API_URL = process.env.API_URL || "http://127.0.0.1:5100";
 const TENANT_SLUG = process.env.NEXT_PUBLIC_TENANT_SLUG || "catholia";
+
+async function checkFeatureEnabled(feature: string): Promise<boolean> {
+  try {
+    const res = await fetch(`${API_URL}/api/platform/tenants/${TENANT_SLUG}`, {
+      next: { revalidate: 3600 },
+    });
+    if (!res.ok) return false;
+    const data = await res.json();
+    const config = data.configJson ? JSON.parse(data.configJson) : null;
+    return config?.enabledFeatures?.includes(feature) ?? false;
+  } catch {
+    return false;
+  }
+}
 
 interface SaintDetail {
   id: number;
@@ -72,6 +88,10 @@ export default async function SaintDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+
+  const hasSaints = await checkFeatureEnabled("saints");
+  if (!hasSaints) redirect("/");
+
   const [saint, products] = await Promise.all([fetchSaint(id), fetchSaintProducts(id)]);
 
   if (!saint) {

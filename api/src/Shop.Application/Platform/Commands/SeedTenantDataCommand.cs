@@ -33,7 +33,8 @@ public record SeedProductDto(
     bool IsFeatured = false,
     bool IsNew = true,
     string? Specification = null,
-    string? ImageUrl = null);
+    string? ImageUrl = null,
+    string? CustomFieldsJson = null);
 
 public record SeedTenantResultDto(
     int CategoriesCreated,
@@ -155,6 +156,7 @@ public class SeedTenantDataCommandHandler : IRequestHandler<SeedTenantDataComman
                     IsNew = prodDto.IsNew,
                     IsActive = true,
                     SortOrder = productsCreated,
+                    CustomFieldsJson = prodDto.CustomFieldsJson,
                     CreatedBy = "SeedSystem"
                 };
                 await _db.Products.AddAsync(product, cancellationToken);

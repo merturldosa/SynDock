@@ -1,3 +1,4 @@
+using Asp.Versioning;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -5,10 +6,13 @@ using Microsoft.AspNetCore.RateLimiting;
 using Shop.Application.Auth.Commands;
 using Shop.Application.Auth.Queries;
 using Shop.Application.Common.DTOs;
+using Microsoft.EntityFrameworkCore;
+using Shop.Application.Common.Interfaces;
 using SynDock.Core.Interfaces;
 
 namespace Shop.API.Controllers;
 
+[ApiVersion("1.0")]
 [ApiController]
 [Route("api/[controller]")]
 [EnableRateLimiting("auth")]
@@ -16,13 +20,17 @@ public class AuthController : ControllerBase
 {
     private readonly IMediator _mediator;
     private readonly ICurrentUserService _currentUser;
+    private readonly IShopDbContext _db;
     private readonly ILogger<AuthController> _logger;
+    private readonly ISecurityMonitorService _security;
 
-    public AuthController(IMediator mediator, ICurrentUserService currentUser, ILogger<AuthController> logger)
+    public AuthController(IMediator mediator, ICurrentUserService currentUser, IShopDbContext db, ILogger<AuthController> logger, ISecurityMonitorService security)
     {
         _mediator = mediator;
         _currentUser = currentUser;
+        _db = db;
         _logger = logger;
+        _security = security;
     }
 
     [HttpPost("register")]
@@ -38,9 +46,25 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginCommand command, CancellationToken ct)
     {
+        // AI-SOC: Check if login should be blocked (IP blocked or account locked)
+        var clientIp = HttpContext.Connection.RemoteIpAddress?.ToString();
+        if (await _security.ShouldBlockLoginAsync(command.Email, clientIp, ct))
+        {
+            await _security.RecordEventAsync("LoginFailed", "High", clientIp,
+                Request.Headers.UserAgent, null, null, "/api/auth/login",
+                $"Login blocked for {command.Email} (IP or account locked)", ct: ct);
+            return StatusCode(403, new { error = "Account is locked or IP is blocked. Please try again later." });
+        }
+
         var result = await _mediator.Send(command, ct);
         if (!result.IsSuccess)
+        {
+            // Record failed login for AI-SOC pattern detection
+            await _security.RecordEventAsync("LoginFailed", "Low", clientIp,
+                Request.Headers.UserAgent, null, null, "/api/auth/login",
+                $"Login failed for {command.Email}: {result.Error}", ct: ct);
             return Unauthorized(new { error = result.Error });
+        }
 
         return Ok(result.Data);
     }
@@ -215,6 +239,74 @@ public class AuthController : ControllerBase
 
         return Ok(result.Data);
     }
+    /// <summary>Get active sessions (devices)</summary>
+    [HttpGet("sessions")]
+    [Authorize]
+    public async Task<IActionResult> GetActiveSessions(CancellationToken ct)
+    {
+        var userId = _currentUser.UserId;
+        if (userId == null) return Unauthorized();
+
+        var sessions = await _db.RefreshTokens
+            .IgnoreQueryFilters()
+            .Where(t => t.UserId == userId.Value && !t.IsRevoked && t.ExpiresAt > DateTime.UtcNow)
+            .OrderByDescending(t => t.CreatedAt)
+            .Select(t => new
+            {
+                t.Id,
+                t.CreatedAt,
+                t.ExpiresAt,
+                daysRemaining = (int)(t.ExpiresAt - DateTime.UtcNow).TotalDays,
+                tenantId = t.TenantId
+            })
+            .ToListAsync(ct);
+
+        return Ok(new { activeSessions = sessions.Count, sessions });
+    }
+
+    /// <summary>Revoke a specific session (logout from one device)</summary>
+    [HttpDelete("sessions/{tokenId}")]
+    [Authorize]
+    public async Task<IActionResult> RevokeSession(int tokenId, CancellationToken ct)
+    {
+        var userId = _currentUser.UserId;
+        if (userId == null) return Unauthorized();
+
+        var token = await _db.RefreshTokens
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(t => t.Id == tokenId && t.UserId == userId.Value, ct);
+
+        if (token == null) return NotFound();
+
+        token.IsRevoked = true;
+        token.RevokedAt = DateTime.UtcNow;
+        await _db.SaveChangesAsync(ct);
+
+        return Ok(new { message = "Session revoked" });
+    }
+
+    /// <summary>Revoke all sessions except current (logout from all other devices)</summary>
+    [HttpPost("sessions/revoke-others")]
+    [Authorize]
+    public async Task<IActionResult> RevokeOtherSessions([FromBody] RevokeOthersRequest req, CancellationToken ct)
+    {
+        var userId = _currentUser.UserId;
+        if (userId == null) return Unauthorized();
+
+        var tokens = await _db.RefreshTokens
+            .IgnoreQueryFilters()
+            .Where(t => t.UserId == userId.Value && !t.IsRevoked && t.Token != req.CurrentRefreshToken)
+            .ToListAsync(ct);
+
+        foreach (var token in tokens)
+        {
+            token.IsRevoked = true;
+            token.RevokedAt = DateTime.UtcNow;
+        }
+        await _db.SaveChangesAsync(ct);
+
+        return Ok(new { message = $"{tokens.Count} sessions revoked" });
+    }
 }
 
 public record OAuthLoginRequest(string Code, string RedirectUri);
@@ -226,3 +318,4 @@ public record ChangePasswordRequest(string CurrentPassword, string NewPassword);
 public record VerifyTwoFactorSetupRequest(string Code);
 public record DisableTwoFactorRequest(string Code);
 public record VerifyTwoFactorLoginRequest(string TwoFactorToken, string Code);
+public record RevokeOthersRequest(string CurrentRefreshToken);

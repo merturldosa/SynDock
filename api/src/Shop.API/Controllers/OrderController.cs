@@ -1,3 +1,4 @@
+using Asp.Versioning;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -9,6 +10,7 @@ using Shop.Domain.Interfaces;
 
 namespace Shop.API.Controllers;
 
+[ApiVersion("1.0")]
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
@@ -113,6 +115,21 @@ public class OrderController : ControllerBase
     }
 }
 
-public record CreateOrderRequest(int? ShippingAddressId, string? Note, string? CouponCode = null, decimal PointsToUse = 0);
-public record UpdateOrderStatusRequest(string Status, string? TrackingNumber = null, string? TrackingCarrier = null);
-public record UpdateShippingRequest(string TrackingNumber, string? TrackingCarrier = null);
+public class CreateOrderRequest
+{
+    public int? ShippingAddressId { get; set; }
+    public string? Note { get; set; }
+    public string? CouponCode { get; set; }
+    public decimal PointsToUse { get; set; }
+}
+public class UpdateOrderStatusRequest
+{
+    public string Status { get; set; } = "";
+    public string? TrackingNumber { get; set; }
+    public string? TrackingCarrier { get; set; }
+}
+public class UpdateShippingRequest
+{
+    public string TrackingNumber { get; set; } = "";
+    public string? TrackingCarrier { get; set; }
+}

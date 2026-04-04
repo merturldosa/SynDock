@@ -19,6 +19,7 @@ using Shop.Application;
 using Shop.Application.Common.Interfaces;
 using Shop.Infrastructure;
 using Shop.Infrastructure.Data;
+using Shop.API.Extensions;
 using Shop.Infrastructure.Logging;
 
 // Serilog bootstrap
@@ -61,6 +62,14 @@ try
     // Application & Infrastructure DI
     builder.Services.AddApplication();
     builder.Services.AddInfrastructure(builder.Configuration);
+
+    // Register MediatR handlers from Infrastructure assembly (event handlers for module integration)
+    // Handlers: WmsPickingAutoCreator, AccountingEntryAutoCreator, StockReservationHandler,
+    // CrmTicketAutoCreator, WorkflowAutoCreator, SnsAutoMarketingHandler, WmsGoodsReceiptAutoCreator
+    builder.Services.AddMediatR(cfg =>
+    {
+        cfg.RegisterServicesFromAssembly(typeof(Shop.Infrastructure.Integration.MesOrderForwarder).Assembly);
+    });
 
     // JWT Authentication
     var jwtSecret = builder.Configuration["Jwt:Secret"]!;
@@ -138,6 +147,7 @@ try
     builder.Services.AddSignalR();
     builder.Services.AddScoped<INotificationSender, SignalRNotificationSender>();
     builder.Services.AddScoped<IAdminDashboardNotifier, SignalRAdminDashboardNotifier>();
+    builder.Services.AddScoped<IDriverNotifier, SignalRDriverNotifier>();
 
     // Localization (i18n) with GeoIP auto-detection
     builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
@@ -178,8 +188,16 @@ try
         healthBuilder.AddRedis(redisConn, name: "redis", tags: ["cache", "ready"]);
     }
 
+    // API Versioning
+    builder.Services.AddApiVersioningConfiguration();
+
     // Controllers
-    builder.Services.AddControllers();
+    builder.Services.AddControllers()
+        .AddJsonOptions(opt =>
+        {
+            opt.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+            opt.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+        });
 
     // Swagger
     builder.Services.AddEndpointsApiExplorer();
@@ -234,8 +252,9 @@ try
 
     var app = builder.Build();
 
-    // Auto-create database in development
-    if (app.Environment.IsDevelopment())
+    // Database initialization
+    var skipMigration = Environment.GetEnvironmentVariable("SKIP_MIGRATION")?.ToLower() == "true";
+    if (!skipMigration)
     {
         using var scope = app.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<ShopDbContext>();
@@ -244,11 +263,13 @@ try
         else
             await db.Database.EnsureCreatedAsync();
 
-        // Seed initial tenant data (Catholia + MoHyun)
-        await InitialDataSeeder.SeedAsync(app.Services);
+        // Seed initial tenant data (Catholia + MoHyun) in development
+        if (app.Environment.IsDevelopment())
+            await InitialDataSeeder.SeedAsync(app.Services);
     }
 
     // HTTP pipeline
+    app.UseMiddleware<SecurityGuardMiddleware>(); // AI-SOC: IP block + SQLi/XSS detection (must be first)
     app.UseHttpMetrics(); // Prometheus request metrics
     app.UseMiddleware<ExceptionHandlingMiddleware>();
     app.UseMiddleware<SecurityHeadersMiddleware>();
@@ -270,11 +291,21 @@ try
     app.UseRateLimiter();
     app.UseMiddleware<ResponseCachingMiddleware>();
 
+    // Partner API authentication (before tenant resolution, uses its own auth)
+    app.UseMiddleware<PartnerApiAuthMiddleware>();
+
     // Tenant resolution middleware
     app.UseMiddleware<TenantMiddleware>();
+    // Feature gating: block WMS/CRM/ERP/MES routes if not enabled
+    app.UseMiddleware<FeatureGatingMiddleware>();
 
+    app.UseMiddleware<SsoCookieMiddleware>();
     app.UseAuthentication();
     app.UseAuthorization();
+    app.UseMiddleware<ActivityTrackingMiddleware>();
+
+    // Department-based access control (runs after auth)
+    app.UseMiddleware<DepartmentAuthorizationMiddleware>();
 
     // PII masking: masks other users' email/phone in API responses
     app.UseMiddleware<PiiMaskingMiddleware>();
@@ -282,6 +313,7 @@ try
     app.MapControllers();
     app.MapHub<NotificationHub>("/api/hubs/notifications");
     app.MapHub<AdminHub>("/api/hubs/admin");
+    app.MapHub<DriverHub>("/api/hubs/driver");
 
     // Health check endpoints
     app.MapHealthChecks("/health/live", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions

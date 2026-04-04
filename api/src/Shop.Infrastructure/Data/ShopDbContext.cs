@@ -72,8 +72,102 @@ public class ShopDbContext : DbContext, IShopDbContext
     public DbSet<AutoReorderRule> AutoReorderRules { get; set; }
     public DbSet<PurchaseOrder> PurchaseOrders { get; set; }
     public DbSet<PurchaseOrderItem> PurchaseOrderItems { get; set; }
-    public DbSet<SaintProduct> SaintProducts => Set<SaintProduct>();
-    public DbSet<Banner> Banners => Set<Banner>();
+    public DbSet<SaintProduct> SaintProducts { get; set; }
+    public DbSet<Banner> Banners { get; set; }
+    public DbSet<AuditLog> AuditLogs { get; set; }
+    public DbSet<DeliveryDriver> DeliveryDrivers { get; set; }
+    public DbSet<DeliveryZone> DeliveryZones { get; set; }
+    public DbSet<DeliveryZoneDriver> DeliveryZoneDrivers { get; set; }
+    public DbSet<DeliveryOption> DeliveryOptions { get; set; }
+    public DbSet<DeliveryAssignment> DeliveryAssignments { get; set; }
+    public DbSet<DriverLocationHistory> DriverLocationHistories { get; set; }
+
+    // WMS
+    public DbSet<WarehouseZone> WarehouseZones { get; set; }
+    public DbSet<WarehouseLocation> WarehouseLocations { get; set; }
+    public DbSet<InventoryMovement> InventoryMovements { get; set; }
+    public DbSet<PickingOrder> PickingOrders { get; set; }
+    public DbSet<PickingItem> PickingItems { get; set; }
+    public DbSet<PackingSlip> PackingSlips { get; set; }
+    public DbSet<BarcodeMapping> BarcodeMappings { get; set; }
+    public DbSet<LotTracking> LotTrackings { get; set; }
+    public DbSet<GoodsReceipt> GoodsReceipts { get; set; }
+    public DbSet<GoodsReceiptItem> GoodsReceiptItems { get; set; }
+    public DbSet<CycleCount> CycleCounts { get; set; }
+    public DbSet<CycleCountItem> CycleCountItems { get; set; }
+
+    // CRM
+    public DbSet<CustomerSegment> CustomerSegments { get; set; }
+    public DbSet<CustomerTag> CustomerTags { get; set; }
+    public DbSet<CustomerTagAssignment> CustomerTagAssignments { get; set; }
+    public DbSet<CsTicket> CsTickets { get; set; }
+    public DbSet<CsTicketMessage> CsTicketMessages { get; set; }
+    public DbSet<CustomerJourneyEvent> CustomerJourneyEvents { get; set; }
+    public DbSet<LeadScore> LeadScores { get; set; }
+    public DbSet<VocEntry> VocEntries { get; set; }
+    public DbSet<SalesPipeline> SalesPipelines { get; set; }
+
+    // ERP
+    public DbSet<ChartOfAccount> ChartOfAccounts { get; set; }
+    public DbSet<AccountEntry> AccountEntries { get; set; }
+    public DbSet<Employee> Employees { get; set; }
+    public DbSet<Attendance> Attendances { get; set; }
+    public DbSet<Payroll> Payrolls { get; set; }
+    public DbSet<CostAnalysis> CostAnalyses { get; set; }
+    public DbSet<AccountingPeriod> AccountingPeriods { get; set; }
+
+    // SCM
+    public DbSet<Supplier> Suppliers { get; set; }
+    public DbSet<ProcurementOrder> ProcurementOrders { get; set; }
+    public DbSet<ProcurementOrderItem> ProcurementOrderItems { get; set; }
+    public DbSet<SupplierEvaluation> SupplierEvaluations { get; set; }
+
+    // Provisioning
+    public DbSet<TenantApplication> TenantApplications { get; set; }
+
+    // Migration
+    public DbSet<MigrationJob> MigrationJobs { get; set; }
+
+    // PMS (Property Management)
+    public DbSet<Room> Rooms { get; set; }
+    public DbSet<Booking> Bookings { get; set; }
+    public DbSet<CleaningTask> CleaningTasks { get; set; }
+    public DbSet<RoomAmenityLog> RoomAmenityLogs { get; set; }
+
+    // Blockchain / Token
+    public DbSet<BlockchainTransaction> BlockchainTransactions { get; set; }
+    public DbSet<TokenWallet> TokenWallets { get; set; }
+    public DbSet<TokenTransaction> TokenTransactions { get; set; }
+
+    // Social Commerce
+    public DbSet<MemberGrade> MemberGrades { get; set; }
+    public DbSet<Gift> Gifts { get; set; }
+    public DbSet<ChatRoom> ChatRooms { get; set; }
+    public DbSet<ChatMessage> ChatMessages { get; set; }
+
+    // Friend System + Mini-Game
+    public DbSet<Friendship> Friendships { get; set; }
+    public DbSet<GameRoom> GameRooms { get; set; }
+    public DbSet<GamePlayer> GamePlayers { get; set; }
+
+    // Marketplace
+    public DbSet<MarketplaceConnection> MarketplaceConnections { get; set; }
+    public DbSet<MarketplaceListing> MarketplaceListings { get; set; }
+    public DbSet<MarketplaceOrder> MarketplaceOrders { get; set; }
+
+    // Partner API
+    public DbSet<ApiPartner> ApiPartners { get; set; }
+    public DbSet<PartnerProduct> PartnerProducts { get; set; }
+    public DbSet<PartnerApiLog> PartnerApiLogs { get; set; }
+
+    // Security (AI-SOC)
+    public DbSet<SecurityEvent> SecurityEvents { get; set; }
+    public DbSet<BlockedIp> BlockedIps { get; set; }
+    public DbSet<AccountLockout> AccountLockouts { get; set; }
+
+    // Workflow Engine
+    public DbSet<WorkItem> WorkItems { get; set; }
+    public DbSet<ProcessStep> ProcessSteps { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -102,6 +196,13 @@ public class ShopDbContext : DbContext, IShopDbContext
                     .HasMaxLength(512);
 
                 entity.Property(e => e.Address2)
+                    .HasConversion(converter)
+                    .HasMaxLength(512);
+            });
+
+            modelBuilder.Entity<DeliveryDriver>(entity =>
+            {
+                entity.Property(e => e.Phone)
                     .HasConversion(converter)
                     .HasMaxLength(512);
             });
@@ -162,6 +263,47 @@ public class ShopDbContext : DbContext, IShopDbContext
         ConfigureSocialPost(modelBuilder);
         ConfigureAutoReorderRule(modelBuilder);
         ConfigurePurchaseOrder(modelBuilder);
+        ConfigureAuditLog(modelBuilder);
+        ConfigureDeliveryDriver(modelBuilder);
+        ConfigureDeliveryZone(modelBuilder);
+        ConfigureDeliveryZoneDriver(modelBuilder);
+        ConfigureDeliveryOption(modelBuilder);
+        ConfigureDeliveryAssignment(modelBuilder);
+        ConfigureDriverLocationHistory(modelBuilder);
+
+        // WMS
+        ConfigureWarehouseZone(modelBuilder);
+        ConfigureWarehouseLocation(modelBuilder);
+        ConfigureInventoryMovement(modelBuilder);
+        ConfigurePickingOrder(modelBuilder);
+        ConfigurePickingItem(modelBuilder);
+        ConfigurePackingSlip(modelBuilder);
+        ConfigureBarcodeMapping(modelBuilder);
+
+        // CRM
+        ConfigureCustomerSegment(modelBuilder);
+        ConfigureCustomerTag(modelBuilder);
+        ConfigureCustomerTagAssignment(modelBuilder);
+        ConfigureCsTicket(modelBuilder);
+        ConfigureCsTicketMessage(modelBuilder);
+        ConfigureCustomerJourneyEvent(modelBuilder);
+
+        // ERP
+        ConfigureChartOfAccount(modelBuilder);
+        ConfigureAccountEntry(modelBuilder);
+        ConfigureEmployee(modelBuilder);
+        ConfigureAttendance(modelBuilder);
+        ConfigurePayroll(modelBuilder);
+        ConfigureCostAnalysis(modelBuilder);
+
+        // Provisioning
+        ConfigureTenantApplication(modelBuilder);
+
+        // Social Commerce
+        ConfigureMemberGrade(modelBuilder);
+        ConfigureGift(modelBuilder);
+        ConfigureChatRoom(modelBuilder);
+        ConfigureChatMessage(modelBuilder);
     }
 
     private void ApplyTenantFilter<T>(ModelBuilder modelBuilder) where T : class, ITenantEntity
@@ -921,6 +1063,515 @@ public class ShopDbContext : DbContext, IShopDbContext
             entity.HasIndex(e => e.ProductId);
             entity.HasOne(e => e.PurchaseOrder).WithMany(po => po.Items).HasForeignKey(e => e.PurchaseOrderId).OnDelete(DeleteBehavior.Cascade);
             entity.HasOne(e => e.Product).WithMany().HasForeignKey(e => e.ProductId).OnDelete(DeleteBehavior.Restrict);
+        });
+    }
+
+    private static void ConfigureAuditLog(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<AuditLog>(entity =>
+        {
+            entity.HasIndex(e => new { e.EntityName, e.EntityId });
+            entity.HasIndex(e => e.UserId);
+            entity.HasIndex(e => e.TenantId);
+            entity.HasIndex(e => e.Timestamp);
+        });
+    }
+
+    private static void ConfigureDeliveryDriver(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<DeliveryDriver>(entity =>
+        {
+            entity.HasIndex(e => new { e.TenantId, e.UserId }).IsUnique();
+            entity.HasIndex(e => e.Status);
+            entity.HasIndex(e => e.IsApproved);
+
+            entity.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+    }
+
+    private static void ConfigureDeliveryZone(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<DeliveryZone>(entity =>
+        {
+            entity.HasIndex(e => e.TenantId);
+            entity.HasIndex(e => e.IsActive);
+        });
+    }
+
+    private static void ConfigureDeliveryZoneDriver(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<DeliveryZoneDriver>(entity =>
+        {
+            entity.HasIndex(e => new { e.DeliveryZoneId, e.DeliveryDriverId }).IsUnique();
+
+            entity.HasOne(e => e.Zone)
+                .WithMany(z => z.ZoneDrivers)
+                .HasForeignKey(e => e.DeliveryZoneId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.Driver)
+                .WithMany(d => d.ZoneDrivers)
+                .HasForeignKey(e => e.DeliveryDriverId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+    }
+
+    private static void ConfigureDeliveryOption(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<DeliveryOption>(entity =>
+        {
+            entity.HasIndex(e => new { e.TenantId, e.DeliveryType });
+            entity.HasIndex(e => e.IsActive);
+            entity.HasIndex(e => e.SortOrder);
+        });
+    }
+
+    private static void ConfigureDeliveryAssignment(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<DeliveryAssignment>(entity =>
+        {
+            entity.HasIndex(e => e.OrderId);
+            entity.HasIndex(e => e.DeliveryDriverId);
+            entity.HasIndex(e => e.Status);
+            entity.HasIndex(e => new { e.TenantId, e.Status });
+
+            entity.HasOne(e => e.Order)
+                .WithOne(o => o.DeliveryAssignment)
+                .HasForeignKey<DeliveryAssignment>(e => e.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.Driver)
+                .WithMany()
+                .HasForeignKey(e => e.DeliveryDriverId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasOne(e => e.DeliveryOption)
+                .WithMany()
+                .HasForeignKey(e => e.DeliveryOptionId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+    }
+
+    private static void ConfigureDriverLocationHistory(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<DriverLocationHistory>(entity =>
+        {
+            entity.HasIndex(e => new { e.DeliveryDriverId, e.RecordedAt });
+            entity.HasIndex(e => e.DeliveryAssignmentId);
+
+            entity.HasOne(e => e.Driver)
+                .WithMany()
+                .HasForeignKey(e => e.DeliveryDriverId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+    }
+
+    // === WMS Configurations ===
+
+    private static void ConfigureWarehouseZone(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<WarehouseZone>(entity =>
+        {
+            entity.HasIndex(e => new { e.TenantId, e.Code }).IsUnique();
+        });
+    }
+
+    private static void ConfigureWarehouseLocation(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<WarehouseLocation>(entity =>
+        {
+            entity.HasIndex(e => new { e.TenantId, e.Code }).IsUnique();
+            entity.HasIndex(e => new { e.TenantId, e.ProductId });
+
+            entity.HasOne(e => e.Zone)
+                .WithMany(z => z.Locations)
+                .HasForeignKey(e => e.WarehouseZoneId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.Product)
+                .WithMany()
+                .HasForeignKey(e => e.ProductId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+    }
+
+    private static void ConfigureInventoryMovement(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<InventoryMovement>(entity =>
+        {
+            entity.HasIndex(e => new { e.TenantId, e.ProductId });
+            entity.HasIndex(e => e.MovementType);
+            entity.HasIndex(e => e.CreatedAt);
+
+            entity.HasOne(e => e.Product)
+                .WithMany()
+                .HasForeignKey(e => e.ProductId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.FromLocation)
+                .WithMany()
+                .HasForeignKey(e => e.FromLocationId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasOne(e => e.ToLocation)
+                .WithMany()
+                .HasForeignKey(e => e.ToLocationId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+    }
+
+    private static void ConfigurePickingOrder(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<PickingOrder>(entity =>
+        {
+            entity.HasIndex(e => new { e.TenantId, e.PickingNumber }).IsUnique();
+            entity.HasIndex(e => e.Status);
+
+            entity.HasOne(e => e.Order)
+                .WithMany()
+                .HasForeignKey(e => e.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.AssignedUser)
+                .WithMany()
+                .HasForeignKey(e => e.AssignedUserId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+    }
+
+    private static void ConfigurePickingItem(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<PickingItem>(entity =>
+        {
+            entity.HasOne(e => e.PickingOrder)
+                .WithMany(p => p.Items)
+                .HasForeignKey(e => e.PickingOrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.Product)
+                .WithMany()
+                .HasForeignKey(e => e.ProductId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.Location)
+                .WithMany()
+                .HasForeignKey(e => e.LocationId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+    }
+
+    private static void ConfigurePackingSlip(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<PackingSlip>(entity =>
+        {
+            entity.HasIndex(e => new { e.TenantId, e.PackingNumber }).IsUnique();
+            entity.HasIndex(e => e.TrackingNumber);
+
+            entity.HasOne(e => e.Order)
+                .WithMany()
+                .HasForeignKey(e => e.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.PickingOrder)
+                .WithMany()
+                .HasForeignKey(e => e.PickingOrderId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasOne(e => e.PackedByUser)
+                .WithMany()
+                .HasForeignKey(e => e.PackedByUserId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+    }
+
+    private static void ConfigureBarcodeMapping(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<BarcodeMapping>(entity =>
+        {
+            entity.HasIndex(e => new { e.TenantId, e.Barcode }).IsUnique();
+            entity.HasIndex(e => new { e.EntityType, e.EntityId });
+        });
+    }
+
+    // === CRM Configurations ===
+
+    private static void ConfigureCustomerSegment(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<CustomerSegment>(entity =>
+        {
+            entity.HasIndex(e => new { e.TenantId, e.Name }).IsUnique();
+        });
+    }
+
+    private static void ConfigureCustomerTag(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<CustomerTag>(entity =>
+        {
+            entity.HasIndex(e => new { e.TenantId, e.Name }).IsUnique();
+        });
+    }
+
+    private static void ConfigureCustomerTagAssignment(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<CustomerTagAssignment>(entity =>
+        {
+            entity.HasIndex(e => new { e.UserId, e.CustomerTagId }).IsUnique().HasFilter("\"CustomerTagId\" IS NOT NULL");
+            entity.HasIndex(e => new { e.UserId, e.CustomerSegmentId }).HasFilter("\"CustomerSegmentId\" IS NOT NULL");
+
+            entity.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.Tag)
+                .WithMany(t => t.Assignments)
+                .HasForeignKey(e => e.CustomerTagId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.Segment)
+                .WithMany(s => s.TagAssignments)
+                .HasForeignKey(e => e.CustomerSegmentId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+    }
+
+    private static void ConfigureCsTicket(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<CsTicket>(entity =>
+        {
+            entity.HasIndex(e => new { e.TenantId, e.TicketNumber }).IsUnique();
+            entity.HasIndex(e => e.Status);
+            entity.HasIndex(e => e.Category);
+            entity.HasIndex(e => e.UserId);
+
+            entity.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.Order)
+                .WithMany()
+                .HasForeignKey(e => e.OrderId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasOne(e => e.AssignedToUser)
+                .WithMany()
+                .HasForeignKey(e => e.AssignedToUserId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+    }
+
+    private static void ConfigureCsTicketMessage(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<CsTicketMessage>(entity =>
+        {
+            entity.HasOne(e => e.Ticket)
+                .WithMany(t => t.Messages)
+                .HasForeignKey(e => e.CsTicketId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.Sender)
+                .WithMany()
+                .HasForeignKey(e => e.SenderId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+    }
+
+    private static void ConfigureCustomerJourneyEvent(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<CustomerJourneyEvent>(entity =>
+        {
+            entity.HasIndex(e => new { e.TenantId, e.UserId });
+            entity.HasIndex(e => e.EventType);
+            entity.HasIndex(e => e.CreatedAt);
+
+            entity.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+    }
+
+    // === ERP Configurations ===
+
+    private static void ConfigureChartOfAccount(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<ChartOfAccount>(entity =>
+        {
+            entity.HasIndex(e => new { e.TenantId, e.AccountCode }).IsUnique();
+        });
+    }
+
+    private static void ConfigureAccountEntry(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<AccountEntry>(entity =>
+        {
+            entity.HasIndex(e => new { e.TenantId, e.EntryNumber }).IsUnique();
+            entity.HasIndex(e => e.EntryDate);
+            entity.HasIndex(e => e.Status);
+
+            entity.HasOne(e => e.Account)
+                .WithMany(a => a.Entries)
+                .HasForeignKey(e => e.ChartOfAccountId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+    }
+
+    private static void ConfigureEmployee(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Employee>(entity =>
+        {
+            entity.HasIndex(e => new { e.TenantId, e.EmployeeNumber }).IsUnique();
+            entity.HasIndex(e => e.Department);
+            entity.HasIndex(e => e.Status);
+
+            entity.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+    }
+
+    private static void ConfigureAttendance(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Attendance>(entity =>
+        {
+            entity.HasIndex(e => new { e.EmployeeId, e.WorkDate }).IsUnique();
+            entity.HasIndex(e => e.WorkDate);
+
+            entity.HasOne(e => e.Employee)
+                .WithMany(emp => emp.Attendances)
+                .HasForeignKey(e => e.EmployeeId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+    }
+
+    private static void ConfigurePayroll(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Payroll>(entity =>
+        {
+            entity.HasIndex(e => new { e.EmployeeId, e.PayPeriod }).IsUnique();
+            entity.HasIndex(e => e.PayPeriod);
+            entity.HasIndex(e => e.Status);
+
+            entity.HasOne(e => e.Employee)
+                .WithMany(emp => emp.Payrolls)
+                .HasForeignKey(e => e.EmployeeId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+    }
+
+    private static void ConfigureCostAnalysis(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<CostAnalysis>(entity =>
+        {
+            entity.HasIndex(e => new { e.TenantId, e.ProductId, e.AnalysisPeriod });
+            entity.HasIndex(e => e.AnalysisPeriod);
+
+            entity.HasOne(e => e.Product)
+                .WithMany()
+                .HasForeignKey(e => e.ProductId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+    }
+
+    // === Provisioning ===
+
+    private static void ConfigureTenantApplication(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<TenantApplication>(entity =>
+        {
+            entity.HasIndex(e => e.DesiredSlug);
+            entity.HasIndex(e => e.Status);
+            entity.HasIndex(e => e.Email);
+
+            entity.HasOne(e => e.ProvisionedTenant)
+                .WithMany()
+                .HasForeignKey(e => e.ProvisionedTenantId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+    }
+
+    // === Social Commerce ===
+
+    private static void ConfigureMemberGrade(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<MemberGrade>(entity =>
+        {
+            entity.HasIndex(e => new { e.TenantId, e.UserId }).IsUnique();
+            entity.HasIndex(e => e.Grade);
+            entity.HasIndex(e => e.GradePoints);
+
+            entity.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+    }
+
+    private static void ConfigureGift(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Gift>(entity =>
+        {
+            entity.HasIndex(e => new { e.TenantId, e.FromUserId });
+            entity.HasIndex(e => new { e.TenantId, e.ToUserId });
+            entity.HasIndex(e => e.Status);
+
+            entity.HasOne(e => e.FromUser)
+                .WithMany()
+                .HasForeignKey(e => e.FromUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.ToUser)
+                .WithMany()
+                .HasForeignKey(e => e.ToUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+    }
+
+    private static void ConfigureChatRoom(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<ChatRoom>(entity =>
+        {
+            entity.HasIndex(e => new { e.TenantId, e.User1Id, e.User2Id });
+            entity.HasIndex(e => e.LastMessageAt);
+
+            entity.HasOne(e => e.User1)
+                .WithMany()
+                .HasForeignKey(e => e.User1Id)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.User2)
+                .WithMany()
+                .HasForeignKey(e => e.User2Id)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.Product)
+                .WithMany()
+                .HasForeignKey(e => e.ProductId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+    }
+
+    private static void ConfigureChatMessage(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<ChatMessage>(entity =>
+        {
+            entity.HasIndex(e => new { e.ChatRoomId, e.CreatedAt });
+            entity.HasIndex(e => new { e.SenderId, e.IsRead });
+
+            entity.HasOne(e => e.ChatRoom)
+                .WithMany(r => r.Messages)
+                .HasForeignKey(e => e.ChatRoomId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.Sender)
+                .WithMany()
+                .HasForeignKey(e => e.SenderId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
     }
 }

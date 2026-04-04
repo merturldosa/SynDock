@@ -19,6 +19,7 @@ export interface PaymentConfig {
 }
 
 export interface TenantConfig {
+  enabledFeatures?: string[];
   paymentConfig?: PaymentConfig;
   theme?: TenantTheme;
   heroSubtitle?: string;

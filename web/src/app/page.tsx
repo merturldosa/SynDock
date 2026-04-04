@@ -9,6 +9,7 @@ import { LiturgySummary } from "@/components/home/LiturgySummary";
 import { PromoBanner } from "@/components/home/PromoBanner";
 import { useAuthStore } from "@/stores/authStore";
 import { useCartStore } from "@/stores/cartStore";
+import { useTenantStore } from "@/stores/tenantStore";
 import toast from "react-hot-toast";
 import { useTranslations } from "next-intl";
 import { getProducts, getCategories } from "@/lib/productApi";
@@ -19,6 +20,7 @@ export default function Home() {
   const router = useRouter();
   const { isAuthenticated } = useAuthStore();
   const { addToCart } = useCartStore();
+  const { hasFeature } = useTenantStore();
   const [section1, setSection1] = useState<{ products: ProductSummary[]; category: CategoryInfo | null }>({ products: [], category: null });
   const [section2, setSection2] = useState<{ products: ProductSummary[]; category: CategoryInfo | null }>({ products: [], category: null });
 
@@ -58,7 +60,7 @@ export default function Home() {
       <HeroSection />
       <PromoBanner />
       <CategorySection />
-      <LiturgySummary />
+      {hasFeature("liturgy") && <LiturgySummary />}
       {section1.category && (
         <ProductSection
           title={section1.category.name}

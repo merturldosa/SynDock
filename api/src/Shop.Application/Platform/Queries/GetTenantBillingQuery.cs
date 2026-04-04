@@ -33,25 +33,23 @@ public class GetTenantBillingQueryHandler : IRequestHandler<GetTenantBillingQuer
         if (request.TenantId.HasValue)
             query = query.Where(t => t.Id == request.TenantId.Value);
 
-        var results = await query
-            .GroupJoin(
-                _db.TenantPlans.AsNoTracking(),
-                t => t.Id,
-                p => p.TenantId,
-                (t, plans) => new { Tenant = t, Plans = plans })
-            .SelectMany(
-                x => x.Plans.DefaultIfEmpty(),
-                (x, plan) => new TenantBillingDto(
-                    x.Tenant.Id,
-                    x.Tenant.Name,
-                    x.Tenant.Slug,
-                    plan != null ? plan.PlanType : "Free",
-                    plan != null ? plan.MonthlyPrice : 0,
-                    plan != null ? plan.BillingStatus : "None",
-                    plan != null ? plan.TrialEndsAt : null,
-                    plan != null ? plan.NextBillingAt : null))
-            .OrderBy(x => x.TenantId)
-            .ToListAsync(cancellationToken);
+        var tenants = await query.OrderBy(t => t.Id).ToListAsync(cancellationToken);
+        var plans = await _db.TenantPlans.AsNoTracking().ToListAsync(cancellationToken);
+        var planMap = plans.ToDictionary(p => p.TenantId);
+
+        var results = tenants.Select(t =>
+        {
+            planMap.TryGetValue(t.Id, out var plan);
+            return new TenantBillingDto(
+                t.Id,
+                t.Name,
+                t.Slug,
+                plan?.PlanType ?? "Free",
+                plan?.MonthlyPrice ?? 0,
+                plan?.BillingStatus ?? "None",
+                plan?.TrialEndsAt,
+                plan?.NextBillingAt);
+        }).ToList();
 
         return Result<List<TenantBillingDto>>.Success(results);
     }

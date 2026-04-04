@@ -22,6 +22,9 @@ public class TenantConfig
 
     // Auto Coupon
     public AutoCouponConfig? AutoCoupon { get; set; }
+
+    // AI Integration
+    public AiIntegrationConfig? AiIntegration { get; set; }
 }
 
 public class ThemeConfig
@@ -68,6 +71,10 @@ public class ShippingConfig
     public string? ReturnPolicy { get; set; }
     public int EstimatedDeliveryDays { get; set; } = 3;
     public string[]? AvailableCarriers { get; set; }
+    public bool ExpressDeliveryEnabled { get; set; }
+    public bool DriverAssignmentAutomatic { get; set; } = true;
+    public int DriverOfferTimeoutSeconds { get; set; } = 60;
+    public int MaxDriverOffersPerOrder { get; set; } = 5;
 }
 
 public class SeoConfig
@@ -103,4 +110,15 @@ public class AutoCouponConfig
     public string WelcomeCouponCode { get; set; } = "WELCOME";
     public bool BirthdayCouponEnabled { get; set; }
     public string BirthdayCouponCode { get; set; } = "BIRTHDAY";
+}
+
+public class AiIntegrationConfig
+{
+    public string? OpenAiApiKey { get; set; }
+    public string? OpenAiModel { get; set; } = "gpt-4o";
+    public string? DalleModel { get; set; } = "dall-e-3";
+    public string? ClaudeApiKey { get; set; }
+    public string? ClaudeModel { get; set; } = "claude-sonnet-4-20250514";
+    public bool AiContentEnabled { get; set; }
+    public bool AiImageEnabled { get; set; }
 }

@@ -113,6 +113,7 @@
     "addToCollection": "Add to Collection",
     "searchNoResults": "No results for \"{term}\".",
     "popularInCategory": "Popular in {name}",
+    "fetchError": "Failed to load product data",
     "priceRange": "Price Range",
     "minPrice": "Min",
     "maxPrice": "Max",
@@ -778,7 +779,14 @@
       "autoReorder": "Auto Reorder",
       "banners": "Banners",
       "backToShop": "Back to Shop",
-      "admin": "Admin"
+      "admin": "Admin",
+      "viewShop": "View Shop",
+      "sectionOperations": "Operations",
+      "sectionProducts": "Products",
+      "sectionCustomers": "Customers",
+      "sectionAnalytics": "Analytics",
+      "sectionFinance": "Finance",
+      "sectionSettings": "Settings"
     },
     "dashboard": {
       "title": "Admin Dashboard",

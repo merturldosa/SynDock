@@ -12,9 +12,15 @@ public record TenantSettingsDto(
     string? CompanyName, string? CompanyAddress, string? BusinessNumber,
     string? CeoName, string? ContactPhone, string? ContactEmail,
     string? HeroSubtitle, string? HeroTagline, string? HeroDescription,
-    TenantSettingsThemeDto? Theme, string? LogoUrl, string? FaviconUrl);
+    TenantSettingsThemeDto? Theme, string? LogoUrl, string? FaviconUrl,
+    TenantAiIntegrationDto? AiIntegration = null);
 
 public record TenantSettingsThemeDto(string? Primary, string? PrimaryLight, string? Secondary, string? SecondaryLight, string? Background);
+
+public record TenantAiIntegrationDto(
+    string? OpenAiApiKey, string? OpenAiModel, string? DalleModel,
+    string? ClaudeApiKey, string? ClaudeModel,
+    bool AiContentEnabled, bool AiImageEnabled);
 
 public record GetTenantSettingsQuery : IRequest<Result<TenantSettingsDto>>;
 
@@ -61,6 +67,19 @@ public class GetTenantSettingsQueryHandler : IRequestHandler<GetTenantSettingsQu
                 themeObj["background"]?.GetValue<string>());
         }
 
+        TenantAiIntegrationDto? aiIntegration = null;
+        if (config["aiIntegration"] is JsonObject aiObj)
+        {
+            aiIntegration = new TenantAiIntegrationDto(
+                aiObj["openAiApiKey"]?.GetValue<string>(),
+                aiObj["openAiModel"]?.GetValue<string>(),
+                aiObj["dalleModel"]?.GetValue<string>(),
+                aiObj["claudeApiKey"]?.GetValue<string>(),
+                aiObj["claudeModel"]?.GetValue<string>(),
+                aiObj["aiContentEnabled"]?.GetValue<bool>() ?? false,
+                aiObj["aiImageEnabled"]?.GetValue<bool>() ?? false);
+        }
+
         var dto = new TenantSettingsDto(
             config["companyName"]?.GetValue<string>(),
             config["companyAddress"]?.GetValue<string>(),
@@ -73,7 +92,8 @@ public class GetTenantSettingsQueryHandler : IRequestHandler<GetTenantSettingsQu
             config["heroDescription"]?.GetValue<string>(),
             theme,
             config["logoUrl"]?.GetValue<string>(),
-            config["faviconUrl"]?.GetValue<string>());
+            config["faviconUrl"]?.GetValue<string>(),
+            aiIntegration);
 
         return Result<TenantSettingsDto>.Success(dto);
     }

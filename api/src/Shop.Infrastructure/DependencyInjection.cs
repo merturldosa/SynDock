@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Shop.Application.Common.Interfaces;
 using Shop.Domain.Interfaces;
 using Shop.Infrastructure.Data;
@@ -13,6 +14,8 @@ using Shop.Application.Liturgy.Services;
 using Shop.Infrastructure.AI;
 using Shop.Infrastructure.Integration;
 using Shop.Infrastructure.Storage;
+using Shop.Infrastructure.Services.Scm;
+using Shop.Infrastructure.Blockchain;
 using SynDock.Core.Interfaces;
 
 namespace Shop.Infrastructure;
@@ -21,8 +24,13 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddDbContext<ShopDbContext>(options =>
-            options.UseNpgsql(configuration.GetConnectionString("ShopDb")));
+        services.AddScoped<AuditSaveChangesInterceptor>();
+
+        services.AddDbContext<ShopDbContext>((sp, options) =>
+        {
+            options.UseNpgsql(configuration.GetConnectionString("ShopDb"));
+            options.AddInterceptors(sp.GetRequiredService<AuditSaveChangesInterceptor>());
+        });
 
         services.AddScoped<IShopDbContext>(sp => sp.GetRequiredService<ShopDbContext>());
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
@@ -59,7 +67,29 @@ public static class DependencyInjection
         // File storage
         var uploadsPath = Path.Combine(AppContext.BaseDirectory, "wwwroot", "uploads");
         var baseUrl = configuration["App:BaseUrl"] ?? "http://localhost:5100";
-        services.AddSingleton<IFileStorageService>(new LocalFileStorageService(uploadsPath, baseUrl));
+        services.AddSingleton<LocalFileStorageService>(new LocalFileStorageService(uploadsPath, baseUrl));
+
+        var s3Endpoint = configuration["Storage:S3:Endpoint"];
+        if (!string.IsNullOrEmpty(s3Endpoint))
+        {
+            // S3-compatible CDN (Cloudflare R2 / AWS S3 / MinIO) with local fallback
+            services.AddHttpClient("S3Storage");
+            services.AddSingleton<IFileStorageService>(sp =>
+            {
+                var httpClientFactory = sp.GetRequiredService<IHttpClientFactory>();
+                var httpClient = httpClientFactory.CreateClient("S3Storage");
+                var config = sp.GetRequiredService<IConfiguration>();
+                var localFallback = sp.GetRequiredService<LocalFileStorageService>();
+                var logger = sp.GetRequiredService<ILogger<CdnFileStorageService>>();
+                return new CdnFileStorageService(httpClient, config, localFallback, logger);
+            });
+        }
+        else
+        {
+            // Local file storage only
+            services.AddSingleton<IFileStorageService>(sp =>
+                sp.GetRequiredService<LocalFileStorageService>());
+        }
 
         services.AddHttpContextAccessor();
 
@@ -81,6 +111,7 @@ public static class DependencyInjection
         services.AddHttpClient<IImageGenerator, DalleImageGenerator>();
         services.AddScoped<IRecommendationEngine, CollaborativeFilteringEngine>();
         services.AddScoped<IAiForecastInsightService, ClaudeAiForecastInsightService>();
+        services.AddHttpClient<IAiHomepageGenerator, AiHomepageGenerator>();
         services.AddScoped<IDemandForecastService, DemandForecastService>();
 
         // Production Plan
@@ -88,9 +119,14 @@ public static class DependencyInjection
 
         // MES Integration
         services.AddScoped<IMesProductMapper, MesProductMapper>();
-        if (configuration.GetValue<bool>("Mes:Enabled"))
+        var mesMode = configuration["Mes:Enabled"]?.ToLower();
+        if (mesMode == "true")
         {
             services.AddHttpClient<IMesClient, MesHttpClient>();
+        }
+        else if (mesMode == "demo")
+        {
+            services.AddSingleton<IMesClient, DemoMesClient>();
         }
         else
         {
@@ -117,7 +153,11 @@ public static class DependencyInjection
         // Plan enforcement
         services.AddScoped<IPlanEnforcer, PlanEnforcer>();
 
+        // Delivery
+        services.AddSingleton<IDriverLocationService, InMemoryDriverLocationService>();
+
         // Background jobs
+        services.AddHostedService<DeliveryAssignmentJob>();
         services.AddHostedService<BillingScheduler>();
         services.AddHostedService<TrialExpiryJob>();
         services.AddHostedService<MesInventorySyncJob>();
@@ -128,9 +168,58 @@ public static class DependencyInjection
         services.AddHostedService<BirthdayCouponJob>();
         services.AddHostedService<CartAbandonmentJob>();
         services.AddHostedService<RepurchaseReminderJob>();
+        services.AddHostedService<LotExpirationAlertJob>();
+        services.AddHostedService<SupplierPerformanceJob>();
+        services.AddHostedService<LeadScoreRecalculationJob>();
+        services.AddHostedService<AiSupplyChainOrchestrator>();
+        services.AddHostedService<AiBusinessAutomator>();
+        services.AddHostedService<MemberGradeRecalculationJob>();
+        services.AddHostedService<MarketplaceStockSyncJob>();
+        services.AddHostedService<SecurityCleanupJob>();
+
+        // Security (AI-SOC)
+        services.AddScoped<ISecurityMonitorService, SecurityMonitorService>();
+
+        // Workflow Engine
+        services.AddScoped<IWorkflowService, WorkflowService>();
 
         // Auto Coupon
         services.AddScoped<IAutoCouponService, AutoCouponService>();
+
+        // WMS
+        services.AddScoped<IWmsService, WmsService>();
+
+        // PMS (Property Management)
+        services.AddScoped<IPmsService, PmsService>();
+
+        // Blockchain / Token
+        services.AddScoped<IBlockchainService, BlockchainService>();
+
+        // CRM
+        services.AddScoped<ICrmService, CrmService>();
+
+        // ERP
+        services.AddScoped<IAccountingService, AccountingService>();
+        services.AddScoped<IHrService, HrService>();
+
+        // SCM
+        services.AddScoped<IScmService, ScmService>();
+
+        // Social Commerce
+        services.AddScoped<ISocialCommerceService, SocialCommerceService>();
+
+        // Friend System + Mini-Game
+        services.AddScoped<IFriendGameService, FriendGameService>();
+
+        // Marketplace
+        services.AddScoped<IMarketplaceService, MarketplaceService>();
+
+        // Provisioning & Subscription
+        services.AddScoped<IProvisioningService, ProvisioningService>();
+        services.AddScoped<ISubscriptionService, SubscriptionService>();
+
+        // Shop Migration (crawler/importer)
+        services.AddHttpClient<IShopMigrationService, ShopMigrationService>();
 
         // Redis
         var redisConnection = configuration.GetConnectionString("Redis");

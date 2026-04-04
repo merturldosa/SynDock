@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import toast from "react-hot-toast";
 import { Package, Coins, Ticket, Bell, Cross } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
+import { useTenantStore } from "@/stores/tenantStore";
 import { Button } from "@/components/ui/Button";
 import { updateBaptismalName } from "@/lib/saintApi";
 import { getOrders } from "@/lib/orderApi";
@@ -19,6 +20,7 @@ export default function MyPage() {
   const router = useRouter();
   const t = useTranslations();
   const { user, logout } = useAuthStore();
+  const { hasFeature } = useTenantStore();
   const [baptismalName, setBaptismalName] = useState("");
   const [baptismalInfo, setBaptismalInfo] = useState<BaptismalNameInfo | null>(null);
   const [savingBaptismal, setSavingBaptismal] = useState(false);
@@ -121,8 +123,8 @@ export default function MyPage() {
         </div>
       </div>
 
-      {/* Baptismal Name Section */}
-      <div className="bg-white rounded-xl shadow-sm p-6">
+      {/* Baptismal Name Section - Catholia only */}
+      {hasFeature("baptismalName") && <div className="bg-white rounded-xl shadow-sm p-6">
         <h2 className="font-semibold text-[var(--color-secondary)] mb-3 flex items-center gap-2">
           <Cross size={18} className="text-[var(--color-primary)]" />
           {t("mypage.baptismalNameSection")}
@@ -180,7 +182,7 @@ export default function MyPage() {
             </button>
           </div>
         )}
-      </div>
+      </div>}
 
       <Button
         variant="outline"

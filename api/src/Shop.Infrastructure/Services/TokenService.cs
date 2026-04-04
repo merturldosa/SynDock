@@ -24,7 +24,7 @@ public class TokenService : ITokenService
             Encoding.UTF8.GetBytes(_configuration["Jwt:Secret"]!));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-        var claims = new[]
+        var claims = new List<Claim>
         {
             new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new Claim(JwtRegisteredClaimNames.UniqueName, user.Username),
@@ -34,6 +34,10 @@ public class TokenService : ITokenService
             new Claim("tenant_slug", tenant.Slug),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
+
+        // Include department claim for department-based access control
+        if (!string.IsNullOrEmpty(user.Department))
+            claims.Add(new Claim("department", user.Department));
 
         var expirationMinutes = int.Parse(_configuration["Jwt:ExpirationMinutes"] ?? "60");
 

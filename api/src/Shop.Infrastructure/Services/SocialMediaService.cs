@@ -14,6 +14,9 @@ public class SocialMediaService : ISocialMediaService
     private readonly string _instagramAccountId;
     private readonly string _facebookPageId;
     private readonly string _facebookAccessToken;
+    private readonly string _youtubeApiKey;
+    private readonly string _youtubeChannelId;
+    private readonly string _twitterBearerToken;
 
     public SocialMediaService(HttpClient httpClient, IConfiguration configuration, ILogger<SocialMediaService> logger)
     {
@@ -25,6 +28,9 @@ public class SocialMediaService : ISocialMediaService
         _instagramAccountId = section["Instagram:AccountId"] ?? "";
         _facebookPageId = section["Facebook:PageId"] ?? "";
         _facebookAccessToken = section["Facebook:AccessToken"] ?? "";
+        _youtubeApiKey = section["YouTube:ApiKey"] ?? "";
+        _youtubeChannelId = section["YouTube:ChannelId"] ?? "";
+        _twitterBearerToken = section["Twitter:BearerToken"] ?? "";
     }
 
     public Task<bool> IsConfiguredAsync(string platform, CancellationToken ct = default)
@@ -33,6 +39,8 @@ public class SocialMediaService : ISocialMediaService
         {
             "Instagram" => !string.IsNullOrEmpty(_instagramAccessToken) && !string.IsNullOrEmpty(_instagramAccountId),
             "Facebook" => !string.IsNullOrEmpty(_facebookPageId) && !string.IsNullOrEmpty(_facebookAccessToken),
+            "YouTube" => !string.IsNullOrEmpty(_youtubeApiKey) && !string.IsNullOrEmpty(_youtubeChannelId),
+            "Twitter" => !string.IsNullOrEmpty(_twitterBearerToken),
             _ => false
         };
         return Task.FromResult(configured);
@@ -156,6 +164,116 @@ public class SocialMediaService : ISocialMediaService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Facebook post exception");
+            return new SocialPostResult(false, null, null, ex.Message);
+        }
+    }
+
+    public async Task<SocialPostResult> PostToYoutubeAsync(string title, string description, string? thumbnailUrl, CancellationToken ct = default)
+    {
+        if (string.IsNullOrEmpty(_youtubeApiKey))
+        {
+            _logger.LogInformation("YouTube not configured: skipping post");
+            return new SocialPostResult(false, null, null, "YouTube not configured");
+        }
+
+        try
+        {
+            // YouTube Data API v3 - Create community post or channel bulletin
+            var url = $"https://www.googleapis.com/youtube/v3/activities?part=snippet&key={_youtubeApiKey}";
+
+            var payload = new
+            {
+                snippet = new
+                {
+                    channelId = _youtubeChannelId,
+                    description = description,
+                    type = "bulletin"
+                },
+                contentDetails = new
+                {
+                    bulletin = new
+                    {
+                        resourceId = new
+                        {
+                            kind = "youtube#channel",
+                            channelId = _youtubeChannelId
+                        }
+                    }
+                }
+            };
+
+            var json = JsonSerializer.Serialize(payload);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            _httpClient.DefaultRequestHeaders.Authorization =
+                new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _youtubeApiKey);
+
+            var response = await _httpClient.PostAsync(url, content, ct);
+            var body = await response.Content.ReadAsStringAsync(ct);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                _logger.LogWarning("YouTube post failed: {Body}", body);
+                return new SocialPostResult(false, null, null, body);
+            }
+
+            var result = JsonSerializer.Deserialize<JsonElement>(body);
+            var postId = result.TryGetProperty("id", out var idProp) ? idProp.GetString() : null;
+            var postUrl = $"https://www.youtube.com/channel/{_youtubeChannelId}/community";
+
+            _logger.LogInformation("YouTube post successful: PostId={PostId}", postId);
+            return new SocialPostResult(true, postId, postUrl, null);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "YouTube post exception");
+            return new SocialPostResult(false, null, null, ex.Message);
+        }
+    }
+
+    public async Task<SocialPostResult> PostToTwitterAsync(string text, string? imageUrl, CancellationToken ct = default)
+    {
+        if (string.IsNullOrEmpty(_twitterBearerToken))
+        {
+            _logger.LogInformation("Twitter not configured: skipping post");
+            return new SocialPostResult(false, null, null, "Twitter not configured");
+        }
+
+        try
+        {
+            // Twitter API v2 - Create tweet
+            var url = "https://api.twitter.com/2/tweets";
+
+            var payload = new { text };
+            var json = JsonSerializer.Serialize(payload);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            using var request = new HttpRequestMessage(HttpMethod.Post, url);
+            request.Headers.Authorization =
+                new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _twitterBearerToken);
+            request.Content = content;
+
+            var response = await _httpClient.SendAsync(request, ct);
+            var body = await response.Content.ReadAsStringAsync(ct);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                _logger.LogWarning("Twitter post failed: {Body}", body);
+                return new SocialPostResult(false, null, null, body);
+            }
+
+            var result = JsonSerializer.Deserialize<JsonElement>(body);
+            var tweetId = result.TryGetProperty("data", out var data)
+                ? (data.TryGetProperty("id", out var tid) ? tid.GetString() : null)
+                : null;
+            var postUrl = tweetId is not null ? $"https://twitter.com/i/web/status/{tweetId}" : null;
+
+            _logger.LogInformation("Twitter post successful: TweetId={TweetId}", tweetId);
+            return new SocialPostResult(true, tweetId, postUrl, null);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Twitter post exception");
             return new SocialPostResult(false, null, null, ex.Message);
         }
     }

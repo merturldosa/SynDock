@@ -2,12 +2,14 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { Calendar, Church, Star, ChevronRight } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { getTodayLiturgy, getLiturgicalSeasons } from "@/lib/liturgyApi";
 import type { LiturgyTodayDto, LiturgicalSeasonDto } from "@/types/liturgy";
 import { formatDateShort } from "@/lib/format";
+import { useTenantStore } from "@/stores/tenantStore";
 
 const SEASON_KEYS = [
   "Advent",
@@ -32,9 +34,17 @@ function formatDate(dateStr: string) {
 
 export default function LiturgyPage() {
   const t = useTranslations();
+  const router = useRouter();
+  const { hasFeature, isLoaded } = useTenantStore();
   const [today, setToday] = useState<LiturgyTodayDto | null>(null);
   const [seasons, setSeasons] = useState<LiturgicalSeasonDto[]>([]);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (isLoaded && !hasFeature("liturgy")) {
+      router.replace("/");
+    }
+  }, [isLoaded, hasFeature, router]);
   const currentYear = new Date().getFullYear();
 
   useEffect(() => {

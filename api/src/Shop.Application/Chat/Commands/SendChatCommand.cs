@@ -31,7 +31,7 @@ public class SendChatCommandHandler : IRequestHandler<SendChatCommand, Result<st
     public async Task<Result<string>> Handle(SendChatCommand request, CancellationToken cancellationToken)
     {
         var messages = request.Messages
-            .Select(m => new ChatMessage(m.Role, m.Content))
+            .Select(m => new AiChatMessage(m.Role, m.Content))
             .ToList();
 
         string? systemPrompt = null;

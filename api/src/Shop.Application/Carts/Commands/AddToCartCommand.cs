@@ -41,7 +41,7 @@ public class AddToCartCommandHandler : IRequestHandler<AddToCartCommand, Result<
         if (product is null)
             return Result<int>.Failure("Product not found.");
 
-        // Validate variant if specified
+        // Validate variant if specified + stock check
         if (request.VariantId.HasValue)
         {
             var variant = await _db.ProductVariants
@@ -50,6 +50,19 @@ public class AddToCartCommandHandler : IRequestHandler<AddToCartCommand, Result<
 
             if (variant is null)
                 return Result<int>.Failure("Product variant not found.");
+
+            if (variant.Stock < request.Quantity)
+                return Result<int>.Failure($"재고가 부족합니다. (현재: {variant.Stock}개, 요청: {request.Quantity}개)");
+        }
+        else
+        {
+            // Check default variant stock
+            var defaultVariant = await _db.ProductVariants
+                .AsNoTracking()
+                .FirstOrDefaultAsync(v => v.ProductId == request.ProductId && v.IsActive, cancellationToken);
+
+            if (defaultVariant != null && defaultVariant.Stock < request.Quantity)
+                return Result<int>.Failure($"재고가 부족합니다. (현재: {defaultVariant.Stock}개, 요청: {request.Quantity}개)");
         }
 
         // Get or create cart

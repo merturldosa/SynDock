@@ -1,3 +1,4 @@
+using Asp.Versioning;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -9,6 +10,7 @@ using Shop.Application.Notifications.Commands;
 
 namespace Shop.API.Controllers;
 
+[ApiVersion("1.0")]
 [ApiController]
 [Route("api/[controller]")]
 [Authorize(Roles = "TenantAdmin,Admin,PlatformAdmin")]
@@ -354,7 +356,12 @@ public class AdminController : ControllerBase
             request.Theme != null ? new Application.Admin.Commands.TenantThemeDto(
                 request.Theme.Primary, request.Theme.PrimaryLight,
                 request.Theme.Secondary, request.Theme.SecondaryLight, request.Theme.Background) : null,
-            request.LogoUrl, request.FaviconUrl), ct);
+            request.LogoUrl, request.FaviconUrl,
+            request.AiIntegration != null ? new Application.Admin.Commands.AiIntegrationDto(
+                request.AiIntegration.OpenAiApiKey, request.AiIntegration.OpenAiModel,
+                request.AiIntegration.DalleModel, request.AiIntegration.ClaudeApiKey,
+                request.AiIntegration.ClaudeModel, request.AiIntegration.AiContentEnabled,
+                request.AiIntegration.AiImageEnabled) : null), ct);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
         return Ok(new { success = true });
@@ -378,4 +385,9 @@ public record UpdateTenantSettingsRequest(
     string? CompanyName, string? CompanyAddress, string? BusinessNumber,
     string? CeoName, string? ContactPhone, string? ContactEmail,
     string? HeroSubtitle, string? HeroTagline, string? HeroDescription,
-    UpdateTenantSettingsThemeRequest? Theme, string? LogoUrl, string? FaviconUrl);
+    UpdateTenantSettingsThemeRequest? Theme, string? LogoUrl, string? FaviconUrl,
+    UpdateAiIntegrationRequest? AiIntegration = null);
+public record UpdateAiIntegrationRequest(
+    string? OpenAiApiKey, string? OpenAiModel,
+    string? DalleModel, string? ClaudeApiKey, string? ClaudeModel,
+    bool AiContentEnabled = false, bool AiImageEnabled = false);

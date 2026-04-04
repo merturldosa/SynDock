@@ -46,7 +46,7 @@ public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, R
             TenantId = _tenantContext.TenantId,
             UserId = token.UserId,
             Token = newRefreshTokenValue,
-            ExpiresAt = DateTime.UtcNow.AddDays(7),
+            ExpiresAt = DateTime.UtcNow.AddDays(90), // 90-day persistent login
             CreatedBy = token.User.Username
         };
         await _db.RefreshTokens.AddAsync(newRefreshToken, cancellationToken);

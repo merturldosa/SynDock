@@ -60,5 +60,100 @@ public interface IShopDbContext
     DbSet<PurchaseOrderItem> PurchaseOrderItems { get; }
     DbSet<SaintProduct> SaintProducts { get; }
     DbSet<Banner> Banners { get; }
+    DbSet<AuditLog> AuditLogs { get; }
+    DbSet<DeliveryDriver> DeliveryDrivers { get; }
+    DbSet<DeliveryZone> DeliveryZones { get; }
+    DbSet<DeliveryZoneDriver> DeliveryZoneDrivers { get; }
+    DbSet<DeliveryOption> DeliveryOptions { get; }
+    DbSet<DeliveryAssignment> DeliveryAssignments { get; }
+    DbSet<DriverLocationHistory> DriverLocationHistories { get; }
+
+    // WMS
+    DbSet<WarehouseZone> WarehouseZones { get; }
+    DbSet<WarehouseLocation> WarehouseLocations { get; }
+    DbSet<InventoryMovement> InventoryMovements { get; }
+    DbSet<PickingOrder> PickingOrders { get; }
+    DbSet<PickingItem> PickingItems { get; }
+    DbSet<PackingSlip> PackingSlips { get; }
+    DbSet<BarcodeMapping> BarcodeMappings { get; }
+    DbSet<LotTracking> LotTrackings { get; }
+    DbSet<GoodsReceipt> GoodsReceipts { get; }
+    DbSet<GoodsReceiptItem> GoodsReceiptItems { get; }
+    DbSet<CycleCount> CycleCounts { get; }
+    DbSet<CycleCountItem> CycleCountItems { get; }
+
+    // CRM
+    DbSet<CustomerSegment> CustomerSegments { get; }
+    DbSet<CustomerTag> CustomerTags { get; }
+    DbSet<CustomerTagAssignment> CustomerTagAssignments { get; }
+    DbSet<CsTicket> CsTickets { get; }
+    DbSet<CsTicketMessage> CsTicketMessages { get; }
+    DbSet<CustomerJourneyEvent> CustomerJourneyEvents { get; }
+    DbSet<LeadScore> LeadScores { get; }
+    DbSet<VocEntry> VocEntries { get; }
+    DbSet<SalesPipeline> SalesPipelines { get; }
+
+    // ERP
+    DbSet<ChartOfAccount> ChartOfAccounts { get; }
+    DbSet<AccountEntry> AccountEntries { get; }
+    DbSet<Employee> Employees { get; }
+    DbSet<Attendance> Attendances { get; }
+    DbSet<Payroll> Payrolls { get; }
+    DbSet<CostAnalysis> CostAnalyses { get; }
+    DbSet<AccountingPeriod> AccountingPeriods { get; }
+
+    // SCM
+    DbSet<Supplier> Suppliers { get; }
+    DbSet<ProcurementOrder> ProcurementOrders { get; }
+    DbSet<ProcurementOrderItem> ProcurementOrderItems { get; }
+    DbSet<SupplierEvaluation> SupplierEvaluations { get; }
+
+    // Provisioning
+    DbSet<TenantApplication> TenantApplications { get; }
+
+    // Migration
+    DbSet<MigrationJob> MigrationJobs { get; }
+
+    // PMS (Property Management)
+    DbSet<Room> Rooms { get; }
+    DbSet<Booking> Bookings { get; }
+    DbSet<CleaningTask> CleaningTasks { get; }
+    DbSet<RoomAmenityLog> RoomAmenityLogs { get; }
+
+    // Blockchain / Token
+    DbSet<BlockchainTransaction> BlockchainTransactions { get; }
+    DbSet<TokenWallet> TokenWallets { get; }
+    DbSet<TokenTransaction> TokenTransactions { get; }
+
+    // Social Commerce
+    DbSet<MemberGrade> MemberGrades { get; }
+    DbSet<Gift> Gifts { get; }
+    DbSet<ChatRoom> ChatRooms { get; }
+    DbSet<ChatMessage> ChatMessages { get; }
+
+    // Friend System + Mini-Game
+    DbSet<Friendship> Friendships { get; }
+    DbSet<GameRoom> GameRooms { get; }
+    DbSet<GamePlayer> GamePlayers { get; }
+
+    // Marketplace
+    DbSet<MarketplaceConnection> MarketplaceConnections { get; }
+    DbSet<MarketplaceListing> MarketplaceListings { get; }
+    DbSet<MarketplaceOrder> MarketplaceOrders { get; }
+
+    // Partner API
+    DbSet<ApiPartner> ApiPartners { get; }
+    DbSet<PartnerProduct> PartnerProducts { get; }
+    DbSet<PartnerApiLog> PartnerApiLogs { get; }
+
+    // Security (AI-SOC)
+    DbSet<SecurityEvent> SecurityEvents { get; }
+    DbSet<BlockedIp> BlockedIps { get; }
+    DbSet<AccountLockout> AccountLockouts { get; }
+
+    // Workflow Engine
+    DbSet<WorkItem> WorkItems { get; }
+    DbSet<ProcessStep> ProcessSteps { get; }
+
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

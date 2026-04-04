@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { getTenantSettings, updateTenantSettings, type TenantSettings } from "@/lib/adminApi";
 import api from "@/lib/api";
 import toast from "react-hot-toast";
+import { HelpTooltip, HELP_CONFIGS } from "@/components/ui/HelpTooltip";
 
 export default function AdminSettingsPage() {
   const t = useTranslations();
@@ -32,6 +33,13 @@ export default function AdminSettingsPage() {
     themeSecondary: "",
     themeSecondaryLight: "",
     themeBackground: "",
+    aiOpenAiApiKey: "",
+    aiOpenAiModel: "gpt-4o",
+    aiDalleModel: "dall-e-3",
+    aiClaudeApiKey: "",
+    aiClaudeModel: "claude-sonnet-4-20250514",
+    aiContentEnabled: false,
+    aiImageEnabled: false,
   });
 
   useEffect(() => {
@@ -55,6 +63,13 @@ export default function AdminSettingsPage() {
           themeSecondary: s.theme?.secondary || "",
           themeSecondaryLight: s.theme?.secondaryLight || "",
           themeBackground: s.theme?.background || "",
+          aiOpenAiApiKey: s.aiIntegration?.openAiApiKey || "",
+          aiOpenAiModel: s.aiIntegration?.openAiModel || "gpt-4o",
+          aiDalleModel: s.aiIntegration?.dalleModel || "dall-e-3",
+          aiClaudeApiKey: s.aiIntegration?.claudeApiKey || "",
+          aiClaudeModel: s.aiIntegration?.claudeModel || "claude-sonnet-4-20250514",
+          aiContentEnabled: s.aiIntegration?.aiContentEnabled || false,
+          aiImageEnabled: s.aiIntegration?.aiImageEnabled || false,
         });
       })
       .catch(() => { toast.error(t("common.fetchError")); })
@@ -99,6 +114,15 @@ export default function AdminSettingsPage() {
           secondary: form.themeSecondary || null,
           secondaryLight: form.themeSecondaryLight || null,
           background: form.themeBackground || null,
+        },
+        aiIntegration: {
+          openAiApiKey: form.aiOpenAiApiKey || null,
+          openAiModel: form.aiOpenAiModel || null,
+          dalleModel: form.aiDalleModel || null,
+          claudeApiKey: form.aiClaudeApiKey || null,
+          claudeModel: form.aiClaudeModel || null,
+          aiContentEnabled: form.aiContentEnabled,
+          aiImageEnabled: form.aiImageEnabled,
         },
       });
       setSuccess(t("admin.settings.saveSuccess"));
@@ -233,6 +257,83 @@ export default function AdminSettingsPage() {
                 <Image src={form.faviconUrl} alt="Favicon" width={40} height={40} className="object-contain" />
               </div>
             )}
+          </div>
+        </div>
+      </div>
+
+      {/* AI Integration */}
+      <div className="bg-white rounded-xl shadow-sm p-6 mb-6 space-y-4">
+        <h2 className="font-semibold text-[var(--color-secondary)]">AI 연동 설정</h2>
+        <p className="text-xs text-gray-400">AI 콘텐츠 생성 및 이미지 생성에 사용할 API 키를 입력하세요.</p>
+
+        <div className="flex items-center gap-4">
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" checked={form.aiContentEnabled} onChange={(e) => setForm((f) => ({ ...f, aiContentEnabled: e.target.checked }))} className="rounded" />
+            AI 콘텐츠 생성 활성화
+          </label>
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" checked={form.aiImageEnabled} onChange={(e) => setForm((f) => ({ ...f, aiImageEnabled: e.target.checked }))} className="rounded" />
+            AI 이미지 생성 활성화
+          </label>
+        </div>
+
+        <div className="border-t pt-4 space-y-3">
+          <h3 className="text-sm font-medium text-gray-700">OpenAI (GPT / DALL-E)</h3>
+          <div>
+            <label className="flex items-center text-sm text-gray-500 mb-1">
+              OpenAI API Key
+              <HelpTooltip {...HELP_CONFIGS.openAiApiKey} />
+            </label>
+            <input
+              type="password"
+              value={form.aiOpenAiApiKey}
+              onChange={(e) => setForm((f) => ({ ...f, aiOpenAiApiKey: e.target.value }))}
+              className="w-full px-3 py-2.5 border rounded-lg text-sm font-mono"
+              placeholder="sk-proj-xxxx... (platform.openai.com 에서 발급)"
+            />
+            <p className="text-xs text-gray-400 mt-1">GPT 챗봇 + DALL-E 이미지 생성에 사용 (종량제 과금)</p>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm text-gray-500 mb-1">GPT 모델</label>
+              <select value={form.aiOpenAiModel} onChange={(e) => setForm((f) => ({ ...f, aiOpenAiModel: e.target.value }))} className="w-full px-3 py-2.5 border rounded-lg text-sm">
+                <option value="gpt-4o">GPT-4o</option>
+                <option value="gpt-4o-mini">GPT-4o Mini</option>
+                <option value="gpt-4-turbo">GPT-4 Turbo</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm text-gray-500 mb-1">DALL-E 모델</label>
+              <select value={form.aiDalleModel} onChange={(e) => setForm((f) => ({ ...f, aiDalleModel: e.target.value }))} className="w-full px-3 py-2.5 border rounded-lg text-sm">
+                <option value="dall-e-3">DALL-E 3</option>
+                <option value="dall-e-2">DALL-E 2</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div className="border-t pt-4 space-y-3">
+          <h3 className="text-sm font-medium text-gray-700">Claude (Anthropic)</h3>
+          <div>
+            <label className="flex items-center text-sm text-gray-500 mb-1">
+              Claude API Key
+              <HelpTooltip {...HELP_CONFIGS.claudeApiKey} />
+            </label>
+            <input
+              type="password"
+              value={form.aiClaudeApiKey}
+              onChange={(e) => setForm((f) => ({ ...f, aiClaudeApiKey: e.target.value }))}
+              className="w-full px-3 py-2.5 border rounded-lg text-sm font-mono"
+              placeholder="sk-ant-api03-xxxx... (console.anthropic.com 에서 발급)"
+            />
+            <p className="text-xs text-gray-400 mt-1">한국어 챗봇 대화에 사용 (Claude가 더 자연스러운 한국어 제공)</p>
+          </div>
+          <div>
+            <label className="block text-sm text-gray-500 mb-1">Claude 모델</label>
+            <select value={form.aiClaudeModel} onChange={(e) => setForm((f) => ({ ...f, aiClaudeModel: e.target.value }))} className="w-full px-3 py-2.5 border rounded-lg text-sm">
+              <option value="claude-sonnet-4-20250514">Claude Sonnet 4</option>
+              <option value="claude-haiku-4-5-20251001">Claude Haiku 4.5</option>
+            </select>
           </div>
         </div>
       </div>

@@ -7,11 +7,16 @@ export interface UserInfo {
   customFieldsJson?: string;
 }
 
-export interface LoginResponse {
+export interface AuthTokens {
   accessToken: string;
   refreshToken: string;
-  expiresAt: string;
   user: UserInfo;
+}
+
+export interface LoginResponse {
+  requiresTwoFactor: boolean;
+  twoFactorToken: string | null;
+  auth: AuthTokens | null;
 }
 
 export interface RegisterRequest {

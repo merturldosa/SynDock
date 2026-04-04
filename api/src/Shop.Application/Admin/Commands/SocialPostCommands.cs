@@ -53,6 +53,24 @@ public class AutoPostProductCommandHandler : IRequestHandler<AutoPostProductComm
             results.Add(new SocialPostResultDto("Facebook", fbResult.Success, fbResult.PostUrl, fbResult.ErrorMessage));
         }
 
+        // Twitter (280자 제한)
+        if (await _social.IsConfiguredAsync("Twitter", cancellationToken))
+        {
+            var tweetText = BuildTwitterCaption(product);
+            var twResult = await _social.PostToTwitterAsync(tweetText, imageUrl, cancellationToken);
+            await SaveSocialPost("Twitter", product.Id, tweetText, imageUrl, twResult, cancellationToken);
+            results.Add(new SocialPostResultDto("Twitter", twResult.Success, twResult.PostUrl, twResult.ErrorMessage));
+        }
+
+        // YouTube
+        if (await _social.IsConfiguredAsync("YouTube", cancellationToken))
+        {
+            var title = $"[신상품] {product.Name}"[..Math.Min(100, $"[신상품] {product.Name}".Length)];
+            var ytResult = await _social.PostToYoutubeAsync(title, caption, imageUrl, cancellationToken);
+            await SaveSocialPost("YouTube", product.Id, caption, imageUrl, ytResult, cancellationToken);
+            results.Add(new SocialPostResultDto("YouTube", ytResult.Success, ytResult.PostUrl, ytResult.ErrorMessage));
+        }
+
         return Result<List<SocialPostResultDto>>.Success(results);
     }
 
@@ -99,6 +117,29 @@ public class AutoPostProductCommandHandler : IRequestHandler<AutoPostProductComm
         lines.Add("#신상품 #쇼핑 #추천");
 
         return string.Join("\n", lines);
+    }
+
+    private static string BuildTwitterCaption(Product product)
+    {
+        var text = $"[신상품] {product.Name}";
+
+        if (product.SalePrice.HasValue && product.SalePrice < product.Price)
+        {
+            var discount = Math.Round((1 - (double)product.SalePrice.Value / (double)product.Price) * 100);
+            text += $"\n{discount}% OFF! {product.SalePrice.Value:N0}원";
+        }
+        else if (product.PriceType != "Inquiry")
+        {
+            text += $"\n{product.Price:N0}원";
+        }
+
+        text += "\n#신상품 #쇼핑";
+
+        // Twitter 280자 제한
+        if (text.Length > 280)
+            text = text[..277] + "...";
+
+        return text;
     }
 }
 

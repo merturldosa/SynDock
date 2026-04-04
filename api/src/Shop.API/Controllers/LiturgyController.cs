@@ -1,3 +1,4 @@
+using Asp.Versioning;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Shop.Application.Liturgy.Queries;
@@ -5,6 +6,7 @@ using Shop.Application.Liturgy.Queries;
 namespace Shop.API.Controllers;
 
 [ApiController]
+[ApiVersion("1.0")]
 [Route("api/[controller]")]
 public class LiturgyController : ControllerBase
 {

@@ -20,7 +20,7 @@ public class TenantMiddleware
     {
         // Skip tenant resolution for platform-level endpoints
         var path = context.Request.Path.Value?.ToLower() ?? "";
-        if (path.StartsWith("/api/platform/") || path.StartsWith("/api/health") || path.StartsWith("/swagger"))
+        if (path.StartsWith("/api/platform/") || path.StartsWith("/api/health") || path.StartsWith("/api/provisioning/") || path.StartsWith("/api/migration/") || path.StartsWith("/api/mall/") || path.StartsWith("/api/chain/stats") || path.StartsWith("/api/partner/") || path.StartsWith("/api/security/") || path.StartsWith("/api/sns-marketing/") || path.StartsWith("/swagger") || path.StartsWith("/metrics"))
         {
             await _next(context);
             return;

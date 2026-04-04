@@ -100,6 +100,7 @@ export const createOrder = (data: {
   note?: string;
   couponCode?: string;
   pointsToUse?: number;
+  deliveryOptionId?: number;
 }) => api.post("/order", data);
 
 export const getOrders = (params?: Record<string, unknown>) =>
@@ -125,6 +126,16 @@ export const getNotifications = (page = 1, pageSize = 20) =>
 export const getUnreadCount = () =>
   api.get<{ count: number }>("/notifications/unread-count");
 export const markAllRead = () => api.put("/notifications/read-all");
+
+// Push Token
+export const registerPushToken = (token: string, platform: string) =>
+  api.post("/push/mobile-token", { token, platform });
+export const unregisterPushToken = (token: string, platform: string) =>
+  api.post("/push/mobile-token/unregister", { token, platform });
+
+// Delivery Tracking
+export const getDeliveryTracking = (orderId: number) =>
+  api.get(`/delivery/orders/${orderId}/assignment`);
 
 // Recommendations
 export const getPopular = () => api.get<Product[]>("/recommendations/popular");

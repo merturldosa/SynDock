@@ -34,8 +34,21 @@ public class ChangePasswordCommandHandler : IRequestHandler<ChangePasswordComman
             return Result<bool>.Failure("Current password is incorrect.");
 
         user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
+        user.MustChangePassword = false;
         user.UpdatedBy = _currentUser.Username;
         user.UpdatedAt = DateTime.UtcNow;
+
+        // Security: Revoke ALL refresh tokens on password change (force re-login on all devices)
+        var activeTokens = await _db.RefreshTokens
+            .IgnoreQueryFilters()
+            .Where(t => t.UserId == user.Id && !t.IsRevoked)
+            .ToListAsync(cancellationToken);
+
+        foreach (var token in activeTokens)
+        {
+            token.IsRevoked = true;
+            token.RevokedAt = DateTime.UtcNow;
+        }
 
         await _db.SaveChangesAsync(cancellationToken);
 

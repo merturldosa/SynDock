@@ -43,7 +43,8 @@ public class GetDashboardStatsQueryHandler : IRequestHandler<GetDashboardStatsQu
         var totalOrders = await _db.Orders.CountAsync(cancellationToken);
         var totalRevenue = await _db.Orders
             .Where(o => o.Status != nameof(OrderStatus.Cancelled) && o.Status != nameof(OrderStatus.Refunded))
-            .SumAsync(o => o.TotalAmount, cancellationToken);
+            .Select(o => (decimal?)o.TotalAmount)
+            .SumAsync(cancellationToken) ?? 0;
         var totalUsers = await _db.Users.CountAsync(cancellationToken);
 
         // Orders by status
@@ -105,7 +106,8 @@ public class GetDashboardStatsQueryHandler : IRequestHandler<GetDashboardStatsQu
         var todayRevenue = await _db.Orders
             .AsNoTracking()
             .Where(o => o.CreatedAt >= todayStart && o.Status != nameof(OrderStatus.Cancelled) && o.Status != nameof(OrderStatus.Refunded))
-            .SumAsync(o => o.TotalAmount, cancellationToken);
+            .Select(o => (decimal?)o.TotalAmount)
+            .SumAsync(cancellationToken) ?? 0;
 
         // Category sales (top 5) — try DB-side GroupBy first, fall back to in-memory for InMemory DB
         var cancelledStatuses = new[] { nameof(OrderStatus.Cancelled), nameof(OrderStatus.Refunded) };

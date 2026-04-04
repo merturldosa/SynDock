@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
-import { ChevronUp, ChevronDown, Trash2, Plus, Save, X } from "lucide-react";
+import { ChevronUp, ChevronDown, Trash2, Plus, Save, X, Sparkles } from "lucide-react";
 import toast from "react-hot-toast";
 import {
   getProductDetailSections,
@@ -40,6 +40,8 @@ export function ProductDetailSectionEditor({ productId }: Props) {
     sectionType: "Custom",
   });
   const [uploading, setUploading] = useState(false);
+  const [aiGenerating, setAiGenerating] = useState(false);
+  const [aiPrompt, setAiPrompt] = useState("");
 
   const load = async () => {
     try {
@@ -243,6 +245,38 @@ export function ProductDetailSectionEditor({ productId }: Props) {
                 disabled={uploading}
               />
               {uploading && <span className="text-xs text-gray-400">{t("review.uploading")}</span>}
+            </div>
+            {/* AI Image Generation */}
+            <div className="mt-2 flex items-center gap-2">
+              <input
+                type="text"
+                value={aiPrompt}
+                onChange={(e) => setAiPrompt(e.target.value)}
+                className="flex-1 px-3 py-2 border rounded-lg text-sm"
+                placeholder="AI 이미지 프롬프트 (비워두면 자동 생성)"
+              />
+              <button
+                type="button"
+                disabled={aiGenerating}
+                onClick={async () => {
+                  setAiGenerating(true);
+                  try {
+                    const { data } = await api.post(`/products/${productId}/sections/generate-image`, {
+                      prompt: aiPrompt || undefined,
+                      sectionType: form.sectionType,
+                    });
+                    setForm((f) => ({ ...f, imageUrl: data.url }));
+                    toast.success("AI 이미지 생성 완료");
+                  } catch {
+                    toast.error("AI 이미지 생성 실패");
+                  }
+                  setAiGenerating(false);
+                }}
+                className="px-3 py-2 bg-purple-600 text-white rounded-lg text-sm hover:bg-purple-700 disabled:opacity-50 flex items-center gap-1 whitespace-nowrap"
+              >
+                <Sparkles size={14} />
+                {aiGenerating ? "생성 중..." : "AI 생성"}
+              </button>
             </div>
             {form.imageUrl && (
               <div className="mt-2 flex items-center gap-3">

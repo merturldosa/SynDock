@@ -35,7 +35,8 @@ public class MesHttpClient : IMesClient
         _configuration = configuration;
         _logger = logger;
 
-        _enabled = configuration.GetValue<bool>("Mes:Enabled");
+        var mesMode = configuration["Mes:Enabled"]?.ToLower();
+        _enabled = mesMode == "true";
         if (_enabled)
         {
             var baseUrl = configuration["Mes:BaseUrl"] ?? "http://localhost:8080";

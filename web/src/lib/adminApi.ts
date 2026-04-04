@@ -530,6 +530,16 @@ export interface TenantSettingsTheme {
   background: string | null;
 }
 
+export interface TenantAiIntegration {
+  openAiApiKey: string | null;
+  openAiModel: string | null;
+  dalleModel: string | null;
+  claudeApiKey: string | null;
+  claudeModel: string | null;
+  aiContentEnabled: boolean;
+  aiImageEnabled: boolean;
+}
+
 export interface TenantSettings {
   companyName: string | null;
   companyAddress: string | null;
@@ -543,6 +553,7 @@ export interface TenantSettings {
   theme: TenantSettingsTheme | null;
   logoUrl: string | null;
   faviconUrl: string | null;
+  aiIntegration: TenantAiIntegration | null;
 }
 
 export async function getTenantSettings(): Promise<TenantSettings> {

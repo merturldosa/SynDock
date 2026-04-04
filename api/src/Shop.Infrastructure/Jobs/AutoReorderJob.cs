@@ -20,7 +20,8 @@ public class AutoReorderJob : BackgroundService
     {
         _services = services;
         _logger = logger;
-        _enabled = configuration.GetValue<bool>("Mes:Enabled");
+        var mesMode = configuration["Mes:Enabled"]?.ToLower();
+        _enabled = mesMode == "true" || mesMode == "demo";
         var minutes = configuration.GetValue<int>("Mes:AutoReorderIntervalMinutes", 30);
         _interval = TimeSpan.FromMinutes(minutes);
     }

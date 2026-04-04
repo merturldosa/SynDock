@@ -19,7 +19,7 @@ export function Header() {
   const t = useTranslations();
   const router = useRouter();
   const { user, isAuthenticated, isLoading, logout, fetchMe } = useAuthStore();
-  const { name: tenantName } = useTenantStore();
+  const { name: tenantName, hasFeature } = useTenantStore();
   const { cart, fetchCart } = useCartStore();
   const { unreadCount, setUnreadCount, connect, disconnect } = useNotificationStore();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -102,9 +102,11 @@ export function Header() {
           <Link href="/feed" className="hidden md:block text-xs px-2 py-1 hover:text-[var(--color-primary)] transition-colors">
             {t("common.community")}
           </Link>
-          <Link href="/liturgy" className="hidden md:block text-xs px-2 py-1 hover:text-[var(--color-primary)] transition-colors">
-            {t("common.liturgy")}
-          </Link>
+          {hasFeature("liturgy") && (
+            <Link href="/liturgy" className="hidden md:block text-xs px-2 py-1 hover:text-[var(--color-primary)] transition-colors">
+              {t("common.liturgy")}
+            </Link>
+          )}
           <Link href="/search" className="hidden md:block p-2 hover:text-[var(--color-primary)] transition-colors">
             <Search size={20} />
           </Link>
@@ -124,7 +126,7 @@ export function Header() {
               <Link href="/mypage" className="hidden md:block p-2 hover:text-[var(--color-primary)] transition-colors">
                 <User size={20} />
               </Link>
-              {(user?.role === "Admin" || user?.role === "PlatformAdmin") && (
+              {(user?.role === "TenantAdmin" || user?.role === "Admin" || user?.role === "PlatformAdmin") && (
                 <Link href="/admin" className="hidden md:block text-xs px-2 py-1 bg-[var(--color-primary)] rounded text-white hover:opacity-90">
                   {t("header.admin")}
                 </Link>

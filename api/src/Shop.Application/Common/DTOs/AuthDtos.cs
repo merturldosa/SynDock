@@ -10,7 +10,8 @@ public record UserProfileDto(int Id, string Username, string Email, string Name,
 public record LoginResponse(
     bool RequiresTwoFactor,
     string? TwoFactorToken,
-    AuthResponse? Auth);
+    AuthResponse? Auth,
+    bool MustChangePassword = false);
 
 public record TwoFactorSetupResponse(
     string QrCodeUri,
