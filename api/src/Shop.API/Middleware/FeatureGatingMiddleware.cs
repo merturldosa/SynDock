@@ -65,11 +65,24 @@ public class FeatureGatingMiddleware
         try
         {
             using var doc = JsonDocument.Parse(configJson);
+
+            // Check "features" dictionary: { "features": { "wms": true } }
             if (doc.RootElement.TryGetProperty("features", out var features))
             {
                 if (features.TryGetProperty(feature, out var value))
                 {
                     return value.ValueKind == JsonValueKind.True;
+                }
+            }
+
+            // Also check "enabledFeatures" array: { "enabledFeatures": ["wms", "crm"] }
+            if (doc.RootElement.TryGetProperty("enabledFeatures", out var enabledFeatures) &&
+                enabledFeatures.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var item in enabledFeatures.EnumerateArray())
+                {
+                    if (item.GetString()?.Equals(feature, StringComparison.OrdinalIgnoreCase) == true)
+                        return true;
                 }
             }
         }

@@ -18,7 +18,7 @@ public static class MoHyunSeedData
             FaviconUrl = "/uploads/tenants/mohyun/favicon.ico",
             FontFamily = "'Noto Serif KR', serif"
         },
-        EnabledFeatures = ["aiChat", "collection", "community", "wishlist", "review", "qna"],
+        EnabledFeatures = ["aiChat", "collection", "community", "wishlist", "review", "qna", "wms", "crm", "erp", "scm", "mes"],
         SeasonalThemes = new Dictionary<string, SeasonalThemeConfig>
         {
             ["spring"] = new() { Primary = "#6B8E23", Secondary = "#556B2F", Background = "#FAFFF0" },

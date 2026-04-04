@@ -24,6 +24,8 @@ public class GetOrderByIdQueryHandler : IRequestHandler<GetOrderByIdQuery, Order
         if (_currentUser.UserId is null)
             return null;
 
+        var isAdmin = _currentUser.Role is "TenantAdmin" or "Admin" or "PlatformAdmin";
+
         var order = await _db.Orders
             .AsNoTracking()
             .Include(o => o.Items)
@@ -33,7 +35,7 @@ public class GetOrderByIdQueryHandler : IRequestHandler<GetOrderByIdQuery, Order
                 .ThenInclude(oi => oi.Variant)
             .Include(o => o.ShippingAddress)
             .Include(o => o.Histories)
-            .FirstOrDefaultAsync(o => o.Id == request.OrderId && o.UserId == _currentUser.UserId.Value, cancellationToken);
+            .FirstOrDefaultAsync(o => o.Id == request.OrderId && (isAdmin || o.UserId == _currentUser.UserId.Value), cancellationToken);
 
         if (order is null)
             return null;

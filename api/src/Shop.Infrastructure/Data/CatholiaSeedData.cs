@@ -18,7 +18,7 @@ public static class CatholiaSeedData
             FaviconUrl = null,
             FontFamily = "Pretendard, sans-serif"
         },
-        EnabledFeatures = ["liturgy", "saints", "baptismalName", "community", "aiChat", "collection"],
+        EnabledFeatures = ["liturgy", "saints", "baptismalName", "community", "aiChat", "collection", "wms", "crm", "erp", "scm", "mes"],
         ChatPersona = new ChatPersonaConfig
         {
             Name = "\uce74\ud1a8\ub9ac\uc544 AI \ub3c4\uc6b0\ubbf8",
